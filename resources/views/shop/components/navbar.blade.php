@@ -56,8 +56,12 @@
                                     {{ __('shop.navigation.bestseller') }}
                                 </a>
 
-                                <a href="cart.html" class="dropdown-item">
-                                    {{ __('shop.navigation.cart') }}
+                                <a href="{{ route('shop.cart.index') }}"
+                                   class="dropdown-item d-flex align-items-center justify-content-between gap-3">
+                                    <span>{{ __('shop.navigation.cart') }}</span>
+                                    <span class="badge bg-secondary rounded-pill">
+                                        {{ $storefrontCartQuantity ?? 0 }}
+                                    </span>
                                 </a>
 
                                 <a href="cheackout.html" class="dropdown-item">

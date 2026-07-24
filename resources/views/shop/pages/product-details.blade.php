@@ -111,42 +111,52 @@
                                     </div>
                                 @endif
 
-                                <div class="input-group quantity mb-4" style="width: 140px;">
-                                    <div class="input-group-btn">
-                                        <button type="button" class="btn btn-sm btn-minus rounded-circle bg-light border"
-                                            aria-label="{{ __('shop.product_details.decrease_quantity') }}"
-                                            @disabled(! $inStock)>
-                                            <i class="fa fa-minus"></i>
-                                        </button>
-                                    </div>
-                                    <input type="number" class="form-control form-control-sm text-center border-0"
-                                        value="{{ $inStock ? 1 : 0 }}" min="1" max="{{ $availableQuantity }}"
-                                        step="1" aria-label="{{ __('shop.product_details.quantity') }}"
-                                        @disabled(! $inStock)>
-                                    <div class="input-group-btn">
-                                        <button type="button" class="btn btn-sm btn-plus rounded-circle bg-light border"
-                                            aria-label="{{ __('shop.product_details.increase_quantity') }}"
-                                            @disabled(! $inStock)>
-                                            <i class="fa fa-plus"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                                <form action="{{ route('shop.cart.items.store') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->getKey() }}">
 
-                                <div class="d-flex flex-wrap gap-3">
-                                    <a href="#"
-                                        class="btn btn-primary border border-secondary rounded-pill px-4 py-2 mb-4 text-primary {{ $inStock ? '' : 'disabled' }}"
-                                        @unless ($inStock)
-                                            aria-disabled="true" tabindex="-1"
-                                        @endunless>
-                                        <i class="fa fa-shopping-bag me-2 text-white"></i>
-                                        {{ __('shop.product.add_to_cart') }}
-                                    </a>
-                                    <a href="#"
-                                        class="btn btn-primary border border-secondary rounded-pill px-4 py-2 mb-4 text-primary">
-                                        <i class="bi bi-heart me-2"></i>
-                                        {{ __('shop.product.wishlist') }}
-                                    </a>
-                                </div>
+                                    <div class="input-group quantity mb-4" style="width: 140px;">
+                                        <div class="input-group-btn">
+                                            <button type="button"
+                                                class="btn btn-sm btn-minus rounded-circle bg-light border"
+                                                aria-label="{{ __('shop.product_details.decrease_quantity') }}"
+                                                @disabled(! $inStock)>
+                                                <i class="fa fa-minus"></i>
+                                            </button>
+                                        </div>
+                                        <input type="number" name="quantity"
+                                            class="form-control form-control-sm text-center border-0 @error('quantity') is-invalid @enderror"
+                                            value="{{ old('quantity', $inStock ? 1 : 0) }}" min="1"
+                                            max="{{ $availableQuantity }}" step="1"
+                                            aria-label="{{ __('shop.product_details.quantity') }}"
+                                            @disabled(! $inStock)>
+                                        <div class="input-group-btn">
+                                            <button type="button"
+                                                class="btn btn-sm btn-plus rounded-circle bg-light border"
+                                                aria-label="{{ __('shop.product_details.increase_quantity') }}"
+                                                @disabled(! $inStock)>
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @error('quantity')
+                                        <div class="text-danger mb-3">{{ $message }}</div>
+                                    @enderror
+
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <button type="submit"
+                                            class="btn btn-primary border border-secondary rounded-pill px-4 py-2 mb-4 text-primary"
+                                            @disabled(! $inStock)>
+                                            <i class="fa fa-shopping-bag me-2 text-white"></i>
+                                            {{ __('shop.product.add_to_cart') }}
+                                        </button>
+                                        <button type="button"
+                                            class="btn btn-primary border border-secondary rounded-pill px-4 py-2 mb-4 text-primary">
+                                            <i class="bi bi-heart me-2"></i>
+                                            {{ __('shop.product.wishlist') }}
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
 

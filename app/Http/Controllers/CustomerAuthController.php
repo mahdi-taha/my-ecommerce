@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\AccountType;
 use App\Http\Requests\CustomerLoginRequest;
+use App\Services\CartService;
+use App\Services\GuestCartTokenService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +13,11 @@ use Illuminate\View\View;
 
 class CustomerAuthController extends Controller
 {
+    public function __construct(
+        private CartService $cartService,
+        private GuestCartTokenService $tokenService
+    ) {}
+
     public function showLogin(): View
     {
         return view('customer.auth.login');
@@ -32,9 +39,19 @@ class CustomerAuthController extends Controller
         }
 
         $request->session()->regenerate();
-        $request->user('customer')->update(['last_login_at' => now()]);
+        $customer = $request->user('customer');
+        $customer->update(['last_login_at' => now()]);
+        $guestToken = $this->tokenService->fromRequest($request);
+        $warnings = $this->cartService->mergeGuestCart($customer, $guestToken);
+        $response = redirect()->intended(route('customer.account.edit'));
 
-        return redirect()->intended(route('customer.account.edit'));
+        if ($warnings !== []) {
+            $response->with('warning', implode(' ', $warnings));
+        }
+
+        return $guestToken
+            ? $response->withCookie($this->tokenService->forgetCookie())
+            : $response;
     }
 
     public function logout(Request $request): RedirectResponse

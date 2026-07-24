@@ -62,6 +62,42 @@ return [
         'related_speaker_price' => '$79.00',
     ],
 
+    'cart' => [
+        'title' => 'Shopping Cart',
+        'empty' => 'Your cart is empty.',
+        'continue_shopping' => 'Continue Shopping',
+        'product' => 'Product',
+        'sku' => 'SKU',
+        'unit_price' => 'Unit Price',
+        'quantity' => 'Quantity',
+        'line_total' => 'Line Total',
+        'subtotal' => 'Cart Subtotal',
+        'actions' => 'Actions',
+        'update' => 'Update',
+        'remove' => 'Remove item',
+        'clear' => 'Clear Cart',
+        'messages' => [
+            'added' => 'The product was added to your cart.',
+            'updated' => 'The cart quantity was updated.',
+            'removed' => 'The product was removed from your cart.',
+            'cleared' => 'Your cart was cleared.',
+        ],
+        'validation' => [
+            'integer_quantity' => 'The quantity must be a whole number.',
+            'minimum_quantity' => 'The quantity must be at least 1.',
+            'out_of_stock' => 'This product is out of stock.',
+            'insufficient_stock' => 'Only :quantity item(s) are currently available.',
+            'ineligible_product' => 'This product cannot be added to the cart.',
+            'not_found' => 'The cart could not be found.',
+            'item_not_found' => 'The selected cart item could not be found.',
+            'invalid_customer' => 'This customer cannot own a storefront cart.',
+        ],
+        'warnings' => [
+            'removed_unavailable' => 'An unavailable product was removed while merging your carts.',
+            'quantity_capped' => ':product was adjusted to the available quantity of :quantity.',
+        ],
+    ],
+
     'navigation' => [
         'brand' => 'Electro',
         'home' => 'Home',

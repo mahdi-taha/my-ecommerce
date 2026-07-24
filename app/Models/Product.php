@@ -202,6 +202,11 @@ class Product extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function cartItems(): HasMany
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
     private function applyTaxForDisplay(string|float $price, string $taxMode, ?Tax $defaultTax): float
     {
         $amount = (float) $price;

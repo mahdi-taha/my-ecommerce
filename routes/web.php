@@ -14,14 +14,22 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\Shop\CartController as ShopCartController;
 use App\Http\Controllers\Shop\ProductController as ShopProductController;
 use App\Http\Controllers\VariantController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [HomeController::class, 'index'])->name('shop.home');
-Route::get('/products/{url_key}', [ShopProductController::class, 'show'])
-    ->name('shop.products.show');
+Route::middleware('storefront.cart')->group(function () {
+    Route::get('/', [HomeController::class, 'index'])->name('shop.home');
+    Route::get('/products/{url_key}', [ShopProductController::class, 'show'])
+        ->name('shop.products.show');
+    Route::get('/cart', [ShopCartController::class, 'index'])->name('shop.cart.index');
+    Route::post('/cart/items', [ShopCartController::class, 'store'])->name('shop.cart.items.store');
+    Route::patch('/cart/items/{cartItem}', [ShopCartController::class, 'update'])->name('shop.cart.items.update');
+    Route::delete('/cart/items/{cartItem}', [ShopCartController::class, 'destroy'])->name('shop.cart.items.destroy');
+    Route::delete('/cart', [ShopCartController::class, 'clear'])->name('shop.cart.clear');
+});
 // Route::get('/', function () {
 //     return view('admin/start');
 // })->middleware(['auth:admin', 'admin']);

@@ -1049,3 +1049,16 @@ Working implementations exist, but they predate significant frozen structural de
 8. Commit the current repository state in small, labeled commits so future recovery can rely on Git.
 
 The immediate Cart implementation should remain paused until the authoritative Module 7 tables and constraints are restored.
+
+---
+
+# Approved authoritative amendment — Module 7 Cart
+
+The previously unresolved Module 7 schema and business decisions have now been
+explicitly approved. The authoritative specification is:
+
+[`docs/ecommerce-v1-module-7-cart.md`](ecommerce-v1-module-7-cart.md)
+
+This amendment supersedes only statements in this recovery report that describe
+Module 7 as unresolved or paused. It does not silently alter any other recovered
+module, confidence label, or uncertainty.

@@ -45,8 +45,8 @@ class SimpleProductDetailsTest extends TestCase
             ->assertSee('Out of Stock')
             ->assertDontSee('Available quantity:')
             ->assertSee('value="0"', false)
-            ->assertSee('aria-disabled="true"', false)
-            ->assertSee('tabindex="-1"', false);
+            ->assertSee('type="submit"', false)
+            ->assertSee('disabled', false);
     }
 
     public function test_product_resolution_is_locale_specific_without_fallback(): void

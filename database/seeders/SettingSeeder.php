@@ -35,6 +35,9 @@ class SettingSeeder extends Seeder
             ['group' => 'inventory', 'key' => 'manage_stock', 'value' => '1', 'type' => 'boolean'],
             ['group' => 'inventory', 'key' => 'allow_backorders', 'value' => '0', 'type' => 'boolean'],
 
+            // Cart
+            ['group' => 'cart', 'key' => 'lifetime_days', 'value' => '30', 'type' => 'integer'],
+
         ];
 
         foreach ($settings as $setting) {
