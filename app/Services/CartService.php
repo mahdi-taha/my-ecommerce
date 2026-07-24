@@ -88,6 +88,54 @@ class CartService
         });
     }
 
+    public function addConfigurable(
+        ?User $customer,
+        ?string $guestToken,
+        int $parentProductId,
+        array $selectedOptions,
+        int $quantity
+    ): Cart {
+        return DB::transaction(function () use (
+            $customer,
+            $guestToken,
+            $parentProductId,
+            $selectedOptions,
+            $quantity
+        ) {
+            $now = now();
+            $cart = $this->lockedCartForMutation($customer, $guestToken, $now);
+            $variant = $this->resolveConfigurableVariant(
+                $parentProductId,
+                $selectedOptions
+            );
+            $configurationHash = $this->configurableConfigurationHash($variant);
+            $item = CartItem::query()
+                ->where('cart_id', $cart->getKey())
+                ->where('product_id', $variant->getKey())
+                ->where('configuration_hash', $configurationHash)
+                ->lockForUpdate()
+                ->first();
+            $combinedQuantity = $quantity + (int) ($item?->quantity ?? 0);
+
+            $this->validateAvailableQuantity($variant, $combinedQuantity);
+
+            if ($item) {
+                $item->update(['quantity' => $combinedQuantity]);
+            } else {
+                $cart->items()->create([
+                    'product_id' => $variant->getKey(),
+                    'product_type' => CartItemType::Configurable->value,
+                    'configuration_hash' => $configurationHash,
+                    'quantity' => $quantity,
+                ]);
+            }
+
+            $this->touch($cart, $now);
+
+            return $cart->fresh();
+        });
+    }
+
     public function updateQuantity(
         ?User $customer,
         ?string $guestToken,
@@ -112,7 +160,7 @@ class CartService
                 ]);
             }
 
-            $product = $this->eligibleSimpleProduct((int) $item->product_id);
+            $product = $this->eligibleCartItemProduct($item);
             $this->validateAvailableQuantity($product, (int) $quantity);
 
             if ((int) $item->quantity !== (int) $quantity) {
@@ -187,6 +235,19 @@ class CartService
                 'images',
                 'inventory',
                 'tax' => fn ($query) => $query->active(),
+                'configurable' => fn ($query) => $query->with([
+                    'translations' => fn ($query) => $query
+                        ->where('locale', app()->getLocale()),
+                    'images',
+                ]),
+                'attributeValues' => fn ($query) => $query
+                    ->whereNotNull('attribute_option_id')
+                    ->with([
+                        'attribute.translations' => fn ($query) => $query
+                            ->where('locale', app()->getLocale()),
+                        'option.translations' => fn ($query) => $query
+                            ->where('locale', app()->getLocale()),
+                    ]),
             ]),
         ]);
 
@@ -194,11 +255,31 @@ class CartService
             ->filter(fn (CartItem $item) => $item->product !== null)
             ->map(function (CartItem $item) use ($taxMode, $defaultTax) {
                 $unitPrice = $item->product->displayPrice($taxMode, $defaultTax);
+                $isConfigurable = $item->product_type === CartItemType::Configurable;
+                $displayProduct = $isConfigurable
+                    ? $item->product->configurable
+                    : $item->product;
+                $selectedOptions = $isConfigurable
+                    ? $item->product->attributeValues
+                        ->sortBy('attribute_id')
+                        ->map(function ($value) {
+                            $attribute = $value->attribute?->translations->first()?->admin_name;
+                            $option = $value->option?->translations->first()?->label;
+
+                            return $attribute && $option
+                                ? $attribute.': '.$option
+                                : null;
+                        })
+                        ->filter()
+                        ->values()
+                    : collect();
 
                 return [
                     'model' => $item,
                     'product' => $item->product,
-                    'translation' => $item->product->translations->first(),
+                    'display_product' => $displayProduct,
+                    'translation' => $displayProduct?->translations->first(),
+                    'selected_options' => $selectedOptions,
                     'unit_price' => $unitPrice,
                     'line_total' => $unitPrice * (float) $item->quantity,
                     'available_quantity' => $item->product->inventory?->availableQuantity() ?? '0.0000',
@@ -282,11 +363,7 @@ class CartService
                 ->get();
 
             foreach ($guestItems as $guestItem) {
-                if ($guestItem->product_type !== CartItemType::Simple) {
-                    throw new RuntimeException('Only Simple Product cart items can currently be merged.');
-                }
-
-                $product = $this->eligibleSimpleProductOrNull((int) $guestItem->product_id);
+                $product = $this->eligibleCartItemProductOrNull($guestItem);
 
                 if (! $product) {
                     $warnings[] = __('shop.cart.warnings.removed_unavailable');
@@ -307,7 +384,8 @@ class CartService
 
                 if ($adjusted < $combined) {
                     $warnings[] = __('shop.cart.warnings.quantity_capped', [
-                        'product' => $product->translations
+                        'product' => ($product->configurable ?? $product)
+                            ->translations
                             ->firstWhere('locale', app()->getLocale())?->name
                             ?? $product->sku,
                         'quantity' => $adjusted,
@@ -448,6 +526,48 @@ class CartService
             ->first();
     }
 
+    private function eligibleCartItemProduct(CartItem $item): Product
+    {
+        if ($item->product_type === CartItemType::Simple) {
+            return $this->eligibleSimpleProduct((int) $item->product_id);
+        }
+
+        if ($item->product_type === CartItemType::Configurable) {
+            $variant = $this->eligibleConfigurableVariantQuery(
+                (int) $item->product_id
+            )->first();
+
+            if ($variant) {
+                return $variant;
+            }
+        }
+
+        throw ValidationException::withMessages([
+            'product_id' => __('shop.cart.validation.ineligible_product'),
+        ]);
+    }
+
+    private function eligibleCartItemProductOrNull(CartItem $item): ?Product
+    {
+        $query = match ($item->product_type) {
+            CartItemType::Simple => $this->eligibleSimpleProductQuery(
+                (int) $item->product_id
+            ),
+            CartItemType::Configurable => $this->eligibleConfigurableVariantQuery(
+                (int) $item->product_id
+            ),
+        };
+
+        return $query
+            ->with([
+                'translations' => fn ($query) => $query
+                    ->where('locale', app()->getLocale()),
+                'configurable.translations' => fn ($query) => $query
+                    ->where('locale', app()->getLocale()),
+            ])
+            ->first();
+    }
+
     private function eligibleSimpleProductQuery(int $productId): Builder
     {
         return Product::query()
@@ -457,6 +577,112 @@ class CartService
             ->where('type', ProductType::Simple->value)
             ->whereNull('configurable_id')
             ->with('inventory');
+    }
+
+    private function eligibleConfigurableVariantQuery(int $productId): Builder
+    {
+        return Product::query()
+            ->whereKey($productId)
+            ->active()
+            ->where('type', ProductType::Simple->value)
+            ->whereNotNull('configurable_id')
+            ->whereHas('configurable', fn (Builder $query) => $query
+                ->active()
+                ->visible()
+                ->where('type', ProductType::Configurable->value)
+                ->whereNull('configurable_id'))
+            ->with(['inventory', 'configurable']);
+    }
+
+    private function resolveConfigurableVariant(
+        int $parentProductId,
+        array $selectedOptions
+    ): Product {
+        $parent = Product::query()
+            ->whereKey($parentProductId)
+            ->active()
+            ->visible()
+            ->where('type', ProductType::Configurable->value)
+            ->whereNull('configurable_id')
+            ->lockForUpdate()
+            ->first();
+
+        if (! $parent) {
+            throw ValidationException::withMessages([
+                'product_id' => __('shop.cart.validation.ineligible_product'),
+            ]);
+        }
+
+        $superAttributes = $parent->superAttributes()
+            ->with('options:id')
+            ->get()
+            ->keyBy('attribute_id');
+        $normalized = [];
+
+        foreach ($selectedOptions as $attributeId => $optionId) {
+            if (! ctype_digit((string) $attributeId)) {
+                throw ValidationException::withMessages([
+                    'options' => __('shop.cart.validation.invalid_configuration'),
+                ]);
+            }
+
+            $normalized[(int) $attributeId] = (int) $optionId;
+        }
+
+        ksort($normalized, SORT_NUMERIC);
+        $requiredAttributeIds = $superAttributes->keys()
+            ->map(fn ($id) => (int) $id)
+            ->sort()
+            ->values()
+            ->all();
+
+        if (array_keys($normalized) !== $requiredAttributeIds) {
+            throw ValidationException::withMessages([
+                'options' => __('shop.cart.validation.complete_configuration'),
+            ]);
+        }
+
+        foreach ($normalized as $attributeId => $optionId) {
+            $allowed = $superAttributes
+                ->get($attributeId)
+                ?->options
+                ->contains('id', $optionId);
+
+            if (! $allowed) {
+                throw ValidationException::withMessages([
+                    'options.'.$attributeId => __('shop.cart.validation.invalid_option'),
+                ]);
+            }
+        }
+
+        $variants = Product::query()
+            ->where('configurable_id', $parent->getKey())
+            ->where('type', ProductType::Simple->value)
+            ->active()
+            ->with('attributeValues')
+            ->lockForUpdate()
+            ->get()
+            ->filter(function (Product $variant) use ($normalized) {
+                $values = $variant->attributeValues
+                    ->whereNotNull('attribute_option_id');
+                $combination = $values
+                    ->pluck('attribute_option_id', 'attribute_id')
+                    ->map(fn ($id) => (int) $id)
+                    ->sortKeys()
+                    ->all();
+
+                return $values->count() === count($normalized)
+                    && $combination === $normalized;
+            })
+            ->values();
+
+        if ($variants->count() !== 1) {
+            throw ValidationException::withMessages([
+                'options' => __('shop.cart.validation.unavailable_configuration'),
+            ]);
+        }
+
+        return $variants->first()->load('inventory');
     }
 
     private function validateAvailableQuantity(Product $product, int $quantity): void
@@ -489,6 +715,14 @@ class CartService
         return hash('sha256', json_encode([
             'type' => CartItemType::Simple->value,
             'product_id' => $product->getKey(),
+        ], JSON_THROW_ON_ERROR));
+    }
+
+    private function configurableConfigurationHash(Product $variant): string
+    {
+        return hash('sha256', json_encode([
+            'type' => CartItemType::Configurable->value,
+            'product_id' => $variant->getKey(),
         ], JSON_THROW_ON_ERROR));
     }
 

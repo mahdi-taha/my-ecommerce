@@ -55,6 +55,7 @@
                                         @php
                                             $item = $line['model'];
                                             $product = $line['product'];
+                                            $displayProduct = $line['display_product'];
                                             $translation = $line['translation'];
                                         @endphp
                                         <tr>
@@ -62,8 +63,8 @@
                                                 <div class="d-flex align-items-center gap-3" style="min-width: 240px;">
                                                     <div class="bg-light rounded d-flex align-items-center justify-content-center"
                                                         style="width: 72px; height: 72px;">
-                                                        @if ($product->mainImageUrl())
-                                                            <img src="{{ $product->mainImageUrl() }}"
+                                                        @if ($product->mainImageUrl() ?? $displayProduct?->mainImageUrl())
+                                                            <img src="{{ $product->mainImageUrl() ?? $displayProduct?->mainImageUrl() }}"
                                                                 alt="{{ $translation?->name ?? $product->sku }}"
                                                                 class="img-fluid rounded"
                                                                 style="width: 72px; height: 72px; object-fit: contain;">
@@ -73,6 +74,11 @@
                                                     </div>
                                                     <span class="fw-semibold">
                                                         {{ $translation?->name ?? $product->sku }}
+                                                        @if ($line['selected_options']->isNotEmpty())
+                                                            <small class="d-block text-muted fw-normal mt-1">
+                                                                {{ $line['selected_options']->implode(' / ') }}
+                                                            </small>
+                                                        @endif
                                                     </span>
                                                 </div>
                                             </td>

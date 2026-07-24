@@ -21,8 +21,11 @@ class ProductController extends Controller
         $product = Product::query()
             ->active()
             ->visible()
-            ->where('type', ProductType::Simple->value)
             ->whereNull('configurable_id')
+            ->whereIn('type', [
+                ProductType::Simple->value,
+                ProductType::Configurable->value,
+            ])
             ->whereHas('translations', fn (Builder $query) => $query
                 ->where('locale', $locale)
                 ->where('url_key', $url_key))
@@ -61,6 +64,27 @@ class ProductController extends Controller
                             ->where('locale', $locale),
                     ])
                     ->orderBy('id'),
+                'superAttributes' => fn ($query) => $query
+                    ->orderBy('id')
+                    ->with([
+                        'attribute' => fn ($query) => $query->with([
+                            'translations' => fn ($query) => $query
+                                ->where('locale', $locale),
+                            'options' => fn ($query) => $query->with([
+                                'translations' => fn ($query) => $query
+                                    ->where('locale', $locale),
+                            ]),
+                        ]),
+                    ]),
+                'variants' => fn ($query) => $query
+                    ->active()
+                    ->where('type', ProductType::Simple->value)
+                    ->with([
+                        'attributeValues',
+                        'images',
+                        'inventory',
+                        'tax' => fn ($query) => $query->active(),
+                    ]),
             ])
             ->firstOrFail();
 
@@ -103,8 +127,14 @@ class ProductController extends Controller
         $taxMode = setting('tax.tax_mode', 'b2c');
         $defaultTax = $this->defaultTax();
         $relatedProducts = $product->relatedProducts;
-        $availableQuantity = $product->inventory?->availableQuantity() ?? '0.0000';
-        $inStock = (float) $availableQuantity > 0;
+        $isConfigurable = $product->type === ProductType::Configurable->value;
+        $availableQuantity = $isConfigurable
+            ? '0.0000'
+            : ($product->inventory?->availableQuantity() ?? '0.0000');
+        $inStock = ! $isConfigurable && (float) $availableQuantity > 0;
+        [$configurableAttributes, $variantPresentation] = $isConfigurable
+            ? $this->configurablePresentation($product, $taxMode, $defaultTax)
+            : [collect(), []];
 
         return view('shop.pages.product-details', compact(
             'product',
@@ -118,8 +148,121 @@ class ProductController extends Controller
             'defaultTax',
             'relatedProducts',
             'availableQuantity',
-            'inStock'
+            'inStock',
+            'isConfigurable',
+            'configurableAttributes',
+            'variantPresentation'
         ));
+    }
+
+    /**
+     * @return array{0: Collection, 1: array<string, array<string, mixed>>}
+     */
+    private function configurablePresentation(
+        Product $product,
+        string $taxMode,
+        ?Tax $defaultTax
+    ): array {
+        $attributeIds = $product->superAttributes
+            ->pluck('attribute_id')
+            ->map(fn ($id) => (int) $id)
+            ->sort()
+            ->values();
+        $variants = $product->variants
+            ->filter(function (Product $variant) use ($attributeIds) {
+                $selectedAttributeIds = $variant->attributeValues
+                    ->whereNotNull('attribute_option_id')
+                    ->pluck('attribute_id')
+                    ->map(fn ($id) => (int) $id)
+                    ->sort()
+                    ->values();
+
+                return $selectedAttributeIds->all() === $attributeIds->all();
+            });
+        $usedOptionIds = $variants
+            ->flatMap(fn (Product $variant) => $variant->attributeValues
+                ->pluck('attribute_option_id'))
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique();
+        $attributes = $product->superAttributes
+            ->map(function ($superAttribute) use ($usedOptionIds) {
+                $attribute = $superAttribute->attribute;
+                $options = $attribute?->options
+                    ->whereIn('id', $usedOptionIds)
+                    ->filter(fn ($option) => $option->translations->isNotEmpty())
+                    ->values() ?? collect();
+
+                if (! $attribute || $attribute->translations->isEmpty() || $options->isEmpty()) {
+                    return null;
+                }
+
+                return [
+                    'id' => (int) $attribute->getKey(),
+                    'label' => $attribute->translations->first()->admin_name,
+                    'options' => $options->map(fn ($option) => [
+                        'id' => (int) $option->getKey(),
+                        'label' => $option->translations->first()->label,
+                    ])->all(),
+                ];
+            })
+            ->filter()
+            ->values();
+
+        $presentation = [];
+
+        foreach ($variants as $variant) {
+            $options = $variant->attributeValues
+                ->whereNotNull('attribute_option_id')
+                ->pluck('attribute_option_id', 'attribute_id')
+                ->mapWithKeys(fn ($optionId, $attributeId) => [
+                    (string) $attributeId => (int) $optionId,
+                ])
+                ->sortKeys();
+            $key = $options
+                ->map(fn ($optionId, $attributeId) => $attributeId.':'.$optionId)
+                ->implode('|');
+            $available = $variant->inventory?->availableQuantity() ?? '0.0000';
+            $taxRate = $variant->effectiveTaxRate($defaultTax);
+            $formattedTaxRate = rtrim(
+                rtrim(number_format($taxRate, 4, '.', ''), '0'),
+                '.'
+            );
+            $primaryImage = $variant->images->firstWhere('is_base', true)
+                ?? $variant->images->first();
+
+            $presentation[$key] = [
+                'options' => $options->all(),
+                'sku' => $variant->sku,
+                'price' => format_store_price(
+                    $variant->displayPrice($taxMode, $defaultTax),
+                    setting('currency.default_currency', 'USD')
+                ),
+                'regular_price' => $variant->hasActiveSpecialPrice()
+                    ? format_store_price(
+                        $variant->displayRegularPrice($taxMode, $defaultTax),
+                        setting('currency.default_currency', 'USD')
+                    )
+                    : null,
+                'tax_label' => $taxRate > 0
+                    ? ($taxMode === 'b2c'
+                        ? __('shop.product_details.including_tax', ['rate' => $formattedTaxRate])
+                        : __('shop.product_details.tax_at_checkout', ['rate' => $formattedTaxRate]))
+                    : null,
+                'available_quantity' => $available,
+                'available_label' => (float) $available > 0
+                    ? __('shop.product.available_quantity', [
+                        'quantity' => rtrim(rtrim($available, '0'), '.'),
+                    ])
+                    : __('shop.product.out_of_stock'),
+                'in_stock' => (float) $available > 0,
+                'image_url' => $primaryImage
+                    ? Storage::disk('public')->url($primaryImage->path)
+                    : null,
+            ];
+        }
+
+        return [$attributes, $presentation];
     }
 
     private function breadcrumbCategories(?Category $category): Collection

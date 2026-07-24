@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Shop;
 
+use App\Enums\CartItemType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AddCartItemRequest;
 use App\Http\Requests\UpdateCartItemRequest;
@@ -38,12 +39,24 @@ class CartController extends Controller
             $guestToken = $newGuestToken = $this->tokenService->generate();
         }
 
-        $this->cartService->addSimple(
-            $customer,
-            $guestToken,
-            (int) $request->validated('product_id'),
-            (int) $request->validated('quantity')
-        );
+        $validated = $request->validated();
+
+        if ($validated['product_type'] === CartItemType::Configurable->value) {
+            $this->cartService->addConfigurable(
+                $customer,
+                $guestToken,
+                (int) $validated['product_id'],
+                $validated['options'],
+                (int) $validated['quantity']
+            );
+        } else {
+            $this->cartService->addSimple(
+                $customer,
+                $guestToken,
+                (int) $validated['product_id'],
+                (int) $validated['quantity']
+            );
+        }
 
         $response = redirect()
             ->route('shop.cart.index')

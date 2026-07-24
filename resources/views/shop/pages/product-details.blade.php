@@ -32,13 +32,16 @@
                                         data-dot="<img class='img-fluid' src='{{ $image['url'] }}' alt=''>">
                                         <div class="single-inner bg-light rounded">
                                             <img src="{{ $image['url'] }}" class="img-fluid rounded"
-                                                alt="{{ $translation->name }}">
+                                                alt="{{ $translation->name }}"
+                                                @if ($loop->first) data-product-main-image @endif>
                                         </div>
                                     </div>
                                 @empty
                                     <div class="single-item">
-                                    <div class="single-inner bg-light rounded">
-                                            <div class="text-muted text-center">
+                                        <div class="single-inner bg-light rounded">
+                                            <img src="" class="img-fluid rounded d-none"
+                                                alt="{{ $translation->name }}" data-product-main-image>
+                                            <div class="text-muted text-center" data-product-image-placeholder>
                                                 <i class="bi bi-image fs-1 d-block mb-2"></i>
                                                 {{ __('shop.product_details.image_unavailable') }}
                                             </div>
@@ -60,33 +63,50 @@
                                     </p>
                                 @endif
                                 @php
-                                    $effectiveTaxRate = $product->effectiveTaxRate($defaultTax);
+                                    $effectiveTaxRate = $isConfigurable ? 0 : $product->effectiveTaxRate($defaultTax);
                                     $formattedTaxRate = rtrim(rtrim(number_format($effectiveTaxRate, 4, '.', ''), '0'), '.');
                                 @endphp
-                                <div class="mb-4">
-                                    <span class="h4 fw-bold text-primary mb-0">
-                                        {{ format_store_price($product->displayPrice($taxMode, $defaultTax), $currencyCode) }}
-                                    </span>
-                                    @if ($product->hasActiveSpecialPrice())
-                                        <span class="text-muted text-decoration-line-through ms-2">
-                                            {{ format_store_price($product->displayRegularPrice($taxMode, $defaultTax), $currencyCode) }}
+                                <div class="mb-4" data-product-price>
+                                    @if ($isConfigurable)
+                                        <span class="text-muted" data-price-placeholder>
+                                            {{ __('shop.product_details.select_options_for_price') }}
                                         </span>
-                                    @endif
-                                    @if ($effectiveTaxRate > 0)
-                                        <small class="d-block text-muted mt-1">
-                                            {{ $taxMode === 'b2c'
-                                                ? __('shop.product_details.including_tax', ['rate' => $formattedTaxRate])
-                                                : __('shop.product_details.tax_at_checkout', ['rate' => $formattedTaxRate]) }}
-                                        </small>
+                                    @else
+                                        <span class="h4 fw-bold text-primary mb-0" data-current-price>
+                                            {{ format_store_price($product->displayPrice($taxMode, $defaultTax), $currencyCode) }}
+                                        </span>
+                                        @if ($product->hasActiveSpecialPrice())
+                                            <span class="text-muted text-decoration-line-through ms-2" data-regular-price>
+                                                {{ format_store_price($product->displayRegularPrice($taxMode, $defaultTax), $currencyCode) }}
+                                            </span>
+                                        @endif
+                                        @if ($effectiveTaxRate > 0)
+                                            <small class="d-block text-muted mt-1" data-tax-label>
+                                                {{ $taxMode === 'b2c'
+                                                    ? __('shop.product_details.including_tax', ['rate' => $formattedTaxRate])
+                                                    : __('shop.product_details.tax_at_checkout', ['rate' => $formattedTaxRate]) }}
+                                            </small>
+                                        @endif
                                     @endif
                                 </div>
 
-                                <div class="mb-3">
+                                @if ($isConfigurable)
+                                    <p class="text-muted mb-3 d-none" data-variant-sku>
+                                        {{ __('shop.product_details.sku') }}
+                                        <span class="fw-semibold"></span>
+                                    </p>
+                                @endif
+
+                                <div class="mb-3" data-product-availability>
                                     <span class="badge {{ $inStock ? 'bg-success' : 'bg-danger' }} rounded-pill px-3 py-2">
                                         <i class="bi {{ $inStock ? 'bi-check-lg' : 'bi-x-lg' }} me-1"></i>
-                                        {{ $inStock
-                                            ? __('shop.product.available_quantity', ['quantity' => rtrim(rtrim($availableQuantity, '0'), '.')])
-                                            : __('shop.product.out_of_stock') }}
+                                        <span data-availability-label>
+                                            {{ $isConfigurable
+                                                ? __('shop.product_details.select_options')
+                                                : ($inStock
+                                                    ? __('shop.product.available_quantity', ['quantity' => rtrim(rtrim($availableQuantity, '0'), '.')])
+                                                    : __('shop.product.out_of_stock')) }}
+                                        </span>
                                     </span>
                                 </div>
 
@@ -111,16 +131,57 @@
                                     </div>
                                 @endif
 
-                                <form action="{{ route('shop.cart.items.store') }}" method="POST">
+                                <form action="{{ route('shop.cart.items.store') }}" method="POST"
+                                    @if ($isConfigurable)
+                                        data-configurable-product-form
+                                        data-unavailable-label="{{ __('shop.product_details.unavailable_combination') }}"
+                                        data-select-label="{{ __('shop.product_details.select_options') }}"
+                                        data-out-of-stock-label="{{ __('shop.product.out_of_stock') }}"
+                                    @endif>
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $product->getKey() }}">
+                                    <input type="hidden" name="product_type"
+                                        value="{{ $isConfigurable ? 'configurable' : 'simple' }}">
+
+                                    @if ($isConfigurable)
+                                        <div class="mb-4">
+                                            @foreach ($configurableAttributes as $configurableAttribute)
+                                                <div class="mb-3">
+                                                    <label for="configurable_attribute_{{ $configurableAttribute['id'] }}"
+                                                        class="form-label fw-semibold">
+                                                        {{ $configurableAttribute['label'] }}
+                                                    </label>
+                                                    <select
+                                                        id="configurable_attribute_{{ $configurableAttribute['id'] }}"
+                                                        name="options[{{ $configurableAttribute['id'] }}]"
+                                                        class="form-select @error('options.'.$configurableAttribute['id']) is-invalid @enderror"
+                                                        data-configurable-attribute="{{ $configurableAttribute['id'] }}"
+                                                        required>
+                                                        <option value="">{{ __('shop.product_details.choose_option') }}</option>
+                                                        @foreach ($configurableAttribute['options'] as $option)
+                                                            <option value="{{ $option['id'] }}"
+                                                                @selected((string) old('options.'.$configurableAttribute['id']) === (string) $option['id'])>
+                                                                {{ $option['label'] }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                    @error('options.'.$configurableAttribute['id'])
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            @endforeach
+                                            @error('options')
+                                                <div class="text-danger mb-3">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    @endif
 
                                     <div class="input-group quantity mb-4" style="width: 140px;">
                                         <div class="input-group-btn">
                                             <button type="button"
                                                 class="btn btn-sm btn-minus rounded-circle bg-light border"
                                                 aria-label="{{ __('shop.product_details.decrease_quantity') }}"
-                                                @disabled(! $inStock)>
+                                                @disabled(! $inStock || $isConfigurable)>
                                                 <i class="fa fa-minus"></i>
                                             </button>
                                         </div>
@@ -129,12 +190,12 @@
                                             value="{{ old('quantity', $inStock ? 1 : 0) }}" min="1"
                                             max="{{ $availableQuantity }}" step="1"
                                             aria-label="{{ __('shop.product_details.quantity') }}"
-                                            @disabled(! $inStock)>
+                                            @disabled(! $inStock || $isConfigurable)>
                                         <div class="input-group-btn">
                                             <button type="button"
                                                 class="btn btn-sm btn-plus rounded-circle bg-light border"
                                                 aria-label="{{ __('shop.product_details.increase_quantity') }}"
-                                                @disabled(! $inStock)>
+                                                @disabled(! $inStock || $isConfigurable)>
                                                 <i class="fa fa-plus"></i>
                                             </button>
                                         </div>
@@ -146,7 +207,7 @@
                                     <div class="d-flex flex-wrap gap-3">
                                         <button type="submit"
                                             class="btn btn-primary border border-secondary rounded-pill px-4 py-2 mb-4 text-primary"
-                                            @disabled(! $inStock)>
+                                            @disabled(! $inStock || $isConfigurable)>
                                             <i class="fa fa-shopping-bag me-2 text-white"></i>
                                             {{ __('shop.product.add_to_cart') }}
                                         </button>
@@ -156,6 +217,14 @@
                                             {{ __('shop.product.wishlist') }}
                                         </button>
                                     </div>
+                                    @if ($isConfigurable)
+                                        <script type="application/json" data-configurable-variants>
+                                            {!! json_encode(
+                                                $variantPresentation,
+                                                JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR
+                                            ) !!}
+                                        </script>
+                                    @endif
                                 </form>
                             </div>
                         </div>
