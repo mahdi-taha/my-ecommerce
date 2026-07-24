@@ -3,8 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Attribute;
-use App\Models\BundleOption;
-use App\Models\BundleOptionItem;
 use App\Models\Product;
 use App\Models\ProductTranslation;
 use Illuminate\Foundation\Http\FormRequest;
@@ -92,12 +90,10 @@ class UpdateProductRequest extends FormRequest
 
         $isStandaloneSimple = $product->type === 'simple' &&
             $product->configurable_id === null;
-        $isBundleParent = $product->type === 'bundle' &&
-            $product->configurable_id === null;
         $isConfigurableParent = $product->type === 'configurable' &&
             $product->configurable_id === null;
 
-        if (! $isStandaloneSimple && ! $isBundleParent && ! $isConfigurableParent) {
+        if (! $isStandaloneSimple && ! $isConfigurableParent) {
             return $rules;
         }
 
@@ -149,29 +145,6 @@ class UpdateProductRequest extends FormRequest
 
         if ($isConfigurableParent) {
             $rules['price'] = ['required', 'numeric', 'min:0'];
-        }
-
-        if ($isBundleParent) {
-            $rules = array_merge($rules, [
-                'bundle_options' => ['nullable', 'array'],
-                'bundle_options.*.id' => ['nullable', 'integer'],
-                'bundle_options.*.deleted' => ['required', 'boolean'],
-                'bundle_options.*.title_en' => ['nullable', 'string', 'max:255'],
-                'bundle_options.*.title_ar' => ['nullable', 'string', 'max:255'],
-                'bundle_options.*.type' => ['nullable', Rule::in(['select', 'radio', 'checkbox', 'multiselect'])],
-                'bundle_options.*.is_required' => ['nullable', 'boolean'],
-                'bundle_options.*.sort_order' => ['nullable', 'integer', 'min:0'],
-                'bundle_options.*.min_selections' => ['nullable', 'integer', 'min:0'],
-                'bundle_options.*.max_selections' => ['nullable', 'integer', 'min:1'],
-                'bundle_options.*.items' => ['nullable', 'array'],
-                'bundle_options.*.items.*.id' => ['nullable', 'integer'],
-                'bundle_options.*.items.*.deleted' => ['required', 'boolean'],
-                'bundle_options.*.items.*.product_id' => ['nullable', 'integer'],
-                'bundle_options.*.items.*.default_quantity' => ['nullable', 'numeric', 'gt:0'],
-                'bundle_options.*.items.*.is_default' => ['nullable', 'boolean'],
-                'bundle_options.*.items.*.sort_order' => ['nullable', 'integer', 'min:0'],
-                'bundle_options.*.items.*.price_override' => ['nullable', 'numeric', 'min:0'],
-            ]);
         }
 
         $attributes = Attribute::query()
@@ -233,7 +206,7 @@ class UpdateProductRequest extends FormRequest
                 $product = $this->route('product');
 
                 $supportsCatalogEditing = $product->configurable_id === null &&
-                    in_array($product->type, ['simple', 'configurable', 'bundle']);
+                    in_array($product->type, ['simple', 'configurable']);
 
                 if (! $supportsCatalogEditing) {
                     return;
@@ -256,10 +229,6 @@ class UpdateProductRequest extends FormRequest
                         'attributes',
                         'One or more submitted attributes are invalid.'
                     );
-                }
-
-                if ($product->type === 'bundle') {
-                    $this->validateBundleOptions($validator, $product);
                 }
 
                 if ($product->type === 'configurable') {
@@ -341,70 +310,5 @@ class UpdateProductRequest extends FormRequest
             ->mapWithKeys(fn (Attribute $attribute) => [
                 $attribute->id => $attribute->translations->first()?->admin_name ?? $attribute->code,
             ]);
-    }
-
-    private function validateBundleOptions(Validator $validator, Product $product): void
-    {
-        foreach ((array) $this->input('bundle_options', []) as $optionKey => $optionData) {
-            $optionData = (array) $optionData;
-            $optionId = isset($optionData['id']) ? (int) $optionData['id'] : null;
-
-            if ($optionId && ! BundleOption::whereKey($optionId)->where('product_id', $product->id)->exists()) {
-                $validator->errors()->add("bundle_options.{$optionKey}.id", 'The bundle option does not belong to this product.');
-
-                continue;
-            }
-
-            if ((bool) ($optionData['deleted'] ?? false)) {
-                continue;
-            }
-
-            foreach (['title_en', 'title_ar', 'type', 'sort_order'] as $field) {
-                if (! isset($optionData[$field]) || $optionData[$field] === '') {
-                    $validator->errors()->add("bundle_options.{$optionKey}.{$field}", 'This field is required.');
-                }
-            }
-
-            if (in_array($optionData['type'] ?? null, ['checkbox', 'multiselect'], true)) {
-                $min = $optionData['min_selections'] ?? null;
-                $max = $optionData['max_selections'] ?? null;
-                if ($min === null || $max === null || (int) $max < (int) $min) {
-                    $validator->errors()->add("bundle_options.{$optionKey}.max_selections", 'Maximum selections must be at least the minimum selections.');
-                }
-            }
-
-            $activeProductIds = [];
-            foreach ((array) ($optionData['items'] ?? []) as $itemKey => $itemData) {
-                $itemData = (array) $itemData;
-                $itemId = isset($itemData['id']) ? (int) $itemData['id'] : null;
-
-                if ($itemId && (! $optionId || ! BundleOptionItem::whereKey($itemId)->where('bundle_option_id', $optionId)->exists())) {
-                    $validator->errors()->add("bundle_options.{$optionKey}.items.{$itemKey}.id", 'The bundle item does not belong to this option.');
-
-                    continue;
-                }
-
-                if ((bool) ($itemData['deleted'] ?? false)) {
-                    continue;
-                }
-
-                $itemProductId = (int) ($itemData['product_id'] ?? 0);
-                $eligible = Product::query()
-                    ->whereKey($itemProductId)
-                    ->where('type', 'simple')
-                    ->where('status', true)
-                    ->whereKeyNot($product->id)
-                    ->exists();
-
-                if (! $eligible) {
-                    $validator->errors()->add("bundle_options.{$optionKey}.items.{$itemKey}.product_id", 'Select an active simple product or variant.');
-                }
-
-                if (in_array($itemProductId, $activeProductIds, true)) {
-                    $validator->errors()->add("bundle_options.{$optionKey}.items.{$itemKey}.product_id", 'A product may appear only once in the same option.');
-                }
-                $activeProductIds[] = $itemProductId;
-            }
-        }
     }
 }

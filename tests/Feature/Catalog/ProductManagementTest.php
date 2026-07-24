@@ -3,7 +3,6 @@
 namespace Tests\Feature\Catalog;
 
 use App\Models\Attribute;
-use App\Models\BundleOption;
 use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\Product;
@@ -45,6 +44,20 @@ class ProductManagementTest extends TestCase
 
         $this->assertSame('12.5000', $product->price);
         $this->assertNull($product->inventory);
+    }
+
+    public function test_bundle_product_type_is_rejected(): void
+    {
+        $this->actingAs(User::factory()->create(), 'admin')
+            ->post(route('admin.products.store'), [
+                'type' => 'bundle',
+                'sku' => 'RETIRED-BUNDLE',
+                'product_name_en' => 'Retired Bundle',
+                'product_name_ar' => 'منتج مجمع',
+            ])
+            ->assertSessionHasErrors('type');
+
+        $this->assertDatabaseMissing('products', ['sku' => 'RETIRED-BUNDLE']);
     }
 
     public function test_variants_do_not_own_translations_or_categories(): void
@@ -147,22 +160,6 @@ class ProductManagementTest extends TestCase
     {
         $product = Product::factory()->create(['type' => 'configurable']);
         Product::factory()->create(['configurable_id' => $product->id]);
-
-        $this->assertProductDeletionRejected($product);
-    }
-
-    public function test_product_used_by_a_bundle_cannot_be_deleted(): void
-    {
-        $product = Product::factory()->create();
-        $bundle = Product::factory()->create(['type' => 'bundle']);
-        $option = BundleOption::factory()->create(['product_id' => $bundle->id]);
-        $option->items()->create([
-            'product_id' => $product->id,
-            'default_quantity' => 1,
-            'is_default' => false,
-            'sort_order' => 0,
-            'price_override' => null,
-        ]);
 
         $this->assertProductDeletionRejected($product);
     }

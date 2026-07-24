@@ -54,9 +54,6 @@ class ProductController extends Controller
                     'configurable' => $data
                         ->where('type', 'configurable')
                         ->whereNull('configurable_id'),
-                    'bundle' => $data
-                        ->where('type', 'bundle')
-                        ->whereNull('configurable_id'),
                     default => null,
                 };
             }
@@ -110,7 +107,6 @@ class ProductController extends Controller
                     return match ($product->type) {
                         'simple' => 'Standalone Simple',
                         'configurable' => 'Configurable Parent',
-                        'bundle' => 'Bundle',
                         default => ucfirst($product->type),
                     };
                 })
@@ -194,12 +190,11 @@ class ProductController extends Controller
 
         $categories = collect();
         $attributes = collect();
-        $bundleItemProducts = collect();
         $taxes = collect();
         $relatedProductOptions = collect();
         $selectedRelatedProductIds = [];
 
-        if (in_array($product->type, ['simple', 'configurable', 'bundle'])) {
+        if (in_array($product->type, ['simple', 'configurable'])) {
             $categories = Category::with([
                 'translations' => function ($query) {
                     $query->where('locale', 'en');
@@ -241,25 +236,6 @@ class ProductController extends Controller
                 'superAttributes.attribute.options.translations',
             ]);
             $product->loadCount('variants');
-        } elseif ($product->type === 'bundle') {
-            $product->load([
-                'bundleOptions.translations',
-                'bundleOptions.items.product.translations',
-                'bundleOptions.items.product.configurable.translations',
-            ]);
-
-            $bundleItemProducts = Product::with([
-                'translations' => function ($query) {
-                    $query->where('locale', 'en');
-                },
-                'configurable.translations' => function ($query) {
-                    $query->where('locale', 'en');
-                },
-            ])
-                ->where('type', 'simple')
-                ->where('status', true)
-                ->orderBy('sku')
-                ->get();
         } elseif ($product->type === 'simple') {
             $taxes = Tax::query()
                 ->active()
@@ -299,7 +275,6 @@ class ProductController extends Controller
                 'product',
                 'categories',
                 'attributes',
-                'bundleItemProducts',
                 'taxes',
                 'relatedProductOptions',
                 'selectedRelatedProductIds'

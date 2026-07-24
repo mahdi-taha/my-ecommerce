@@ -1062,3 +1062,27 @@ explicitly approved. The authoritative specification is:
 This amendment supersedes only statements in this recovery report that describe
 Module 7 as unresolved or paused. It does not silently alter any other recovered
 module, confidence label, or uncertainty.
+
+---
+
+# Approved authoritative amendment — Bundle Product retirement
+
+Following a project-wide dependency and implementation review, Bundle Product
+support was intentionally and permanently removed from Ecommerce Version 1.0.
+Version 1 supports only Simple and Configurable Products.
+
+Bundle administration and schema foundations existed, but end-to-end storefront
+pricing, Cart handling, Checkout conversion, and purchasing behavior were never
+implemented. The Bundle Catalog and Cart tables were therefore retired through a
+new forward migration. Previously applied migrations remain preserved as
+historical migration records.
+
+Historical `order_items.product_type` snapshot values such as `bundle` and
+`bundle_item` remain valid immutable history and MUST NOT be rewritten. Order
+lifecycle behavior continues to rely on `is_inventory_item`, parent relationships,
+and OrderItem snapshots rather than live Bundle models.
+
+This amendment supersedes earlier recovered statements that describe Bundle
+Products as an active or future Version 1 capability. It does not redesign
+Simple Products, Configurable Products, generic Order parent-child snapshots, or
+historical Order records.

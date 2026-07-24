@@ -2,7 +2,6 @@
     $englishTranslation = $product->translations->firstWhere('locale', 'en');
     $arabicTranslation = $product->translations->firstWhere('locale', 'ar');
     $isStandaloneSimple = $product->type === 'simple' && $product->configurable_id === null;
-    $isBundleParent = $product->type === 'bundle' && $product->configurable_id === null;
     $selectedCategoryIds = old('category_ids', $product->categories->pluck('id')->map(fn ($id) => (string) $id)->all());
     $attributeValues = $product->attributeValues->groupBy('attribute_id');
     $useDefaultTax = (bool) old('use_default_tax', $product->use_default_tax);
@@ -20,9 +19,6 @@
     @foreach (['general' => 'General', 'settings' => 'Settings', 'translations' => 'Translations', 'pricing' => 'Pricing', 'inventory' => 'Inventory', 'categories' => 'Categories', 'images' => 'Images', 'attributes' => 'Attributes', 'seo' => 'SEO'] as $anchor => $label)
         <a href="#{{ $anchor }}" class="btn btn-outline-primary btn-sm">{{ $label }}</a>
     @endforeach
-    @if ($isBundleParent)
-        <a href="#bundle-options" class="btn btn-outline-primary btn-sm">Bundle Options</a>
-    @endif
     @if ($isStandaloneSimple)
         <a href="#tax" class="btn btn-outline-primary btn-sm">Tax</a>
         <a href="#related-products" class="btn btn-outline-primary btn-sm">Related Products</a>
@@ -139,8 +135,6 @@
                     @error('special_price_to')<p class="text-danger">{{ $message }}</p>@enderror
                 </div>
             </div>
-        @else
-            <div class="alert alert-info mb-0">Bundle pricing is calculated dynamically from selected items.</div>
         @endif
     </section>
 
@@ -184,8 +178,6 @@
                         value="{{ $product->inventory?->average_cost ?? 0 }}" readonly>
                 </div>
             </div>
-        @else
-            <div class="alert alert-info mb-0">Bundle parents do not hold inventory.</div>
         @endif
     </section>
 
@@ -312,12 +304,6 @@
             @endforeach
         </div>
     </section>
-
-    @if ($isBundleParent)
-        <section id="bundle-options" class="mb-4">
-            @include('admin.products._bundle-options')
-        </section>
-    @endif
 
     <div class="text-end">
         <button type="submit" class="btn btn-primary shadow">

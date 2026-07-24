@@ -4,8 +4,6 @@ namespace Tests\Feature\Storefront;
 
 use App\Enums\AccountType;
 use App\Enums\CartItemType;
-use App\Models\BundleOption;
-use App\Models\BundleOptionItem;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\User;
@@ -54,7 +52,7 @@ class CartDatabaseTest extends TestCase
         $this->cartForCustomer($customer);
     }
 
-    public function test_cart_item_and_bundle_quantities_must_be_positive(): void
+    public function test_cart_item_quantities_must_be_positive(): void
     {
         $cart = $this->cartForCustomer($this->customer());
         $product = Product::factory()->create();
@@ -71,49 +69,22 @@ class CartDatabaseTest extends TestCase
             $this->assertDatabaseCount('cart_items', 0);
         }
 
-        $item = $cart->items()->create([
-            'product_id' => $product->id,
-            'product_type' => CartItemType::Bundle->value,
-            'configuration_hash' => str_repeat('c', 64),
-            'quantity' => 1,
-        ]);
-        $bundle = Product::factory()->create(['type' => 'bundle']);
-        $option = BundleOption::factory()->create(['product_id' => $bundle->id]);
-        $selection = BundleOptionItem::factory()->create([
-            'bundle_option_id' => $option->id,
-        ]);
-
-        $this->expectException(QueryException::class);
-
-        $item->bundleItems()->create([
-            'bundle_option_item_id' => $selection->id,
-            'quantity' => 0,
-        ]);
     }
 
-    public function test_cart_deletion_cascades_to_items_and_bundle_configuration(): void
+    public function test_cart_deletion_cascades_to_items(): void
     {
         $cart = $this->cartForCustomer($this->customer());
-        $bundle = Product::factory()->create(['type' => 'bundle']);
-        $option = BundleOption::factory()->create(['product_id' => $bundle->id]);
-        $selection = BundleOptionItem::factory()->create([
-            'bundle_option_id' => $option->id,
-        ]);
-        $item = $cart->items()->create([
-            'product_id' => $bundle->id,
-            'product_type' => CartItemType::Bundle->value,
-            'configuration_hash' => str_repeat('d', 64),
-            'quantity' => 1,
-        ]);
-        $item->bundleItems()->create([
-            'bundle_option_item_id' => $selection->id,
+        $product = Product::factory()->create();
+        $cart->items()->create([
+            'product_id' => $product->id,
+            'product_type' => CartItemType::Simple->value,
+            'configuration_hash' => str_repeat('c', 64),
             'quantity' => 1,
         ]);
 
         $cart->delete();
 
         $this->assertDatabaseCount('cart_items', 0);
-        $this->assertDatabaseCount('cart_item_bundle_items', 0);
     }
 
     public function test_expired_carts_are_pruned_without_touching_active_carts(): void

@@ -191,12 +191,6 @@ class Product extends Model
         return $this->hasMany(ProductSuperAttribute::class);
     }
 
-    public function bundleOptions(): HasMany
-    {
-        return $this->hasMany(BundleOption::class)
-            ->orderBy('sort_order');
-    }
-
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);

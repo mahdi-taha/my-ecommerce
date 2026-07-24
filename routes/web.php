@@ -3,8 +3,6 @@
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\AttributeOptionController;
-use App\Http\Controllers\BundleOptionController;
-use App\Http\Controllers\BundleOptionItemController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerAccountController;
 use App\Http\Controllers\CustomerAuthController;
@@ -96,18 +94,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('products.variants.edit');
         Route::put('products/{product}/variants/{variant}', [VariantController::class, 'update'])
             ->name('products.variants.update');
-        Route::post('products/{product}/bundle-options', [BundleOptionController::class, 'store'])
-            ->name('products.bundle-options.store');
-        Route::put('products/{product}/bundle-options/{bundleOption}', [BundleOptionController::class, 'update'])
-            ->name('products.bundle-options.update');
-        Route::delete('products/{product}/bundle-options/{bundleOption}', [BundleOptionController::class, 'destroy'])
-            ->name('products.bundle-options.destroy');
-        Route::post('products/{product}/bundle-options/{bundleOption}/items', [BundleOptionItemController::class, 'store'])
-            ->name('products.bundle-options.items.store');
-        Route::put('products/{product}/bundle-options/{bundleOption}/items/{bundleOptionItem}', [BundleOptionItemController::class, 'update'])
-            ->name('products.bundle-options.items.update');
-        Route::delete('products/{product}/bundle-options/{bundleOption}/items/{bundleOptionItem}', [BundleOptionItemController::class, 'destroy'])
-            ->name('products.bundle-options.items.destroy');
         Route::resource('products', ProductController::class)
             ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 

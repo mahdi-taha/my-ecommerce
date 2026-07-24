@@ -86,7 +86,6 @@ class SimpleCartTest extends TestCase
             $this->product(stock: 2, state: ['status' => false]),
             $this->product(stock: 2, state: ['is_visible_individually' => false]),
             $this->product(stock: 2, state: ['type' => ProductType::Configurable->value]),
-            $this->product(stock: 2, state: ['type' => ProductType::Bundle->value]),
         ];
         $parent = Product::factory()->create(['type' => ProductType::Configurable->value]);
         $products[] = $this->product(stock: 2, state: ['configurable_id' => $parent->id]);

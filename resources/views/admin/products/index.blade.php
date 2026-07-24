@@ -32,7 +32,6 @@
                                         <option value="standalone_simple">Standalone Simple</option>
                                         <option value="configurable">Configurable</option>
                                         <option value="variant">Variant</option>
-                                        <option value="bundle">Bundle</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3 mb-2">

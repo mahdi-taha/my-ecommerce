@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\Models\Attribute;
 use App\Models\AttributeOption;
-use App\Models\BundleOption;
-use App\Models\BundleOptionItem;
 use App\Models\Product;
 use App\Models\ProductTranslation;
 use Illuminate\Database\QueryException;
@@ -87,13 +85,6 @@ class ProductService
 
                 if ($product->type === 'simple' && $product->configurable_id === null) {
                     $this->updateSimpleProduct(
-                        $product,
-                        $validated,
-                        $storedImages,
-                        $filesToDelete
-                    );
-                } elseif ($product->type === 'bundle' && $product->configurable_id === null) {
-                    $this->updateBundleProduct(
                         $product,
                         $validated,
                         $storedImages,
@@ -285,8 +276,7 @@ class ProductService
 
             $isReferenced = $product->orderItems()->exists()
                 || $product->inventoryMovements()->exists()
-                || $product->variants()->exists()
-                || BundleOptionItem::query()->where('product_id', $product->getKey())->exists();
+                || $product->variants()->exists();
 
             if ($isReferenced) {
                 throw ValidationException::withMessages([
@@ -405,7 +395,7 @@ class ProductService
                         $variant->images()->delete();
                         $this->maintainBaseImage($variant);
                     } elseif ($action === 'remove_variants') {
-                        if ($variant->inventoryMovements()->exists() || $variant->orderItems()->exists() || BundleOptionItem::where('product_id', $variantId)->exists()) {
+                        if ($variant->inventoryMovements()->exists() || $variant->orderItems()->exists()) {
                             throw ValidationException::withMessages([
                                 'variant_ids' => "Variant {$variant->sku} has protected inventory or transactional history. Disable it instead.",
                             ]);
@@ -430,71 +420,6 @@ class ProductService
         $this->deleteStoredFiles($filesToDelete);
     }
 
-    public function createBundleOption(
-        Product $product,
-        array $validated
-    ): BundleOption {
-        return DB::transaction(function () use ($product, $validated) {
-            $option = $product->bundleOptions()->create(
-                $this->bundleOptionData($validated)
-            );
-            $this->syncBundleOptionTranslations($option, $validated);
-
-            return $option;
-        });
-    }
-
-    public function updateBundleOption(
-        BundleOption $option,
-        array $validated
-    ): BundleOption {
-        return DB::transaction(function () use ($option, $validated) {
-            $option->update($this->bundleOptionData($validated));
-            $this->syncBundleOptionTranslations($option, $validated);
-
-            return $option->refresh();
-        });
-    }
-
-    public function deleteBundleOption(BundleOption $option): void
-    {
-        DB::transaction(function () use ($option) {
-            $option->delete();
-        });
-    }
-
-    public function createBundleOptionItem(
-        BundleOption $option,
-        array $validated
-    ): BundleOptionItem {
-        return DB::transaction(function () use ($option, $validated) {
-            $this->lockEligibleBundleItem($validated['product_id']);
-
-            return $option->items()->create(
-                $this->bundleOptionItemData($validated)
-            );
-        });
-    }
-
-    public function updateBundleOptionItem(
-        BundleOptionItem $item,
-        array $validated
-    ): BundleOptionItem {
-        return DB::transaction(function () use ($item, $validated) {
-            $this->lockEligibleBundleItem($validated['product_id']);
-            $item->update($this->bundleOptionItemData($validated));
-
-            return $item->refresh();
-        });
-    }
-
-    public function deleteBundleOptionItem(BundleOptionItem $item): void
-    {
-        DB::transaction(function () use ($item) {
-            $item->delete();
-        });
-    }
-
     private function updateCommonFields(Product $product, array $validated): void
     {
         $product->update([
@@ -516,96 +441,6 @@ class ProductService
                 ]
             );
         }
-    }
-
-    private function bundleOptionData(array $validated): array
-    {
-        $singleSelection = in_array($validated['type'], ['select', 'radio']);
-
-        return [
-            'type' => $validated['type'],
-            'is_required' => $validated['is_required'],
-            'sort_order' => $validated['sort_order'],
-            'min_selections' => $singleSelection
-                ? 1
-                : $validated['min_selections'],
-            'max_selections' => $singleSelection
-                ? 1
-                : $validated['max_selections'],
-        ];
-    }
-
-    private function syncBundleOptionTranslations(
-        BundleOption $option,
-        array $validated
-    ): void {
-        foreach (['en', 'ar'] as $locale) {
-            $option->translations()->updateOrCreate(
-                ['locale' => $locale],
-                ['title' => $validated['title_'.$locale]]
-            );
-        }
-    }
-
-    private function bundleOptionItemData(array $validated): array
-    {
-        return [
-            'product_id' => $validated['product_id'],
-            'default_quantity' => $validated['default_quantity'],
-            'is_default' => $validated['is_default'],
-            'sort_order' => $validated['sort_order'],
-            'price_override' => $validated['price_override'] ?? null,
-        ];
-    }
-
-    private function syncBundleOptions(Product $product, array $submittedOptions): void
-    {
-        foreach ($submittedOptions as $optionData) {
-            $optionId = $optionData['id'] ?? null;
-            $option = $optionId
-                ? $product->bundleOptions()->whereKey($optionId)->lockForUpdate()->firstOrFail()
-                : null;
-
-            if ((bool) ($optionData['deleted'] ?? false)) {
-                $option?->delete();
-
-                continue;
-            }
-
-            if ($option) {
-                $option->update($this->bundleOptionData($optionData));
-            } else {
-                $option = $product->bundleOptions()->create($this->bundleOptionData($optionData));
-            }
-            $this->syncBundleOptionTranslations($option, $optionData);
-
-            foreach ($optionData['items'] ?? [] as $itemData) {
-                $itemId = $itemData['id'] ?? null;
-                $item = $itemId
-                    ? $option->items()->whereKey($itemId)->lockForUpdate()->firstOrFail()
-                    : null;
-
-                if ((bool) ($itemData['deleted'] ?? false)) {
-                    $item?->delete();
-
-                    continue;
-                }
-
-                $this->lockEligibleBundleItem((int) $itemData['product_id']);
-                $data = $this->bundleOptionItemData($itemData);
-                $item ? $item->update($data) : $option->items()->create($data);
-            }
-        }
-    }
-
-    private function lockEligibleBundleItem(int $productId): Product
-    {
-        return Product::query()
-            ->whereKey($productId)
-            ->where('type', 'simple')
-            ->where('status', true)
-            ->lockForUpdate()
-            ->firstOrFail();
     }
 
     private function updateSimpleProduct(
@@ -689,35 +524,6 @@ class ProductService
                     $relatedProductId => ['sort_order' => $sortOrder],
                 ])
                 ->all()
-        );
-    }
-
-    private function updateBundleProduct(
-        Product $product,
-        array $validated,
-        array $storedImages,
-        array &$filesToDelete
-    ): void {
-        $product->update([
-            'price' => 0,
-            'special_price' => null,
-            'special_price_from' => null,
-            'special_price_to' => null,
-            'business_mode' => $validated['business_mode'] ?? null,
-            'is_new' => $validated['is_new'],
-            'is_featured' => $validated['is_featured'],
-            'is_visible_individually' => $validated['is_visible_individually'],
-            'status' => $validated['status'],
-        ]);
-
-        $product->categories()->sync($validated['category_ids'] ?? []);
-        $this->syncAttributeValues($product, $validated['attributes'] ?? []);
-        $this->syncBundleOptions($product, $validated['bundle_options'] ?? []);
-        $this->syncImages(
-            $product,
-            $validated,
-            $storedImages,
-            $filesToDelete
         );
     }
 

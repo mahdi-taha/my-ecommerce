@@ -13,7 +13,6 @@
                         <option value="">Select Product Type</option>
                         <option value="simple" @selected(old('type') === 'simple')>Simple Product</option>
                         <option value="configurable" @selected(old('type') === 'configurable')>Configurable Product</option>
-                        <option value="bundle" @selected(old('type') === 'bundle')>Bundle Product</option>
                     </select>
                     @error('type')<p class="text-danger">{{ $message }}</p>@enderror
                 </div>

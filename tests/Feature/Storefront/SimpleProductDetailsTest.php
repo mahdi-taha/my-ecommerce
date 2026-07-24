@@ -69,13 +69,12 @@ class SimpleProductDetailsTest extends TestCase
         $inactive = $this->product(['status' => false], 'inactive');
         $hidden = $this->product(['is_visible_individually' => false], 'hidden');
         $configurable = $this->product(['type' => ProductType::Configurable->value], 'configurable');
-        $bundle = $this->product(['type' => ProductType::Bundle->value], 'bundle');
         $parent = Product::factory()->create(['type' => ProductType::Configurable->value]);
         $variant = $this->product([
             'configurable_id' => $parent->id,
         ], 'variant');
 
-        foreach ([$inactive, $hidden, $configurable, $bundle, $variant] as $product) {
+        foreach ([$inactive, $hidden, $configurable, $variant] as $product) {
             $urlKey = $product->translations()->where('locale', 'en')->value('url_key');
 
             $this->get(route('shop.products.show', $urlKey))->assertNotFound();

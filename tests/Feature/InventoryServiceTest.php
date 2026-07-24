@@ -233,17 +233,15 @@ class InventoryServiceTest extends TestCase
         ]);
     }
 
-    public function test_configurable_and_bundle_parents_are_rejected(): void
+    public function test_configurable_parents_are_rejected(): void
     {
-        foreach (['configurable', 'bundle'] as $type) {
-            $product = $this->product($type);
+        $product = $this->product('configurable');
 
-            try {
-                $this->inventoryService->receiveStock($product, ['quantity' => 1, 'unit_cost' => 1], $this->user->id);
-                $this->fail("A {$type} parent was allowed to own inventory.");
-            } catch (ValidationException) {
-                $this->assertDatabaseMissing('product_inventories', ['product_id' => $product->id]);
-            }
+        try {
+            $this->inventoryService->receiveStock($product, ['quantity' => 1, 'unit_cost' => 1], $this->user->id);
+            $this->fail('A configurable parent was allowed to own inventory.');
+        } catch (ValidationException) {
+            $this->assertDatabaseMissing('product_inventories', ['product_id' => $product->id]);
         }
     }
 

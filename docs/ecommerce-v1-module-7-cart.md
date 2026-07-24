@@ -5,6 +5,15 @@ Status: **Authoritative**
 This specification completes the recovered Module 7 architecture. It governs the
 database foundation and the initial standalone Simple Product Cart slice.
 
+## Product-type amendment
+
+Following architectural review, Bundle Product support was permanently removed
+from Ecommerce Version 1.0. The supported Catalog Product types are Simple and
+Configurable only. Bundle schema foundations were retired because storefront
+pricing, Cart behavior, Checkout conversion, and purchasing were never
+implemented. Configurable Cart compatibility remains, while its storefront
+operations are deferred.
+
 ## Aggregate and ownership
 
 `Cart` is the aggregate root and the database is its source of truth. A Cart MUST
@@ -50,26 +59,8 @@ Deleting a Cart or its referenced convenience-state Product cascades to its
 items. `(cart_id, product_id, configuration_hash)` is unique. Items are
 displayed oldest first using `created_at`, then `id`; no `sort_order` exists.
 
-`product_type` uses application-managed values `simple`, `configurable`, and
-`bundle`. The initial implementation operates only on `simple`.
-
-### `cart_item_bundle_items`
-
-| Column | Type | Rules |
-|---|---|---|
-| `id` | BIGINT UNSIGNED | Primary key |
-| `cart_item_id` | BIGINT UNSIGNED | Required FK to `cart_items.id` |
-| `bundle_option_item_id` | BIGINT UNSIGNED | Required FK to `bundle_option_items.id` |
-| `quantity` | DECIMAL(15,4) | Required; greater than zero |
-| `created_at`, `updated_at` | TIMESTAMP | Framework timestamps |
-
-This table is the authoritative normalized Bundle selection. Deleting the parent
-CartItem cascades. Deleting a selected Bundle configuration row cascades that
-selection; subsequent Cart validation MUST remove the now-invalid parent Bundle
-CartItem and communicate the adjustment. The selected option item owns its
-BundleOption and Product relationships, so those identifiers are not duplicated
-here. `(cart_item_id, bundle_option_item_id)` is unique. Bundle operations are
-deferred.
+`product_type` uses application-managed values `simple` and `configurable`. The
+initial implementation operates only on `simple`.
 
 ## Item rules
 
@@ -86,8 +77,6 @@ deferred.
 - Configurable items will reference the selected Simple variant, whose valid
   configurable parent must be verified. A configurable parent cannot be stored
   as the selected Product.
-- Bundle items reference the Bundle parent; normalized child selections define
-  their configuration.
 - Identical valid configurations merge using `configuration_hash`. Different
   configurations remain separate.
 
@@ -135,7 +124,7 @@ Cart changes. Only external effects occur after commit.
 
 Version 1 initially supports resolving guest/customer Carts, adding eligible
 standalone Simple Products, viewing, updating, removing, clearing, expiration,
-header quantity, and authenticated merge. Configurable and Bundle schema and
-relationships are compatibility foundations only. Coupons, Checkout, Orders,
-Payments, shipping calculations, and inventory reservation are outside this
-slice.
+header quantity, and authenticated merge. Configurable schema compatibility
+remains, but Configurable Cart operations are deferred. Coupons, Checkout,
+Orders, Payments, shipping calculations, and inventory reservation are outside
+this slice.

@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\CartItemType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CartItem extends Model
 {
@@ -30,10 +29,5 @@ class CartItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
-    }
-
-    public function bundleItems(): HasMany
-    {
-        return $this->hasMany(CartItemBundleItem::class);
     }
 }
