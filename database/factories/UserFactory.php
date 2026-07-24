@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\AccountType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
@@ -24,11 +24,21 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $firstName = fake()->firstName();
+        $lastName = fake()->lastName();
+
         return [
-            'name' => fake()->name(),
+            'name' => trim($firstName.' '.$lastName),
+            'first_name' => $firstName,
+            'last_name' => $lastName,
             'email' => fake()->unique()->safeEmail(),
+            'phone' => null,
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'password' => static::$password ??= 'password',
+            'account_type' => AccountType::Admin->value,
+            'has_account' => true,
+            'is_active' => true,
+            'last_login_at' => null,
             'remember_token' => Str::random(10),
         ];
     }
@@ -40,6 +50,32 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    public function customer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'account_type' => AccountType::Customer->value,
+            'has_account' => true,
+        ]);
+    }
+
+    public function manualCustomer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'account_type' => AccountType::Customer->value,
+            'has_account' => false,
+            'email' => null,
+            'email_verified_at' => null,
+            'password' => null,
+        ]);
+    }
+
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
         ]);
     }
 }

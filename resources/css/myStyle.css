@@ -1,0 +1,146 @@
+  /* .select2-container .select2-selection--multiple {
+      line-height: 38px !important;
+      padding: 0 !important;
+      border: 1px solid #ced4da !important;
+      background-color: rgba(0, 0, 0, 0) !important;
+  }
+
+  .select2-container--default .select2-selection--multiple .select2-selection__arrow b {
+      border-color: #88888800 transparent transparent transparent !important;
+  }
+
+  .select2-container .select2-selection__arrow {
+      height: 38px !important;
+  }
+
+
+  .select2-container--default .select2-search--dropdown .select2-search__field {
+      height: 38px !important;
+  }
+
+  .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+      line-height: 38px !important;
+  }
+
+  .select2-danger .select2-container .select2-selection--multiple {
+      border-color: #fc4b6c !important;
+  } */
+
+
+  table.dataTable td,
+  table.dataTable th {
+      text-align: left !important;
+  }
+
+  /* Override DataTables forcing icon to the left for numeric/date types */
+  table.dataTable th.dt-type-numeric div.dt-column-header,
+  table.dataTable th.dt-type-numeric div.dt-column-footer,
+  table.dataTable th.dt-type-date div.dt-column-header,
+  table.dataTable th.dt-type-date div.dt-column-footer,
+  table.dataTable td.dt-type-numeric div.dt-column-header,
+  table.dataTable td.dt-type-numeric div.dt-column-footer,
+  table.dataTable td.dt-type-date div.dt-column-header,
+  table.dataTable td.dt-type-date div.dt-column-footer {
+      flex-direction: row !important;
+      /* ✅ restore default direction */
+  }
+
+  /* lg breakpoint and below */
+  .card-flexible {
+      width: 80% !important;
+  }
+
+  @media (max-width: 991.98px) {
+
+      /* lg breakpoint and below */
+      .card-flexible {
+          width: 100% !important;
+      }
+  }
+
+  .cursor-pointer {
+      cursor: pointer;
+  }
+
+  .inputs-container {
+      background-color: #f8f9fa !important;
+  }
+
+  @media (min-width: 992px) {
+      .custom-offcanvas-width {
+          width: 28vw !important;
+      }
+  }
+
+  .options-card {
+      border: 1px solid #f8f9fa;
+  }
+
+  .option-header {
+      background: #f8f9fa;
+      border-bottom: 1px solid #edf0f5;
+  }
+
+  .option-row {
+      border-bottom: 1px solid #edf0f5;
+  }
+
+  .option-row:last-child {
+      border-bottom: 0;
+  }
+
+  .option-row:hover {
+      background: #fafbfc;
+  }
+
+  .form-control-color {
+      width: 42px;
+      min-width: 42px;
+      height: 38px;
+      padding: 4px;
+  }
+
+  .form-control{
+      border: 1px solid #14141477;
+  }
+
+  .remove-option {
+      border: 0;
+      background: transparent;
+      color: #dc3545;
+  }
+
+  .remove-option:hover {
+      background: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+  }
+
+  
+.select2-danger .select2-container .select2-selection--single {
+    border-color: rgb(220 53 69) !important;
+}
+
+.select2-container .select2-selection--single {
+    height: 48px !important;
+    line-height: 38px !important;
+    padding: 0 !important;
+    border-radius: 10px !important;
+    border: 1px solid #14141477 !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: #88888800 transparent transparent transparent !important;
+}
+
+.select2-container .select2-selection__arrow {
+    height: 38px !important;
+}
+
+
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    height: 38px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 38px !important;
+}
