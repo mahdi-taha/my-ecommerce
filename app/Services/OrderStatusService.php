@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\FulfillmentStatus;
 use App\Enums\OrderHistoryType;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentAttemptStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -399,22 +400,40 @@ class OrderStatusService
         }
 
         $fromStatus = $order->payment_status;
+        $payment = OrderPayment::query()
+            ->where('order_id', $order->getKey())
+            ->lockForUpdate()
+            ->first();
+
+        if (! $payment) {
+            throw new RuntimeException('The order does not have a payment obligation to cancel.');
+        }
 
         if ($fromStatus === PaymentStatus::Pending->value) {
-            $payment = OrderPayment::query()
-                ->where('order_id', $order->getKey())
-                ->where('status', PaymentStatus::Pending->value)
-                ->latest('id')
+            $attempt = $payment->attempts()
+                ->whereIn('status', [
+                    PaymentAttemptStatus::Pending->value,
+                    PaymentAttemptStatus::RequiresAction->value,
+                    PaymentAttemptStatus::Processing->value,
+                ])
+                ->latest('attempt_number')
                 ->lockForUpdate()
                 ->first();
 
-            if (! $payment) {
-                throw new RuntimeException('The order does not have a pending payment record to cancel.');
+            if ($attempt && ! $attempt->update([
+                'status' => PaymentAttemptStatus::Cancelled,
+                'completed_at' => now(),
+            ])) {
+                throw new RuntimeException('The pending payment attempt could not be cancelled.');
             }
+        }
 
-            if (! $payment->update(['status' => PaymentStatus::Cancelled->value])) {
-                throw new RuntimeException('The pending payment record could not be cancelled.');
-            }
+        if (! $payment->update([
+            'status' => PaymentStatus::Cancelled,
+            'paid_amount' => '0.0000',
+            'paid_at' => null,
+        ])) {
+            throw new RuntimeException('The payment obligation could not be cancelled.');
         }
 
         if (! $order->update(['payment_status' => PaymentStatus::Cancelled->value])) {

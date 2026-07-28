@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Enums\OrderHistoryType;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentAttemptStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\OrderPayment;
 use App\Models\OrderStatusHistory;
+use App\Models\PaymentAttempt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -18,50 +20,27 @@ class PaymentStatusService
 
     public function markPaid(Order $order): Order
     {
-        $paidAt = now();
-
-        return $this->transitionPaymentStatus(
+        return $this->transitionPendingPayment(
             $order,
             PaymentStatus::Paid,
-            ['paid_at' => $paidAt],
-            ['paid_at' => $paidAt]
+            PaymentAttemptStatus::Paid
         );
     }
 
     public function markFailed(Order $order): Order
     {
-        return $this->transitionPaymentStatus(
+        return $this->transitionPendingPayment(
             $order,
             PaymentStatus::Failed,
-            [],
-            ['failed_at' => now()]
+            PaymentAttemptStatus::Failed
         );
     }
 
     public function retry(Order $order): Order
     {
         return DB::transaction(function () use ($order) {
-            if (! $order->getKey()) {
-                throw new RuntimeException('The order does not exist.');
-            }
-
-            $lockedOrder = Order::query()
-                ->whereKey($order->getKey())
-                ->lockForUpdate()
-                ->first();
-
-            if (! $lockedOrder) {
-                throw new RuntimeException('The order no longer exists.');
-            }
-
-            if (in_array($lockedOrder->status, [
-                OrderStatus::Cancelled->value,
-                OrderStatus::Completed->value,
-            ], true)) {
-                throw ValidationException::withMessages([
-                    'status' => 'Payments cannot be updated for cancelled or completed orders.',
-                ]);
-            }
+            $lockedOrder = $this->lockedOrder($order);
+            $this->ensureOrderAcceptsPaymentUpdates($lockedOrder);
 
             if ($lockedOrder->payment_status !== PaymentStatus::Failed->value) {
                 throw ValidationException::withMessages([
@@ -69,81 +48,60 @@ class PaymentStatusService
                 ]);
             }
 
-            $failedPayment = OrderPayment::query()
-                ->where('order_id', $lockedOrder->getKey())
-                ->where('status', PaymentStatus::Failed->value)
-                ->latest('id')
+            $payment = $this->lockedPayment($lockedOrder);
+
+            if ($payment->status !== PaymentStatus::Failed) {
+                throw new RuntimeException('The payment obligation does not match the Order payment status.');
+            }
+
+            $failedAttempt = $payment->attempts()
+                ->where('status', PaymentAttemptStatus::Failed->value)
+                ->latest('attempt_number')
                 ->lockForUpdate()
                 ->first();
 
-            if (! $failedPayment) {
+            if (! $failedAttempt) {
                 throw new RuntimeException('The order does not have a failed payment attempt to retry.');
             }
 
-            $payment = OrderPayment::create([
-                'order_id' => $lockedOrder->getKey(),
-                'method' => $lockedOrder->payment_method,
-                'status' => PaymentStatus::Pending->value,
-                'amount' => $failedPayment->amount,
-                'transaction_reference' => null,
-                'failure_message' => null,
-                'paid_at' => null,
-                'failed_at' => null,
-            ]);
-
-            if (! $payment->exists) {
-                throw new RuntimeException('The payment retry could not be created.');
-            }
-
             $userId = auth()->id();
+            $timestamp = now();
+            $this->createAttempt($payment, PaymentAttemptStatus::Pending, $timestamp);
+
+            if (! $payment->update([
+                'status' => PaymentStatus::Pending,
+                'paid_amount' => '0.0000',
+                'paid_at' => null,
+            ])) {
+                throw new RuntimeException('The payment obligation could not be reset for retry.');
+            }
 
             if (! $lockedOrder->update([
                 'payment_status' => PaymentStatus::Pending->value,
+                'paid_at' => null,
             ])) {
                 throw new RuntimeException('The order payment status could not be reset for retry.');
             }
 
-            OrderStatusHistory::create([
-                'order_id' => $lockedOrder->getKey(),
-                'type' => OrderHistoryType::Payment->value,
-                'from_status' => PaymentStatus::Failed->value,
-                'to_status' => PaymentStatus::Pending->value,
-                'created_by' => $userId,
-                'comment' => null,
-            ]);
+            $this->createHistory(
+                $lockedOrder,
+                PaymentStatus::Failed,
+                PaymentStatus::Pending,
+                $userId
+            );
 
             return $lockedOrder->fresh();
         });
     }
 
-    private function transitionPaymentStatus(
+    private function transitionPendingPayment(
         Order $order,
         PaymentStatus $targetStatus,
-        array $orderUpdates,
-        array $paymentUpdates
+        PaymentAttemptStatus $attemptStatus
     ): Order {
-        return DB::transaction(function () use ($order, $targetStatus, $orderUpdates, $paymentUpdates) {
-            if (! $order->getKey()) {
-                throw new RuntimeException('The order does not exist.');
-            }
-
-            $lockedOrder = Order::query()
-                ->whereKey($order->getKey())
-                ->lockForUpdate()
-                ->first();
-
-            if (! $lockedOrder) {
-                throw new RuntimeException('The order no longer exists.');
-            }
-
-            if (in_array($lockedOrder->status, [
-                OrderStatus::Cancelled->value,
-                OrderStatus::Completed->value,
-            ], true)) {
-                throw ValidationException::withMessages([
-                    'status' => 'Payments cannot be updated for cancelled or completed orders.',
-                ]);
-            }
+        return DB::transaction(function () use ($order, $targetStatus, $attemptStatus) {
+            $lockedOrder = $this->lockedOrder($order);
+            $this->ensureOrderAcceptsPaymentUpdates($lockedOrder);
 
             if ($lockedOrder->payment_status !== PaymentStatus::Pending->value) {
                 throw ValidationException::withMessages([
@@ -151,39 +109,49 @@ class PaymentStatusService
                 ]);
             }
 
-            $payment = OrderPayment::query()
-                ->where('order_id', $lockedOrder->getKey())
-                ->where('status', PaymentStatus::Pending->value)
-                ->orderByDesc('id')
-                ->lockForUpdate()
-                ->first();
+            $payment = $this->lockedPayment($lockedOrder);
 
-            if (! $payment) {
-                throw new RuntimeException('The order does not have a pending payment record.');
+            if ($payment->status !== PaymentStatus::Pending) {
+                throw new RuntimeException('The payment obligation does not match the Order payment status.');
             }
 
             $userId = auth()->id();
+            $timestamp = now();
+            $attempt = $this->lockedNonterminalAttempt($payment)
+                ?? $this->createAttempt($payment, PaymentAttemptStatus::Pending, $timestamp);
 
-            if (! $lockedOrder->update(array_merge($orderUpdates, [
+            if (! $attempt->update([
+                'status' => $attemptStatus,
+                'completed_at' => $timestamp,
+            ])) {
+                throw new RuntimeException('The payment attempt could not be completed.');
+            }
+
+            $paymentUpdates = [
+                'status' => $targetStatus,
+                'paid_amount' => $targetStatus === PaymentStatus::Paid
+                    ? $payment->amount
+                    : '0.0000',
+                'paid_at' => $targetStatus === PaymentStatus::Paid ? $timestamp : null,
+            ];
+
+            if (! $payment->update($paymentUpdates)) {
+                throw new RuntimeException('The payment obligation could not be updated.');
+            }
+
+            if (! $lockedOrder->update([
                 'payment_status' => $targetStatus->value,
-            ]))) {
+                'paid_at' => $targetStatus === PaymentStatus::Paid ? $timestamp : null,
+            ])) {
                 throw new RuntimeException('The order payment status could not be updated.');
             }
 
-            if (! $payment->update(array_merge($paymentUpdates, [
-                'status' => $targetStatus->value,
-            ]))) {
-                throw new RuntimeException('The payment record could not be updated.');
-            }
-
-            OrderStatusHistory::create([
-                'order_id' => $lockedOrder->getKey(),
-                'type' => OrderHistoryType::Payment->value,
-                'from_status' => PaymentStatus::Pending->value,
-                'to_status' => $targetStatus->value,
-                'created_by' => $userId,
-                'comment' => null,
-            ]);
+            $this->createHistory(
+                $lockedOrder,
+                PaymentStatus::Pending,
+                $targetStatus,
+                $userId
+            );
 
             if ($targetStatus === PaymentStatus::Paid) {
                 $this->orderCompletionService->completeIfEligible($lockedOrder, $userId);
@@ -191,5 +159,102 @@ class PaymentStatusService
 
             return $lockedOrder->fresh();
         });
+    }
+
+    private function lockedOrder(Order $order): Order
+    {
+        if (! $order->getKey()) {
+            throw new RuntimeException('The order does not exist.');
+        }
+
+        $lockedOrder = Order::query()
+            ->whereKey($order->getKey())
+            ->lockForUpdate()
+            ->first();
+
+        if (! $lockedOrder) {
+            throw new RuntimeException('The order no longer exists.');
+        }
+
+        return $lockedOrder;
+    }
+
+    private function lockedPayment(Order $order): OrderPayment
+    {
+        $payment = OrderPayment::query()
+            ->where('order_id', $order->getKey())
+            ->lockForUpdate()
+            ->first();
+
+        if (! $payment) {
+            throw new RuntimeException('The order does not have a payment obligation.');
+        }
+
+        return $payment;
+    }
+
+    private function ensureOrderAcceptsPaymentUpdates(Order $order): void
+    {
+        if (in_array($order->status, [
+            OrderStatus::Cancelled->value,
+            OrderStatus::Completed->value,
+        ], true)) {
+            throw ValidationException::withMessages([
+                'status' => 'Payments cannot be updated for cancelled or completed orders.',
+            ]);
+        }
+    }
+
+    private function lockedNonterminalAttempt(OrderPayment $payment): ?PaymentAttempt
+    {
+        return $payment->attempts()
+            ->whereIn('status', [
+                PaymentAttemptStatus::Pending->value,
+                PaymentAttemptStatus::RequiresAction->value,
+                PaymentAttemptStatus::Processing->value,
+            ])
+            ->latest('attempt_number')
+            ->lockForUpdate()
+            ->first();
+    }
+
+    private function createAttempt(
+        OrderPayment $payment,
+        PaymentAttemptStatus $status,
+        mixed $timestamp
+    ): PaymentAttempt {
+        $lastAttemptNumber = (int) $payment->attempts()->max('attempt_number');
+
+        return $payment->attempts()->create([
+            'attempt_number' => $lastAttemptNumber + 1,
+            'provider' => null,
+            'status' => $status,
+            'amount' => $payment->amount,
+            'currency_code' => $payment->currency_code,
+            'transaction_reference' => null,
+            'customer_note' => null,
+            'provider_transaction_id' => null,
+            'failure_code' => null,
+            'failure_message' => null,
+            'metadata_json' => null,
+            'initiated_at' => $timestamp,
+            'completed_at' => null,
+        ]);
+    }
+
+    private function createHistory(
+        Order $order,
+        PaymentStatus $fromStatus,
+        PaymentStatus $toStatus,
+        ?int $userId
+    ): void {
+        OrderStatusHistory::create([
+            'order_id' => $order->getKey(),
+            'type' => OrderHistoryType::Payment->value,
+            'from_status' => $fromStatus->value,
+            'to_status' => $toStatus->value,
+            'created_by' => $userId,
+            'comment' => null,
+        ]);
     }
 }

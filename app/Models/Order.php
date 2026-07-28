@@ -48,9 +48,9 @@ class Order extends Model
             ->where('type', 'shipping');
     }
 
-    public function payments(): HasMany
+    public function payment(): HasOne
     {
-        return $this->hasMany(OrderPayment::class);
+        return $this->hasOne(OrderPayment::class);
     }
 
     public function statusHistory(): HasMany

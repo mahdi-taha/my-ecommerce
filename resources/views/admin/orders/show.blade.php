@@ -252,14 +252,14 @@
                                         <table class="table align-middle mb-0">
                                             <thead><tr><th>Method</th><th>Status</th><th>Amount</th><th>Transaction Reference</th><th>Paid At</th><th>Failed At</th></tr></thead>
                                             <tbody>
-                                                @forelse ($order->payments as $payment)
+                                                @forelse ($order->payment?->attempts ?? collect() as $attempt)
                                                     <tr>
-                                                        <td>{{ ucwords(str_replace('_', ' ', $payment->method)) }}</td>
-                                                        <td><span class="badge {{ $paymentBadgeClasses[$payment->status] ?? 'bg-secondary' }}">{{ ucfirst($payment->status) }}</span></td>
-                                                        <td>{{ $order->currency_code }} {{ number_format((float) $payment->amount, 2) }}</td>
-                                                        <td>{{ $payment->transaction_reference ?: '—' }}</td>
-                                                        <td>{{ $payment->paid_at ? date('Y-m-d H:i', strtotime($payment->paid_at)) : '—' }}</td>
-                                                        <td>{{ $payment->failed_at ? date('Y-m-d H:i', strtotime($payment->failed_at)) : '—' }}</td>
+                                                        <td>{{ $order->payment->method_name }}</td>
+                                                        <td><span class="badge {{ $paymentBadgeClasses[$attempt->status->value] ?? 'bg-secondary' }}">{{ ucwords(str_replace('_', ' ', $attempt->status->value)) }}</span></td>
+                                                        <td>{{ $attempt->currency_code }} {{ number_format((float) $attempt->amount, 2) }}</td>
+                                                        <td>{{ $attempt->transaction_reference ?: '—' }}</td>
+                                                        <td>{{ $attempt->status === \App\Enums\PaymentAttemptStatus::Paid ? $attempt->completed_at?->format('Y-m-d H:i') : '—' }}</td>
+                                                        <td>{{ $attempt->status === \App\Enums\PaymentAttemptStatus::Failed ? $attempt->completed_at?->format('Y-m-d H:i') : '—' }}</td>
                                                     </tr>
                                                 @empty
                                                     <tr><td colspan="6" class="text-center text-muted">No payment attempts.</td></tr>

@@ -17,7 +17,10 @@ class OrderService
 {
     private const MAX_ORDER_NUMBER_ATTEMPTS = 3;
 
-    public function __construct(private OrderNumberGenerator $orderNumberGenerator) {}
+    public function __construct(
+        private OrderNumberGenerator $orderNumberGenerator,
+        private PaymentNumberGenerator $paymentNumberGenerator
+    ) {}
 
     public function create(array $data): Order
     {
@@ -33,7 +36,7 @@ class OrderService
 
                     $this->createItems($order, $data['items']);
                     $this->createAddresses($order, $data);
-                    $this->createPayment($order, $data['payment'], $paymentMethod);
+                    $this->createPayment($order, $paymentMethod);
                     $this->createInitialHistory($order);
 
                     return $order;
@@ -108,13 +111,20 @@ class OrderService
 
     private function createPayment(
         Order $order,
-        array $payment,
         PaymentMethod $paymentMethod
     ): void {
-        $order->payments()->create(array_merge($payment, [
-            'method' => $paymentMethod->code,
-            'status' => PaymentStatus::Pending->value,
-        ]));
+        $order->payment()->create([
+            'payment_number' => $this->paymentNumberGenerator->generate(),
+            'payment_method_id' => $paymentMethod->getKey(),
+            'method_code' => $paymentMethod->code,
+            'method_name' => $paymentMethod->name,
+            'method_type' => $paymentMethod->type->value,
+            'amount' => $order->grand_total,
+            'currency_code' => $order->currency_code,
+            'status' => PaymentStatus::Pending,
+            'paid_amount' => '0.0000',
+            'paid_at' => null,
+        ]);
     }
 
     private function paymentMethod(mixed $code): PaymentMethod

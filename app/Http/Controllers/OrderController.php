@@ -119,7 +119,10 @@ class OrderController extends Controller
             'items.children',
             'billingAddress',
             'shippingAddress',
-            'payments' => fn ($query) => $query->latest('id'),
+            'payment' => fn ($query) => $query->with([
+                'paymentMethod',
+                'attempts' => fn ($query) => $query->latest('attempt_number'),
+            ]),
             'statusHistory' => fn ($query) => $query->with('user:id,name')->latest('created_at'),
         ]);
 
@@ -140,6 +143,10 @@ class OrderController extends Controller
                 'paid' => 'bg-success',
                 'failed' => 'bg-danger',
                 'cancelled' => 'bg-secondary',
+                'awaiting_verification' => 'bg-info text-dark',
+                'partially_paid' => 'bg-info text-dark',
+                'refunded' => 'bg-dark',
+                'partially_refunded' => 'bg-dark',
             ]),
             'fulfillment' => $this->statusBadge($order->fulfillment_status, [
                 'unfulfilled' => 'bg-secondary',
@@ -154,6 +161,9 @@ class OrderController extends Controller
             'paid' => 'bg-success',
             'failed' => 'bg-danger',
             'cancelled' => 'bg-secondary',
+            'requires_action' => 'bg-info text-dark',
+            'processing' => 'bg-primary',
+            'expired' => 'bg-dark',
         ];
 
         $availableActions = [
