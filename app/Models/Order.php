@@ -53,6 +53,11 @@ class Order extends Model
         return $this->hasOne(OrderPayment::class);
     }
 
+    public function shipping(): HasOne
+    {
+        return $this->hasOne(OrderShipping::class);
+    }
+
     public function statusHistory(): HasMany
     {
         return $this->hasMany(OrderStatusHistory::class);
