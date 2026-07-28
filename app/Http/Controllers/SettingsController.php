@@ -38,10 +38,12 @@ class SettingsController extends Controller
             ],
             'manage_stock' => 'nullable|boolean',
             'allow_backorders' => 'nullable|boolean',
+            'allow_guest_checkout' => 'nullable|boolean',
         ]);
 
         $validated['manage_stock'] = $request->boolean('manage_stock');
         $validated['allow_backorders'] = $request->boolean('allow_backorders');
+        $validated['allow_guest_checkout'] = $request->boolean('allow_guest_checkout');
 
         foreach ($validated as $key => $value) {
             $setting = Setting::where('key', $key)->first();

@@ -38,6 +38,9 @@ class SettingSeeder extends Seeder
             // Cart
             ['group' => 'cart', 'key' => 'lifetime_days', 'value' => '30', 'type' => 'integer'],
 
+            // Checkout
+            ['group' => 'checkout', 'key' => 'allow_guest_checkout', 'value' => '1', 'type' => 'boolean'],
+
         ];
 
         foreach ($settings as $setting) {

@@ -170,6 +170,30 @@
                                 </div>
                             </div>
 
+                            {{-- Checkout --}}
+                            <div class="col-12 mb-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Checkout</h5>
+                                    </div>
+
+                                    <div class="card-body">
+                                        <input type="hidden" name="allow_guest_checkout" value="0">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input @error('allow_guest_checkout') is-invalid @enderror"
+                                                type="checkbox" id="allow_guest_checkout" name="allow_guest_checkout"
+                                                value="1" @checked(old('allow_guest_checkout', $settings['allow_guest_checkout'] ?? 1))>
+                                            <label class="form-check-label" for="allow_guest_checkout">
+                                                Allow Guest Checkout
+                                            </label>
+                                            @error('allow_guest_checkout')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
 
                         <div class="text-end">
