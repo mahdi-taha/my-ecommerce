@@ -2,37 +2,19 @@
 
 namespace App\Services;
 
-use App\Models\Order;
-use RuntimeException;
+use Illuminate\Support\Carbon;
 
 class OrderNumberGenerator
 {
-    private const PREFIX = 'ORD-';
+    private const DOCUMENT_TYPE = 'order';
 
-    private const MAX_NUMBER = 99_999_999;
+    public function __construct(private DocumentNumberService $documentNumberService) {}
 
     public function generate(): string
     {
-        $latestOrder = Order::query()
-            ->orderByDesc('id')
-            ->first(['id', 'order_number']);
+        $timestamp = Carbon::now();
+        $number = $this->documentNumberService->next(self::DOCUMENT_TYPE);
 
-        if (! $latestOrder) {
-            return self::PREFIX.'00000001';
-        }
-
-        if (! preg_match('/^ORD-(\d{8})$/', $latestOrder->order_number, $matches)) {
-            throw new RuntimeException(
-                "Order {$latestOrder->id} has an invalid order number: {$latestOrder->order_number}."
-            );
-        }
-
-        $nextNumber = (int) $matches[1] + 1;
-
-        if ($nextNumber > self::MAX_NUMBER) {
-            throw new RuntimeException('The eight-digit order number sequence has been exhausted.');
-        }
-
-        return self::PREFIX.sprintf('%08d', $nextNumber);
+        return sprintf('ORD-%s-%06d', $timestamp->format('Y'), $number);
     }
 }

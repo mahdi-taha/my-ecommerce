@@ -26,11 +26,23 @@ class OrderCreationTest extends TestCase
         $this->assertSame(OrderStatus::Pending->value, $order->status);
         $this->assertSame(PaymentStatus::Pending->value, $order->payment_status);
         $this->assertSame(FulfillmentStatus::Unfulfilled->value, $order->fulfillment_status);
+        $this->assertMatchesRegularExpression('/^ORD-\d{4}-000001$/', $order->order_number);
         $this->assertDatabaseHas('order_payments', [
             'order_id' => $order->id,
             'method' => $method->code,
             'status' => PaymentStatus::Pending->value,
         ]);
+    }
+
+    public function test_order_creation_uses_the_global_document_sequence(): void
+    {
+        $method = $this->paymentMethod('cash_on_delivery', false);
+
+        $first = app(OrderService::class)->create($this->orderData($method->code));
+        $second = app(OrderService::class)->create($this->orderData($method->code));
+
+        $this->assertSame(1, (int) str($first->order_number)->afterLast('-')->toString());
+        $this->assertSame(2, (int) str($second->order_number)->afterLast('-')->toString());
     }
 
     public function test_order_creation_snapshots_a_prepayment_required_method(): void
