@@ -64,9 +64,9 @@ class DocumentNumberServiceTest extends TestCase
     public function test_uninitialized_document_type_is_rejected(): void
     {
         $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage('The document sequence [payment] has not been initialized.');
+        $this->expectExceptionMessage('The document sequence [invoice] has not been initialized.');
 
-        DB::transaction(fn () => app(DocumentNumberService::class)->next('payment'));
+        DB::transaction(fn () => app(DocumentNumberService::class)->next('invoice'));
     }
 
     public function test_legacy_initializer_rejects_malformed_numbers_without_changing_sequence(): void

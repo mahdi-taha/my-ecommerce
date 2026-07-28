@@ -5,6 +5,7 @@ namespace Tests\Feature\Orders;
 use App\Enums\FulfillmentStatus;
 use App\Enums\OrderHistoryType;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentAttemptStatus;
 use App\Enums\PaymentStatus;
 use App\Models\InventoryMovement;
 use App\Models\Order;
@@ -367,7 +368,8 @@ class OrderLifecycleTest extends TestCase
         $this->assertDatabaseCount('inventory_movements', 0);
         $this->assertHistory($order, OrderHistoryType::Order->value, 'pending', 'cancelled');
         $this->assertHistory($order, OrderHistoryType::Payment->value, 'pending', 'cancelled');
-        $this->assertSame(PaymentStatus::Cancelled->value, $order->payments()->first()->status);
+        $this->assertSame(PaymentStatus::Cancelled, $order->payment()->firstOrFail()->status);
+        $this->assertDatabaseCount('payment_attempts', 0);
     }
 
     public function test_processing_order_cancellation_restores_inventory(): void
@@ -434,7 +436,7 @@ class OrderLifecycleTest extends TestCase
         [$order, $product] = $this->orderWithInventory(8, [2]);
         $this->orderStatusService->process($order);
         $this->paymentStatusService->markPaid($order);
-        $payment = $order->payments()->firstOrFail()->fresh();
+        $payment = $order->payment()->firstOrFail()->fresh();
         $this->orderStatusService->markOutForDelivery($order);
 
         $failed = $this->orderStatusService->markDeliveryFailed($order);
@@ -442,8 +444,8 @@ class OrderLifecycleTest extends TestCase
         $this->assertSame(OrderStatus::Cancelled->value, $failed->status);
         $this->assertSame(PaymentStatus::Paid->value, $failed->payment_status);
         $this->assertSame(FulfillmentStatus::DeliveryFailed->value, $failed->fulfillment_status);
-        $this->assertSame(PaymentStatus::Paid->value, $payment->fresh()->status);
-        $this->assertSame($payment->paid_at, $payment->fresh()->paid_at);
+        $this->assertSame(PaymentStatus::Paid, $payment->fresh()->status);
+        $this->assertEquals($payment->paid_at, $payment->fresh()->paid_at);
         $this->assertSame('8.0000', $product->inventory()->first()->quantity);
         $this->assertDatabaseCount('inventory_movements', 2);
         $this->assertSame(0, OrderStatusHistory::query()
@@ -478,13 +480,13 @@ class OrderLifecycleTest extends TestCase
     {
         [$order] = $this->orderWithInventory();
         $this->paymentStatusService->markFailed($order);
-        $failedPayment = $order->payments()->firstOrFail()->fresh();
+        $failedPayment = $order->payment->attempts()->firstOrFail()->fresh();
 
         $cancelled = $this->orderStatusService->cancel($order);
 
         $this->assertSame(PaymentStatus::Cancelled->value, $cancelled->payment_status);
-        $this->assertSame(PaymentStatus::Failed->value, $failedPayment->fresh()->status);
-        $this->assertSame($failedPayment->failed_at, $failedPayment->fresh()->failed_at);
+        $this->assertSame(PaymentAttemptStatus::Failed, $failedPayment->fresh()->status);
+        $this->assertEquals($failedPayment->completed_at, $failedPayment->fresh()->completed_at);
         $this->assertDatabaseCount('order_payments', 1);
         $this->assertHistory($order, OrderHistoryType::Payment->value, 'failed', 'cancelled');
         $this->assertHistory($order, OrderHistoryType::Order->value, 'pending', 'cancelled');
@@ -575,7 +577,7 @@ class OrderLifecycleTest extends TestCase
             'order_id' => $order->id,
             'status' => PaymentStatus::Failed->value,
         ]);
-        $this->assertNotNull($order->payments()->first()->failed_at);
+        $this->assertNotNull($order->payment->attempts()->firstOrFail()->completed_at);
     }
 
     public function test_failed_payment_retry_creates_a_new_pending_attempt_and_history(): void
@@ -583,27 +585,25 @@ class OrderLifecycleTest extends TestCase
         $admin = User::factory()->create();
         $this->actingAs($admin);
         [$order] = $this->orderWithInventory();
-        $order->payments()->firstOrFail()->update(['amount' => 17.25]);
         $this->paymentStatusService->markFailed($order);
-        $failedPayment = $order->payments()->firstOrFail()->fresh();
+        $failedPayment = $order->payment->attempts()->firstOrFail()->fresh();
         $failedUpdatedAt = $failedPayment->updated_at;
-        $order->update(['payment_method' => 'online_card']);
+        $order->update(['payment_method' => 'manual_wallet_transfer']);
 
         $retried = $this->paymentStatusService->retry($order);
-        $newPayment = $order->payments()->latest('id')->firstOrFail();
+        $newPayment = $order->payment->attempts()->latest('attempt_number')->firstOrFail();
 
         $this->assertSame(PaymentStatus::Pending->value, $retried->payment_status);
-        $this->assertDatabaseCount('order_payments', 2);
-        $this->assertSame(PaymentStatus::Failed->value, $failedPayment->fresh()->status);
+        $this->assertDatabaseCount('payment_attempts', 2);
+        $this->assertSame(PaymentAttemptStatus::Failed, $failedPayment->fresh()->status);
         $this->assertEquals($failedUpdatedAt, $failedPayment->fresh()->updated_at);
-        $this->assertNotNull($failedPayment->fresh()->failed_at);
-        $this->assertSame('online_card', $newPayment->method);
-        $this->assertEquals(17.25, $newPayment->amount);
-        $this->assertSame(PaymentStatus::Pending->value, $newPayment->status);
+        $this->assertNotNull($failedPayment->fresh()->completed_at);
+        $this->assertEquals('20.0000', $newPayment->amount);
+        $this->assertSame(PaymentAttemptStatus::Pending, $newPayment->status);
         $this->assertNull($newPayment->transaction_reference);
         $this->assertNull($newPayment->failure_message);
         $this->assertNull($newPayment->paid_at);
-        $this->assertNull($newPayment->failed_at);
+        $this->assertNull($newPayment->completed_at);
         $this->assertSame(1, OrderStatusHistory::query()
             ->where('order_id', $order->id)
             ->where('type', OrderHistoryType::Payment->value)
@@ -625,10 +625,10 @@ class OrderLifecycleTest extends TestCase
         $completed = $this->paymentStatusService->markPaid($order);
 
         $this->assertCompletedOrder($completed);
-        $this->assertDatabaseCount('order_payments', 2);
+        $this->assertDatabaseCount('payment_attempts', 2);
         $this->assertSame(
-            [PaymentStatus::Failed->value, PaymentStatus::Paid->value],
-            $order->payments()->orderBy('id')->pluck('status')->all()
+            [PaymentAttemptStatus::Failed, PaymentAttemptStatus::Paid],
+            $order->payment->attempts()->orderBy('attempt_number')->pluck('status')->all()
         );
         $this->assertCompletionHistoryCount($order, 1);
     }
@@ -637,25 +637,25 @@ class OrderLifecycleTest extends TestCase
     {
         [$order] = $this->orderWithInventory();
         $this->paymentStatusService->markFailed($order);
-        $firstFailed = $order->payments()->firstOrFail()->fresh();
+        $firstFailed = $order->payment->attempts()->firstOrFail()->fresh();
 
         $this->paymentStatusService->retry($order);
         $this->paymentStatusService->markFailed($order);
-        $secondFailed = $order->payments()->latest('id')->firstOrFail()->fresh();
+        $secondFailed = $order->payment->attempts()->latest('attempt_number')->firstOrFail()->fresh();
         $this->paymentStatusService->retry($order);
 
         $this->assertSame(PaymentStatus::Pending->value, $order->fresh()->payment_status);
-        $this->assertDatabaseCount('order_payments', 3);
+        $this->assertDatabaseCount('payment_attempts', 3);
         $this->assertSame(
             [
-                PaymentStatus::Failed->value,
-                PaymentStatus::Failed->value,
-                PaymentStatus::Pending->value,
+                PaymentAttemptStatus::Failed,
+                PaymentAttemptStatus::Failed,
+                PaymentAttemptStatus::Pending,
             ],
-            $order->payments()->orderBy('id')->pluck('status')->all()
+            $order->payment->attempts()->orderBy('attempt_number')->pluck('status')->all()
         );
-        $this->assertSame($firstFailed->failed_at, $firstFailed->fresh()->failed_at);
-        $this->assertSame($secondFailed->failed_at, $secondFailed->fresh()->failed_at);
+        $this->assertEquals($firstFailed->completed_at, $firstFailed->fresh()->completed_at);
+        $this->assertEquals($secondFailed->completed_at, $secondFailed->fresh()->completed_at);
         $this->assertSame(2, OrderStatusHistory::query()
             ->where('order_id', $order->id)
             ->where('type', OrderHistoryType::Payment->value)
@@ -846,7 +846,7 @@ class OrderLifecycleTest extends TestCase
             'status' => OrderStatus::Pending->value,
             'payment_status' => PaymentStatus::Pending->value,
             'fulfillment_status' => FulfillmentStatus::Unfulfilled->value,
-            'payment_method' => 'cash',
+            'payment_method' => 'cash_on_delivery',
             'subtotal' => 20,
             'discount_total' => 0,
             'shipping_total' => 0,
@@ -874,10 +874,17 @@ class OrderLifecycleTest extends TestCase
         }
 
         OrderPayment::create([
+            'payment_number' => 'PAY-'.now()->format('Y').'-'.str_pad((string) random_int(1, 999999), 6, '0', STR_PAD_LEFT),
             'order_id' => $order->id,
-            'method' => 'cash',
-            'status' => PaymentStatus::Pending->value,
+            'payment_method_id' => null,
+            'method_code' => 'cash_on_delivery',
+            'method_name' => 'Cash on Delivery',
+            'method_type' => 'offline',
+            'status' => PaymentStatus::Pending,
             'amount' => $order->grand_total,
+            'currency_code' => 'USD',
+            'paid_amount' => '0.0000',
+            'paid_at' => null,
         ]);
 
         return [$order, $product];
@@ -890,10 +897,7 @@ class OrderLifecycleTest extends TestCase
         $this->assertSame(FulfillmentStatus::Fulfilled->value, $order->fulfillment_status);
         $this->assertNotNull($order->paid_at);
         $this->assertNotNull($order->completed_at);
-        $this->assertNotNull($order->payments()
-            ->where('status', PaymentStatus::Paid->value)
-            ->firstOrFail()
-            ->paid_at);
+        $this->assertNotNull($order->payment()->firstOrFail()->paid_at);
     }
 
     private function assertHistory(Order $order, string $type, string $from, string $to): void
@@ -929,10 +933,13 @@ class OrderLifecycleTest extends TestCase
     {
         $status = $order->fresh()->status;
         $orderPaymentStatus = $order->fresh()->payment_status;
-        $payment = $order->payments()->firstOrFail();
+        $payment = $order->payment()->firstOrFail();
         $paymentStatus = $payment->status;
         $paidAt = $payment->paid_at;
-        $failedAt = $payment->failed_at;
+        $attemptSnapshots = $payment->attempts()
+            ->orderBy('attempt_number')
+            ->get(['id', 'status', 'completed_at', 'updated_at'])
+            ->toArray();
         $historyCount = $order->statusHistory()->count();
 
         try {
@@ -947,7 +954,13 @@ class OrderLifecycleTest extends TestCase
             $this->assertSame($orderPaymentStatus, $order->fresh()->payment_status);
             $this->assertSame($paymentStatus, $payment->fresh()->status);
             $this->assertSame($paidAt, $payment->fresh()->paid_at);
-            $this->assertSame($failedAt, $payment->fresh()->failed_at);
+            $this->assertSame(
+                $attemptSnapshots,
+                $payment->attempts()
+                    ->orderBy('attempt_number')
+                    ->get(['id', 'status', 'completed_at', 'updated_at'])
+                    ->toArray()
+            );
             $this->assertSame($historyCount, $order->statusHistory()->count());
             $this->assertCompletionHistoryCount($order, 0);
         }
@@ -960,11 +973,11 @@ class OrderLifecycleTest extends TestCase
     ): void {
         $orderStatus = $order->fresh()->status;
         $paymentStatus = $order->fresh()->payment_status;
-        $paymentCount = $order->payments()->count();
+        $paymentCount = $order->payment->attempts()->count();
         $historyCount = $order->statusHistory()->count();
-        $paymentSnapshots = $order->payments()
-            ->orderBy('id')
-            ->get(['id', 'status', 'paid_at', 'failed_at', 'updated_at'])
+        $paymentSnapshots = $order->payment->attempts()
+            ->orderBy('attempt_number')
+            ->get(['id', 'status', 'completed_at', 'updated_at'])
             ->toArray();
 
         try {
@@ -974,13 +987,13 @@ class OrderLifecycleTest extends TestCase
             $this->assertSame([$message], $exception->errors()[$errorKey]);
             $this->assertSame($orderStatus, $order->fresh()->status);
             $this->assertSame($paymentStatus, $order->fresh()->payment_status);
-            $this->assertSame($paymentCount, $order->payments()->count());
+            $this->assertSame($paymentCount, $order->payment->attempts()->count());
             $this->assertSame($historyCount, $order->statusHistory()->count());
             $this->assertSame(
                 $paymentSnapshots,
-                $order->payments()
-                    ->orderBy('id')
-                    ->get(['id', 'status', 'paid_at', 'failed_at', 'updated_at'])
+                $order->payment->attempts()
+                    ->orderBy('attempt_number')
+                    ->get(['id', 'status', 'completed_at', 'updated_at'])
                     ->toArray()
             );
         }

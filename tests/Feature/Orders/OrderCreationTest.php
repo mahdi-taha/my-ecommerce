@@ -4,6 +4,7 @@ namespace Tests\Feature\Orders;
 
 use App\Enums\FulfillmentStatus;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethodType;
 use App\Enums\PaymentStatus;
 use App\Models\PaymentMethod;
 use App\Services\OrderService;
@@ -29,9 +30,10 @@ class OrderCreationTest extends TestCase
         $this->assertMatchesRegularExpression('/^ORD-\d{4}-000001$/', $order->order_number);
         $this->assertDatabaseHas('order_payments', [
             'order_id' => $order->id,
-            'method' => $method->code,
+            'method_code' => $method->code,
             'status' => PaymentStatus::Pending->value,
         ]);
+        $this->assertDatabaseCount('payment_attempts', 0);
     }
 
     public function test_order_creation_uses_the_global_document_sequence(): void
@@ -47,13 +49,13 @@ class OrderCreationTest extends TestCase
 
     public function test_order_creation_snapshots_a_prepayment_required_method(): void
     {
-        $method = $this->paymentMethod('online_card', true);
+        $method = $this->paymentMethod('manual_wallet_transfer', true);
 
         $order = app(OrderService::class)->create($this->orderData($method->code));
 
         $this->assertSame($method->code, $order->payment_method);
         $this->assertTrue($order->requires_payment_before_processing);
-        $this->assertSame($method->code, $order->payments()->firstOrFail()->method);
+        $this->assertSame($method->code, $order->payment()->firstOrFail()->method_code);
     }
 
     public function test_order_creation_ignores_supplied_inventory_cost(): void
@@ -105,9 +107,12 @@ class OrderCreationTest extends TestCase
         bool $requiresPrepayment,
         bool $active = true
     ): PaymentMethod {
-        return PaymentMethod::create([
+        return PaymentMethod::updateOrCreate(['code' => $code], [
             'code' => $code,
             'name' => str($code)->replace('_', ' ')->title(),
+            'type' => $code === 'manual_wallet_transfer'
+                ? PaymentMethodType::ManualTransfer
+                : PaymentMethodType::Offline,
             'is_active' => $active,
             'requires_payment_before_processing' => $requiresPrepayment,
             'sort_order' => 1,
