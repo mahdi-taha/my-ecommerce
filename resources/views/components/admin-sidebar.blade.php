@@ -117,6 +117,17 @@
               </a>
             </li>
             <li class="sidebar-item">
+              <a class="sidebar-link justify-content-between {{ request()->routeIs('admin.shipping-methods.*') ? 'active' : '' }}"
+                href="{{ route('admin.shipping-methods.index') }}" aria-expanded="false">
+                <div class="d-flex align-items-center gap-3">
+                  <span class="d-flex">
+                    <i class="ti ti-truck-delivery"></i>
+                  </span>
+                  <span class="hide-menu">Shipping Methods</span>
+                </div>
+              </a>
+            </li>
+            <li class="sidebar-item">
               <a class="sidebar-link justify-content-between {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}"
                 href="{{ route('admin.customers.index') }}" aria-expanded="false">
                 <div class="d-flex align-items-center gap-3">

@@ -12,6 +12,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\Shop\CartController as ShopCartController;
 use App\Http\Controllers\Shop\ProductController as ShopProductController;
 use App\Http\Controllers\VariantController;
@@ -74,6 +75,19 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::put('/settings', [SettingsController::class, 'update'])
             ->name('settings.update');
+
+        Route::get('shipping-methods', [ShippingMethodController::class, 'index'])
+            ->name('shipping-methods.index');
+        Route::get('shipping-methods/create', [ShippingMethodController::class, 'create'])
+            ->name('shipping-methods.create');
+        Route::post('shipping-methods', [ShippingMethodController::class, 'store'])
+            ->name('shipping-methods.store');
+        Route::get('shipping-methods/{shippingMethod}/edit', [ShippingMethodController::class, 'edit'])
+            ->name('shipping-methods.edit');
+        Route::put('shipping-methods/{shippingMethod}', [ShippingMethodController::class, 'update'])
+            ->name('shipping-methods.update');
+        Route::patch('shipping-methods/{shippingMethod}/status', [ShippingMethodController::class, 'updateStatus'])
+            ->name('shipping-methods.status.update');
 
         Route::resource('attributes', AttributeController::class)
             ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
