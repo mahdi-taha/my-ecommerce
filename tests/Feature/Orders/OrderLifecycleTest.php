@@ -14,6 +14,7 @@ use App\Models\OrderPayment;
 use App\Models\OrderStatusHistory;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\CouponUsageService;
 use App\Services\InventoryService;
 use App\Services\OrderCompletionService;
 use App\Services\OrderStatusService;
@@ -174,7 +175,8 @@ class OrderLifecycleTest extends TestCase
         };
         $service = new OrderStatusService(
             $inventoryService,
-            $this->orderCompletionService
+            $this->orderCompletionService,
+            app(CouponUsageService::class)
         );
 
         try {
