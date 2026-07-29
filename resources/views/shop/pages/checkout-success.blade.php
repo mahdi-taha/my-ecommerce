@@ -66,6 +66,7 @@
                 </div>
 
                 <div class="col-lg-4">
+                    @include('shop.orders.partials.manual-payment-instructions')
                     <div class="card border-0 shadow-sm mb-4"><div class="card-body p-4">
                         <h2 class="h5">{{ __('shop.checkout.shipping_method') }}</h2>
                         <p class="mb-0">{{ $order->shipping->shipping_method_name }}</p>

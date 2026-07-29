@@ -66,6 +66,8 @@
         </div></div></div>
     </div>
 
+    @include('shop.orders.partials.manual-payment-instructions')
+
     <div class="card shadow-sm border-0 mb-4"><div class="card-body p-4">
         <h2 class="h5 mb-3">{{ __('shop.checkout.confirmation.items') }}</h2>
         <div class="table-responsive"><table class="table align-middle mb-0">

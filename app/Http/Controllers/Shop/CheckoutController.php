@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
 use App\Models\User;
+use App\Presenters\ManualPaymentInstructionsPresenter;
 use App\Services\CartService;
 use App\Services\CheckoutOrderPlacementService;
 use App\Services\CheckoutService;
@@ -36,6 +37,7 @@ class CheckoutController extends Controller
         private GuestCartTokenService $tokenService,
         private CheckoutService $checkoutService,
         private CheckoutOrderPlacementService $placementService,
+        private ManualPaymentInstructionsPresenter $paymentInstructions,
     ) {}
 
     public function show(Request $request): View|RedirectResponse
@@ -178,7 +180,9 @@ class CheckoutController extends Controller
             'items.options',
         ]);
 
-        return view('shop.pages.checkout-success', compact('order'));
+        $manualPayment = $this->paymentInstructions->present($order);
+
+        return view('shop.pages.checkout-success', compact('order', 'manualPayment'));
     }
 
     private function resolveCart(Request $request, ?User $customer): ?Cart

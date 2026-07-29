@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Shop\Account;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Presenters\ManualPaymentInstructionsPresenter;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class OrderController extends Controller
 {
+    public function __construct(private ManualPaymentInstructionsPresenter $paymentInstructions) {}
+
     public function index(Request $request): View
     {
         $orders = $request->user('customer')
@@ -37,6 +40,8 @@ class OrderController extends Controller
                 ->latest('id'),
         ]);
 
-        return view('customer.account.orders.show', compact('order'));
+        $manualPayment = $this->paymentInstructions->present($order);
+
+        return view('customer.account.orders.show', compact('order', 'manualPayment'));
     }
 }

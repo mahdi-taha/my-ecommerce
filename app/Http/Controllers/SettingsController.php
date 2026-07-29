@@ -39,6 +39,18 @@ class SettingsController extends Controller
             'manage_stock' => 'nullable|boolean',
             'allow_backorders' => 'nullable|boolean',
             'allow_guest_checkout' => 'nullable|boolean',
+            'manual_whatsapp_number' => 'nullable|string|max:50',
+            'manual_wallet_title' => 'nullable|string|max:255',
+            'manual_wallet_name' => 'nullable|string|max:255',
+            'manual_wallet_number' => 'nullable|string|max:255',
+            'manual_wallet_instructions' => 'nullable|string|max:2000',
+            'manual_bank_title' => 'nullable|string|max:255',
+            'manual_bank_name' => 'nullable|string|max:255',
+            'manual_bank_account_name' => 'nullable|string|max:255',
+            'manual_bank_account_number' => 'nullable|string|max:255',
+            'manual_bank_iban' => 'nullable|string|max:255',
+            'manual_bank_swift' => 'nullable|string|max:255',
+            'manual_bank_instructions' => 'nullable|string|max:2000',
         ]);
 
         $validated['manage_stock'] = $request->boolean('manage_stock');

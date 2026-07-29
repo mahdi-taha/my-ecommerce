@@ -52,5 +52,27 @@ class SettingSeeder extends Seeder
                 $setting
             );
         }
+
+        $manualPaymentSettings = [
+            ['key' => 'manual_whatsapp_number', 'type' => 'text'],
+            ['key' => 'manual_wallet_title', 'type' => 'text'],
+            ['key' => 'manual_wallet_name', 'type' => 'text'],
+            ['key' => 'manual_wallet_number', 'type' => 'text'],
+            ['key' => 'manual_wallet_instructions', 'type' => 'textarea'],
+            ['key' => 'manual_bank_title', 'type' => 'text'],
+            ['key' => 'manual_bank_name', 'type' => 'text'],
+            ['key' => 'manual_bank_account_name', 'type' => 'text'],
+            ['key' => 'manual_bank_account_number', 'type' => 'text'],
+            ['key' => 'manual_bank_iban', 'type' => 'text'],
+            ['key' => 'manual_bank_swift', 'type' => 'text'],
+            ['key' => 'manual_bank_instructions', 'type' => 'textarea'],
+        ];
+
+        foreach ($manualPaymentSettings as $setting) {
+            Setting::firstOrCreate(
+                ['group' => 'payments', 'key' => $setting['key']],
+                ['value' => '', 'type' => $setting['type']]
+            );
+        }
     }
 }

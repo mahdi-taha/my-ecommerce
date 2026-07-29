@@ -264,4 +264,23 @@ return [
         'watch_alt' => 'ساعة ذكية',
         'off' => 'خصم',
     ],
+
+    'payment_instructions' => [
+        'heading' => 'تعليمات الدفع',
+        'amount_to_pay' => 'المبلغ المطلوب',
+        'wallet_name' => 'اسم المحفظة',
+        'wallet_number' => 'رقم المحفظة',
+        'bank_name' => 'اسم البنك',
+        'account_name' => 'اسم الحساب',
+        'account_number' => 'رقم الحساب',
+        'iban' => 'IBAN',
+        'swift' => 'SWIFT',
+        'instructions' => 'تعليمات إضافية',
+        'send_proof' => 'إرسال إثبات الدفع عبر واتساب',
+        'payment_received' => 'تم استلام الدفع',
+        'whatsapp_unavailable' => 'التواصل عبر واتساب غير متاح حالياً. يرجى التواصل مع الدعم.',
+        'manual_wallet_transfer' => 'تحويل يدوي عبر المحفظة',
+        'manual_bank_transfer' => 'تحويل مصرفي يدوي',
+        'whatsapp_message' => "مرحباً، أريد إرسال إثبات الدفع للطلب :order_number.\nالعميل: :customer_name\nطريقة الدفع: :payment_method\nإجمالي الطلب: :amount (:currency)",
+    ],
 ];

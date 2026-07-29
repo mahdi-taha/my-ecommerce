@@ -264,4 +264,23 @@ return [
         'watch_alt' => 'Smart Watch',
         'off' => 'Off',
     ],
+
+    'payment_instructions' => [
+        'heading' => 'Payment Instructions',
+        'amount_to_pay' => 'Amount to Pay',
+        'wallet_name' => 'Wallet Name',
+        'wallet_number' => 'Wallet Number',
+        'bank_name' => 'Bank Name',
+        'account_name' => 'Account Name',
+        'account_number' => 'Account Number',
+        'iban' => 'IBAN',
+        'swift' => 'SWIFT',
+        'instructions' => 'Additional Instructions',
+        'send_proof' => 'Send Payment Proof on WhatsApp',
+        'payment_received' => 'Payment Already Received',
+        'whatsapp_unavailable' => 'WhatsApp contact is currently unavailable. Please contact support.',
+        'manual_wallet_transfer' => 'Manual Wallet Transfer',
+        'manual_bank_transfer' => 'Manual Bank Transfer',
+        'whatsapp_message' => "Hello, I want to send payment proof for Order :order_number.\nCustomer: :customer_name\nPayment Method: :payment_method\nOrder Total: :amount (:currency)",
+    ],
 ];

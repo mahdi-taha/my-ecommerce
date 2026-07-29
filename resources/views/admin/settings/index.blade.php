@@ -194,6 +194,72 @@
                                 </div>
                             </div>
 
+                            {{-- Manual Payments --}}
+                            <div class="col-12 mb-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Manual Payment Instructions</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-4">
+                                            <label class="form-label" for="manual_whatsapp_number">WhatsApp Number</label>
+                                            <input class="form-control @error('manual_whatsapp_number') is-invalid @enderror"
+                                                id="manual_whatsapp_number" name="manual_whatsapp_number" type="text"
+                                                value="{{ old('manual_whatsapp_number', $settings['manual_whatsapp_number'] ?? '') }}"
+                                                placeholder="Country code and number">
+                                            @error('manual_whatsapp_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                        </div>
+
+                                        <div class="row g-4">
+                                            <div class="col-lg-6">
+                                                <h6>Manual Wallet Transfer</h6>
+                                                @foreach ([
+                                                    'manual_wallet_title' => 'Title',
+                                                    'manual_wallet_name' => 'Wallet Name',
+                                                    'manual_wallet_number' => 'Wallet Number',
+                                                ] as $key => $label)
+                                                    <div class="mb-3">
+                                                        <label class="form-label" for="{{ $key }}">{{ $label }}</label>
+                                                        <input class="form-control @error($key) is-invalid @enderror"
+                                                            id="{{ $key }}" name="{{ $key }}" type="text"
+                                                            value="{{ old($key, $settings[$key] ?? '') }}">
+                                                        @error($key)<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                                    </div>
+                                                @endforeach
+                                                <label class="form-label" for="manual_wallet_instructions">Additional Instructions</label>
+                                                <textarea class="form-control @error('manual_wallet_instructions') is-invalid @enderror"
+                                                    id="manual_wallet_instructions" name="manual_wallet_instructions" rows="4">{{ old('manual_wallet_instructions', $settings['manual_wallet_instructions'] ?? '') }}</textarea>
+                                                @error('manual_wallet_instructions')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                            </div>
+
+                                            <div class="col-lg-6">
+                                                <h6>Manual Bank Transfer</h6>
+                                                @foreach ([
+                                                    'manual_bank_title' => 'Title',
+                                                    'manual_bank_name' => 'Bank Name',
+                                                    'manual_bank_account_name' => 'Account Name',
+                                                    'manual_bank_account_number' => 'Account Number',
+                                                    'manual_bank_iban' => 'IBAN',
+                                                    'manual_bank_swift' => 'SWIFT',
+                                                ] as $key => $label)
+                                                    <div class="mb-3">
+                                                        <label class="form-label" for="{{ $key }}">{{ $label }}</label>
+                                                        <input class="form-control @error($key) is-invalid @enderror"
+                                                            id="{{ $key }}" name="{{ $key }}" type="text"
+                                                            value="{{ old($key, $settings[$key] ?? '') }}">
+                                                        @error($key)<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                                    </div>
+                                                @endforeach
+                                                <label class="form-label" for="manual_bank_instructions">Additional Instructions</label>
+                                                <textarea class="form-control @error('manual_bank_instructions') is-invalid @enderror"
+                                                    id="manual_bank_instructions" name="manual_bank_instructions" rows="4">{{ old('manual_bank_instructions', $settings['manual_bank_instructions'] ?? '') }}</textarea>
+                                                @error('manual_bank_instructions')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
 
                         <div class="text-end">
