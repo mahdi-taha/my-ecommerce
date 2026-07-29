@@ -1,5 +1,6 @@
 import './app.js';
 import { initializeConfigurableProducts } from './shop/configurable-product.js';
+import { initializeCheckoutSummary } from './shop/checkout-summary.js';
 
 async function initializeStorefront() {
     if (typeof window.jQuery !== 'function') {
@@ -23,6 +24,7 @@ async function initializeStorefront() {
 
     await import('../../public/shop/js/main.js');
     initializeConfigurableProducts();
+    initializeCheckoutSummary();
 }
 
 initializeStorefront().catch((error) => {

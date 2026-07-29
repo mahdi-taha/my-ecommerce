@@ -23,7 +23,11 @@
                 </div>
             @endif
 
-            <form action="{{ route('shop.checkout.store') }}" method="POST">
+            <form action="{{ route('shop.checkout.store') }}" method="POST"
+                data-checkout-form
+                data-summary-url="{{ route('shop.checkout.summary') }}"
+                data-summary-loading="{{ __('shop.checkout.summary_updating') }}"
+                data-summary-error="{{ __('shop.checkout.summary_update_failed') }}">
                 @csrf
                 <div class="row g-4">
                     <div class="col-lg-7">
@@ -153,15 +157,18 @@
                                 @endforeach
                                 <dl class="row g-2 mt-3 mb-0">
                                     <dt class="col-7">{{ __('shop.checkout.subtotal') }}</dt>
-                                    <dd class="col-5 text-end">{{ format_store_price($summary->subtotal, $summary->currencyCode) }}</dd>
+                                    <dd class="col-5 text-end" data-checkout-subtotal>{{ format_store_price($summary->subtotal, $summary->currencyCode) }}</dd>
                                     <dt class="col-7">{{ __('shop.checkout.tax') }}</dt>
-                                    <dd class="col-5 text-end">{{ format_store_price($summary->taxTotal, $summary->currencyCode) }}</dd>
+                                    <dd class="col-5 text-end" data-checkout-tax-total>{{ format_store_price($summary->taxTotal, $summary->currencyCode) }}</dd>
                                     <dt class="col-7">{{ __('shop.checkout.shipping') }}</dt>
-                                    <dd class="col-5 text-end">{{ format_store_price($summary->shippingAmount, $summary->currencyCode) }}</dd>
+                                    <dd class="col-5 text-end" data-checkout-shipping-amount>{{ format_store_price($summary->shippingAmount, $summary->currencyCode) }}</dd>
                                     <dt class="col-7 fs-5 pt-2 border-top">{{ __('shop.checkout.grand_total') }}</dt>
-                                    <dd class="col-5 text-end fs-5 fw-bold text-primary pt-2 border-top">{{ format_store_price($summary->grandTotal, $summary->currencyCode) }}</dd>
+                                    <dd class="col-5 text-end fs-5 fw-bold text-primary pt-2 border-top" data-checkout-grand-total>{{ format_store_price($summary->grandTotal, $summary->currencyCode) }}</dd>
                                 </dl>
+                                <p class="small text-muted mt-3 mb-0" role="status" aria-live="polite"
+                                    data-checkout-summary-status></p>
                                 <button type="submit" class="btn btn-primary w-100 text-uppercase mt-4"
+                                    data-checkout-place-order
                                     @disabled(! $summary->isValid() || $shippingMethods->isEmpty() || $paymentMethods->isEmpty())>
                                     {{ __('shop.checkout.place_order') }}
                                 </button>

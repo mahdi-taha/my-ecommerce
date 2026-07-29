@@ -124,6 +124,8 @@ return [
         'shipping' => 'الشحن',
         'grand_total' => 'المجموع الإجمالي',
         'place_order' => 'تأكيد الطلب',
+        'summary_updating' => 'جارٍ تحديث ملخص الطلب…',
+        'summary_update_failed' => 'تعذر تحديث ملخص الطلب. يرجى المحاولة مجدداً.',
         'fields' => [
             'first_name' => 'الاسم الأول',
             'last_name' => 'اسم العائلة',

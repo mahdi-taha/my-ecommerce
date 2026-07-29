@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Shop;
 
-use App\Enums\PaymentMethodType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CheckoutRequest;
+use App\Http\Requests\CheckoutSummaryRequest;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\PaymentMethod;
@@ -15,6 +15,7 @@ use App\Services\CheckoutOrderPlacementService;
 use App\Services\CheckoutService;
 use App\Services\GuestCartTokenService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +24,12 @@ use Illuminate\View\View;
 class CheckoutController extends Controller
 {
     private const GUEST_ORDER_SESSION_KEY = 'shop.checkout.guest_orders';
+
+    private const SUPPORTED_PAYMENT_METHODS = [
+        'cash_on_delivery',
+        'manual_wallet_transfer',
+        'manual_bank_transfer',
+    ];
 
     public function __construct(
         private CartService $cartService,
@@ -105,6 +112,60 @@ class CheckoutController extends Controller
         return redirect()->route('shop.checkout.success', $result->order);
     }
 
+    public function summary(CheckoutSummaryRequest $request): JsonResponse
+    {
+        $customer = $this->customer();
+
+        if (! $customer && ! $this->guestCheckoutAllowed()) {
+            return $this->summaryFailure('guest_checkout_disabled', 'customer');
+        }
+
+        $cart = $this->resolveCart($request, $customer);
+
+        if (! $cart || ! $cart->items()->exists()) {
+            return $this->summaryFailure('empty_cart', 'cart');
+        }
+
+        $validated = $request->validated();
+        $paymentMethodCode = $validated['payment_method']
+            ?? $this->supportedPaymentMethods()->value('code');
+        $summary = $this->checkoutService->summarize(
+            $cart,
+            $validated['shipping_method'],
+            (string) $paymentMethodCode
+        );
+
+        if (! $summary->isValid()) {
+            $errors = collect($summary->errors)->map(function (array $error): array {
+                $code = $error['code'] ?? 'order_placement_failed';
+
+                return [
+                    'code' => $code,
+                    'field' => $error['field'] ?? 'checkout',
+                    'cart_item_id' => $error['cart_item_id'] ?? null,
+                    'product_id' => $error['product_id'] ?? null,
+                    'message' => __('shop.checkout.failures.'.$code),
+                ];
+            })->all();
+
+            return response()->json(['success' => false, 'errors' => $errors], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'summary' => [
+                'subtotal' => $summary->subtotal,
+                'tax_total' => $summary->taxTotal,
+                'shipping_amount' => $summary->shippingAmount,
+                'grand_total' => $summary->grandTotal,
+                'formatted_subtotal' => format_store_price($summary->subtotal, $summary->currencyCode),
+                'formatted_tax_total' => format_store_price($summary->taxTotal, $summary->currencyCode),
+                'formatted_shipping_amount' => format_store_price($summary->shippingAmount, $summary->currencyCode),
+                'formatted_grand_total' => format_store_price($summary->grandTotal, $summary->currencyCode),
+            ],
+        ]);
+    }
+
     public function success(Request $request, Order $order): View
     {
         $this->authorizeConfirmation($request, $order);
@@ -137,10 +198,7 @@ class CheckoutController extends Controller
     {
         return PaymentMethod::query()
             ->where('is_active', true)
-            ->whereIn('type', [
-                PaymentMethodType::Offline->value,
-                PaymentMethodType::ManualTransfer->value,
-            ])
+            ->whereIn('code', self::SUPPORTED_PAYMENT_METHODS)
             ->orderBy('sort_order')
             ->orderBy('id');
     }
@@ -212,5 +270,17 @@ class CheckoutController extends Controller
     private function guestCheckoutAllowed(): bool
     {
         return filter_var(setting('checkout.allow_guest_checkout', true), FILTER_VALIDATE_BOOL);
+    }
+
+    private function summaryFailure(string $code, string $field): JsonResponse
+    {
+        return response()->json([
+            'success' => false,
+            'errors' => [[
+                'code' => $code,
+                'field' => $field,
+                'message' => __('shop.checkout.failures.'.$code),
+            ]],
+        ], 422);
     }
 }

@@ -31,6 +31,8 @@ Route::middleware('storefront.cart')->group(function () {
     Route::delete('/cart', [ShopCartController::class, 'clear'])->name('shop.cart.clear');
     Route::get('/checkout', [ShopCheckoutController::class, 'show'])->name('shop.checkout.show');
     Route::post('/checkout', [ShopCheckoutController::class, 'store'])->name('shop.checkout.store');
+    Route::post('/checkout/summary', [ShopCheckoutController::class, 'summary'])
+        ->name('shop.checkout.summary');
     Route::get('/checkout/success/{order}', [ShopCheckoutController::class, 'success'])
         ->name('shop.checkout.success');
 });

@@ -124,6 +124,8 @@ return [
         'shipping' => 'Shipping',
         'grand_total' => 'Grand Total',
         'place_order' => 'Place Order',
+        'summary_updating' => 'Updating Order summary…',
+        'summary_update_failed' => 'Unable to update the Order summary. Please try again.',
         'fields' => [
             'first_name' => 'First Name',
             'last_name' => 'Last Name',
