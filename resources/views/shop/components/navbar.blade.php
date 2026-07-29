@@ -64,7 +64,7 @@
                                     </span>
                                 </a>
 
-                                <a href="cheackout.html" class="dropdown-item">
+                                <a href="{{ route('shop.checkout.show') }}" class="dropdown-item">
                                     {{ __('shop.navigation.checkout') }}
                                 </a>
 

@@ -14,6 +14,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\Shop\CartController as ShopCartController;
+use App\Http\Controllers\Shop\CheckoutController as ShopCheckoutController;
 use App\Http\Controllers\Shop\ProductController as ShopProductController;
 use App\Http\Controllers\VariantController;
 use App\Models\User;
@@ -28,6 +29,10 @@ Route::middleware('storefront.cart')->group(function () {
     Route::patch('/cart/items/{cartItem}', [ShopCartController::class, 'update'])->name('shop.cart.items.update');
     Route::delete('/cart/items/{cartItem}', [ShopCartController::class, 'destroy'])->name('shop.cart.items.destroy');
     Route::delete('/cart', [ShopCartController::class, 'clear'])->name('shop.cart.clear');
+    Route::get('/checkout', [ShopCheckoutController::class, 'show'])->name('shop.checkout.show');
+    Route::post('/checkout', [ShopCheckoutController::class, 'store'])->name('shop.checkout.store');
+    Route::get('/checkout/success/{order}', [ShopCheckoutController::class, 'success'])
+        ->name('shop.checkout.success');
 });
 // Route::get('/', function () {
 //     return view('admin/start');

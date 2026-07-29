@@ -126,6 +126,9 @@
                             <span class="h4 fw-bold text-primary mb-0">
                                 {{ format_store_price($subtotal, $currency_code) }}
                             </span>
+                            <a class="btn btn-primary text-uppercase" href="{{ route('shop.checkout.show') }}">
+                                {{ __('shop.cart.checkout') }}
+                            </a>
                         </div>
                     </div>
                 </div>

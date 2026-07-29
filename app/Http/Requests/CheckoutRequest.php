@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\PaymentMethodType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -34,7 +35,14 @@ class CheckoutRequest extends FormRequest
             'payment_method' => [
                 'required',
                 'string',
-                Rule::exists('payment_methods', 'code')->where('is_active', true),
+                Rule::exists('payment_methods', 'code')->where(
+                    fn ($query) => $query
+                        ->where('is_active', true)
+                        ->whereIn('type', [
+                            PaymentMethodType::Offline->value,
+                            PaymentMethodType::ManualTransfer->value,
+                        ])
+                ),
             ],
             'customer' => ['required', 'array'],
             'customer.first_name' => ['required', 'string', 'max:255'],
