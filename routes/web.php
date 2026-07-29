@@ -13,6 +13,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ShippingMethodController;
+use App\Http\Controllers\Shop\Account\OrderController as ShopAccountOrderController;
 use App\Http\Controllers\Shop\CartController as ShopCartController;
 use App\Http\Controllers\Shop\CheckoutController as ShopCheckoutController;
 use App\Http\Controllers\Shop\ProductController as ShopProductController;
@@ -173,6 +174,16 @@ Route::middleware('guest:customer')->group(function () {
     Route::post('login', [CustomerAuthController::class, 'login'])
         ->name('customer.login.store');
 });
+
+Route::middleware(['auth:customer', 'customer'])
+    ->prefix('account')
+    ->name('shop.account.')
+    ->group(function () {
+        Route::get('orders', [ShopAccountOrderController::class, 'index'])
+            ->name('orders.index');
+        Route::get('orders/{order}', [ShopAccountOrderController::class, 'show'])
+            ->name('orders.show');
+    });
 
 Route::middleware(['auth:customer', 'customer'])->name('customer.')->group(function () {
     Route::post('logout', [CustomerAuthController::class, 'logout'])->name('logout');

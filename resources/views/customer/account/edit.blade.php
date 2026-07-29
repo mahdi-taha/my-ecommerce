@@ -11,6 +11,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h3 mb-0">My Profile</h1>
         <div class="d-flex gap-2">
+            <a class="btn btn-outline-primary" href="{{ route('shop.account.orders.index') }}">{{ __('shop.account.orders.my_orders') }}</a>
             <a class="btn btn-outline-primary" href="{{ route('customer.account.password.edit') }}">Change Password</a>
             <form method="POST" action="{{ route('customer.logout') }}">@csrf<button class="btn btn-outline-danger">Logout</button></form>
         </div>

@@ -172,6 +172,27 @@ return [
         ],
     ],
 
+    'account' => [
+        'orders' => [
+            'my_orders' => 'طلباتي',
+            'no_orders' => 'لم تقم بإجراء أي طلبات بعد.',
+            'view_order' => 'عرض الطلب',
+            'order_number' => 'رقم الطلب',
+            'order_date' => 'تاريخ الطلب',
+            'status' => 'الحالة',
+            'order_details' => 'تفاصيل الطلب',
+            'actions' => 'الإجراءات',
+            'back_to_account' => 'العودة إلى الحساب',
+            'back_to_orders' => 'العودة إلى طلباتي',
+            'customer' => 'العميل',
+            'product' => 'المنتج',
+            'sku' => 'رمز المنتج',
+            'timeline' => 'سجل الطلب',
+            'no_history' => 'لا يتوفر سجل لهذا الطلب.',
+            'totals' => 'إجماليات الطلب',
+        ],
+    ],
+
     'navigation' => [
         'brand' => 'إلكترو',
         'home' => 'الرئيسية',

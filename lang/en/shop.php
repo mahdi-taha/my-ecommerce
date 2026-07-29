@@ -172,6 +172,27 @@ return [
         ],
     ],
 
+    'account' => [
+        'orders' => [
+            'my_orders' => 'My Orders',
+            'no_orders' => 'You have not placed any Orders yet.',
+            'view_order' => 'View Order',
+            'order_number' => 'Order Number',
+            'order_date' => 'Order Date',
+            'status' => 'Status',
+            'order_details' => 'Order Details',
+            'actions' => 'Actions',
+            'back_to_account' => 'Back to Account',
+            'back_to_orders' => 'Back to My Orders',
+            'customer' => 'Customer',
+            'product' => 'Product',
+            'sku' => 'SKU',
+            'timeline' => 'Order Timeline',
+            'no_history' => 'No Order history is available.',
+            'totals' => 'Order Totals',
+        ],
+    ],
+
     'navigation' => [
         'brand' => 'Electro',
         'home' => 'Home',
