@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ProductType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -102,6 +103,32 @@ class Product extends Model
         );
     }
 
+    public function isWishlistEligible(): bool
+    {
+        return $this->status
+            && $this->is_visible_individually
+            && $this->configurable_id === null
+            && in_array($this->type, [
+                ProductType::Simple->value,
+                ProductType::Configurable->value,
+            ], true);
+    }
+
+    public function isWishlistAvailable(): bool
+    {
+        if (! $this->isWishlistEligible()) {
+            return false;
+        }
+
+        if ($this->type === ProductType::Simple->value) {
+            return (float) ($this->inventory?->availableQuantity() ?? 0) > 0;
+        }
+
+        return $this->variants->contains(fn (Product $variant) => $variant->status
+            && $variant->type === ProductType::Simple->value
+            && (float) ($variant->inventory?->availableQuantity() ?? 0) > 0);
+    }
+
     public function mainImageUrl(): ?string
     {
         $image = $this->images->firstWhere('is_base', true) ?? $this->images->first();
@@ -199,6 +226,11 @@ class Product extends Model
     public function cartItems(): HasMany
     {
         return $this->hasMany(CartItem::class);
+    }
+
+    public function wishlistItems(): HasMany
+    {
+        return $this->hasMany(WishlistItem::class);
     }
 
     private function applyTaxForDisplay(string|float $price, string $taxMode, ?Tax $defaultTax): float

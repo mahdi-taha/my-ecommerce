@@ -64,6 +64,14 @@
                                     </span>
                                 </a>
 
+                                <a href="{{ auth('customer')->check() ? route('shop.wishlist.index') : route('customer.login') }}"
+                                   class="dropdown-item d-flex align-items-center justify-content-between gap-3">
+                                    <span>{{ __('shop.wishlist.title') }}</span>
+                                    <span class="badge bg-secondary rounded-pill">
+                                        {{ $storefrontWishlistCount ?? 0 }}
+                                    </span>
+                                </a>
+
                                 <a href="{{ route('shop.checkout.show') }}" class="dropdown-item">
                                     {{ __('shop.navigation.checkout') }}
                                 </a>

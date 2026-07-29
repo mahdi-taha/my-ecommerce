@@ -17,11 +17,13 @@ use App\Http\Controllers\Shop\Account\OrderController as ShopAccountOrderControl
 use App\Http\Controllers\Shop\CartController as ShopCartController;
 use App\Http\Controllers\Shop\CheckoutController as ShopCheckoutController;
 use App\Http\Controllers\Shop\ProductController as ShopProductController;
+use App\Http\Controllers\Shop\WishlistController as ShopWishlistController;
 use App\Http\Controllers\VariantController;
+use App\Http\Middleware\ShareStorefrontWishlist;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('storefront.cart')->group(function () {
+Route::middleware(['storefront.cart', ShareStorefrontWishlist::class])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('shop.home');
     Route::get('/products/{url_key}', [ShopProductController::class, 'show'])
         ->name('shop.products.show');
@@ -36,6 +38,20 @@ Route::middleware('storefront.cart')->group(function () {
         ->name('shop.checkout.summary');
     Route::get('/checkout/success/{order}', [ShopCheckoutController::class, 'success'])
         ->name('shop.checkout.success');
+});
+
+Route::middleware([
+    'storefront.cart',
+    ShareStorefrontWishlist::class,
+    'auth:customer',
+    'customer',
+])->group(function () {
+    Route::get('/wishlist', [ShopWishlistController::class, 'index'])
+        ->name('shop.wishlist.index');
+    Route::post('/wishlist', [ShopWishlistController::class, 'store'])
+        ->name('shop.wishlist.store');
+    Route::delete('/wishlist/{product}', [ShopWishlistController::class, 'destroy'])
+        ->name('shop.wishlist.destroy');
 });
 // Route::get('/', function () {
 //     return view('admin/start');

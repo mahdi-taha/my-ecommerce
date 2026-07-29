@@ -211,11 +211,19 @@
                                             <i class="fa fa-shopping-bag me-2 text-white"></i>
                                             {{ __('shop.product.add_to_cart') }}
                                         </button>
-                                        <button type="button"
-                                            class="btn btn-primary border border-secondary rounded-pill px-4 py-2 mb-4 text-primary">
-                                            <i class="bi bi-heart me-2"></i>
-                                            {{ __('shop.product.wishlist') }}
-                                        </button>
+                                        @auth('customer')
+                                            <button type="submit" form="product-wishlist-form"
+                                                class="btn btn-primary border border-secondary rounded-pill px-4 py-2 mb-4 text-primary">
+                                                <i class="bi {{ $isWishlisted ? 'bi-heart-fill' : 'bi-heart' }} me-2"></i>
+                                                {{ $isWishlisted ? __('shop.wishlist.remove') : __('shop.wishlist.add') }}
+                                            </button>
+                                        @else
+                                            <a href="{{ route('customer.login') }}"
+                                                class="btn btn-primary border border-secondary rounded-pill px-4 py-2 mb-4 text-primary">
+                                                <i class="bi bi-heart me-2"></i>
+                                                {{ __('shop.wishlist.add') }}
+                                            </a>
+                                        @endauth
                                     </div>
                                     @if ($isConfigurable)
                                         <script type="application/json" data-configurable-variants>
@@ -226,6 +234,19 @@
                                         </script>
                                     @endif
                                 </form>
+                                @auth('customer')
+                                    <form id="product-wishlist-form" method="POST"
+                                        action="{{ $isWishlisted
+                                            ? route('shop.wishlist.destroy', $product)
+                                            : route('shop.wishlist.store') }}">
+                                        @csrf
+                                        @if ($isWishlisted)
+                                            @method('DELETE')
+                                        @else
+                                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                        @endif
+                                    </form>
+                                @endauth
                             </div>
                         </div>
 

@@ -14,6 +14,7 @@
     $productUrl = $translation?->url_key
         ? route('shop.products.show', ['url_key' => $translation->url_key])
         : '#';
+    $isWishlisted = (bool) ($product->is_wishlisted ?? false);
 @endphp
 
 <div class="col-lg-3 col-md-4 col-sm-6">
@@ -89,10 +90,27 @@
             @endif
 
             <div class="d-flex gap-2 mt-auto">
-                <button type="button" class="btn btn-outline-danger"
-                    aria-label="{{ __('shop.product.add_to_wishlist') }}">
-                    <i class="bi bi-heart"></i>
-                </button>
+                @auth('customer')
+                    <form method="POST" action="{{ $isWishlisted
+                        ? route('shop.wishlist.destroy', $product)
+                        : route('shop.wishlist.store') }}">
+                        @csrf
+                        @if ($isWishlisted)
+                            @method('DELETE')
+                        @else
+                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        @endif
+                        <button type="submit" class="btn btn-outline-danger"
+                            aria-label="{{ $isWishlisted ? __('shop.wishlist.remove') : __('shop.wishlist.add') }}">
+                            <i class="bi {{ $isWishlisted ? 'bi-heart-fill' : 'bi-heart' }}"></i>
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('customer.login') }}" class="btn btn-outline-danger"
+                        aria-label="{{ __('shop.wishlist.add') }}">
+                        <i class="bi bi-heart"></i>
+                    </a>
+                @endauth
 
                 <button type="button" class="btn btn-primary flex-grow-1">
                     <i class="bi bi-cart-plus me-2"></i>

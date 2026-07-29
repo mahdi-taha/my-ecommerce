@@ -110,6 +110,11 @@ class User extends Authenticatable
         return $this->hasOne(Cart::class);
     }
 
+    public function wishlist(): HasOne
+    {
+        return $this->hasOne(Wishlist::class);
+    }
+
     public function customerAddresses(): HasMany
     {
         return $this->hasMany(CustomerAddress::class);

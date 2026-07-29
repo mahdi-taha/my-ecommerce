@@ -10,6 +10,7 @@ use App\Models\Tax;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -18,7 +19,7 @@ class ProductController extends Controller
     {
         $locale = app()->getLocale();
 
-        $product = Product::query()
+        $productQuery = Product::query()
             ->active()
             ->visible()
             ->whereNull('configurable_id')
@@ -85,8 +86,10 @@ class ProductController extends Controller
                         'inventory',
                         'tax' => fn ($query) => $query->active(),
                     ]),
-            ])
-            ->firstOrFail();
+            ]);
+
+        $this->withWishlistState($productQuery);
+        $product = $productQuery->firstOrFail();
 
         $product->load([
             'relatedProducts' => fn ($query) => $query
@@ -111,6 +114,12 @@ class ProductController extends Controller
                                 ->where('locale', $locale),
                         ]),
                 ])
+                ->when(Auth::guard('customer')->id(), fn (Builder $query, int $customerId) => $query
+                    ->withExists([
+                        'wishlistItems as is_wishlisted' => fn (Builder $query) => $query
+                            ->whereHas('wishlist', fn (Builder $query) => $query
+                                ->where('user_id', $customerId)),
+                    ]))
                 ->limit(4),
         ]);
 
@@ -127,6 +136,7 @@ class ProductController extends Controller
         $taxMode = setting('tax.tax_mode', 'b2c');
         $defaultTax = $this->defaultTax();
         $relatedProducts = $product->relatedProducts;
+        $isWishlisted = (bool) ($product->is_wishlisted ?? false);
         $isConfigurable = $product->type === ProductType::Configurable->value;
         $availableQuantity = $isConfigurable
             ? '0.0000'
@@ -151,7 +161,8 @@ class ProductController extends Controller
             'inStock',
             'isConfigurable',
             'configurableAttributes',
-            'variantPresentation'
+            'variantPresentation',
+            'isWishlisted'
         ));
     }
 
@@ -334,5 +345,16 @@ class ProductController extends Controller
         return Tax::query()
             ->active()
             ->find($defaultTaxId);
+    }
+
+    private function withWishlistState(Builder $query): void
+    {
+        if ($customerId = Auth::guard('customer')->id()) {
+            $query->withExists([
+                'wishlistItems as is_wishlisted' => fn (Builder $query) => $query
+                    ->whereHas('wishlist', fn (Builder $query) => $query
+                        ->where('user_id', $customerId)),
+            ]);
+        }
     }
 }

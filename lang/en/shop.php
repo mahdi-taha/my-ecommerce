@@ -26,6 +26,20 @@ return [
         'out_of_stock' => 'Out of Stock',
     ],
 
+    'wishlist' => [
+        'title' => 'Wishlist',
+        'add' => 'Add to Wishlist',
+        'remove' => 'Remove from Wishlist',
+        'empty' => 'Your Wishlist is empty.',
+        'added' => 'The Product was added to your Wishlist.',
+        'removed' => 'The Product was removed from your Wishlist.',
+        'view_product' => 'View Product',
+        'available' => 'Available',
+        'unavailable' => 'Unavailable',
+        'product_unavailable' => 'This Product cannot be added to your Wishlist.',
+        'customer_unavailable' => 'This customer cannot own a Wishlist.',
+    ],
+
     'product_details' => [
         'page_title' => 'Smart Camera',
         'breadcrumb_label' => 'Product breadcrumb',

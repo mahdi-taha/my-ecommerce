@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Tax;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -25,6 +26,14 @@ class HomeController extends Controller
                         'translations' => fn ($query) => $query->where('locale', app()->getLocale()),
                     ]),
             ]);
+
+        if ($customerId = Auth::guard('customer')->id()) {
+            $baseQuery->withExists([
+                'wishlistItems as is_wishlisted' => fn (Builder $query) => $query
+                    ->whereHas('wishlist', fn (Builder $query) => $query
+                        ->where('user_id', $customerId)),
+            ]);
+        }
 
         $allProducts = (clone $baseQuery)
             ->latest()
