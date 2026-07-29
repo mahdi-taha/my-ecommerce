@@ -2,11 +2,19 @@
 
 namespace App\Services;
 
+use App\DTOs\Checkout\CheckoutSummary;
+use App\Models\Cart;
 use App\Models\ShippingMethod;
+use App\Models\Tax;
 use InvalidArgumentException;
 
 class CheckoutService
 {
+    public function __construct(
+        private ?CheckoutCartValidator $cartValidator = null,
+        private ?CheckoutPricingService $pricingService = null,
+    ) {}
+
     private const ADDRESS_FIELDS = [
         'first_name',
         'last_name',
@@ -53,7 +61,7 @@ class CheckoutService
         ];
     }
 
-    public function prepareOptionSnapshots(array $options): array
+    public static function prepareOptionSnapshots(array $options): array
     {
         return collect($options)
             ->map(function (array $option): array {
@@ -73,5 +81,40 @@ class CheckoutService
             ->sortBy('attribute_code')
             ->values()
             ->all();
+    }
+
+    public function summarize(
+        Cart $cart,
+        string $shippingMethodCode,
+        string $paymentMethodCode
+    ): CheckoutSummary {
+        $currencyCode = (string) setting('currency.default_currency', 'USD');
+        $taxMode = (string) setting('tax.tax_mode', 'b2c');
+        $defaultTaxId = setting('tax.default_tax_id');
+        $defaultTax = $defaultTaxId
+            ? Tax::query()->active()->find($defaultTaxId)
+            : null;
+        $cartValidator = $this->cartValidator ?? app(CheckoutCartValidator::class);
+        $pricingService = $this->pricingService ?? app(CheckoutPricingService::class);
+        $validation = $cartValidator->validate(
+            $cart,
+            $shippingMethodCode,
+            $paymentMethodCode
+        );
+
+        if (! $validation->isValid()) {
+            return CheckoutSummary::invalid(
+                $validation->errors,
+                $currencyCode,
+                $taxMode
+            );
+        }
+
+        return $pricingService->calculate(
+            $validation,
+            $currencyCode,
+            $taxMode,
+            $defaultTax
+        );
     }
 }
