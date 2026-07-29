@@ -31,4 +31,19 @@ class IdentityDatabaseTest extends TestCase
 
         $this->assertDatabaseMissing('customer_addresses', ['id' => $address->id]);
     }
+
+    public function test_customer_exposes_independent_default_address_relationships(): void
+    {
+        $customer = User::factory()->customer()->create();
+        $shipping = CustomerAddress::factory()->for($customer, 'customer')->create([
+            'is_default_shipping' => true,
+        ]);
+        $billing = CustomerAddress::factory()->for($customer, 'customer')->create([
+            'is_default_billing' => true,
+        ]);
+
+        $this->assertTrue($customer->defaultShippingAddress()->is($shipping));
+        $this->assertTrue($customer->defaultBillingAddress()->is($billing));
+        $this->assertTrue($customer->defaultAddress()->is($shipping));
+    }
 }

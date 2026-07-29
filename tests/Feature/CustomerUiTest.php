@@ -208,8 +208,11 @@ class CustomerUiTest extends TestCase
             'last_name' => 'Recipient',
             'address_line_1' => '123 Customer Street',
             'city' => 'Beirut',
+            'state' => 'Beirut',
             'country_code' => 'LB',
-            'is_default' => true,
+            'phone' => '70123456',
+            'is_default_shipping' => true,
+            'is_default_billing' => true,
         ]);
 
         $this->actingAs($this->admin)
