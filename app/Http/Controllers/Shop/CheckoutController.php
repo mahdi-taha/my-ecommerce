@@ -168,13 +168,17 @@ class CheckoutController extends Controller
             'success' => true,
             'summary' => [
                 'subtotal' => $summary->subtotal,
+                'discount_total' => $summary->discountTotal,
                 'tax_total' => $summary->taxTotal,
                 'shipping_amount' => $summary->shippingAmount,
                 'grand_total' => $summary->grandTotal,
                 'formatted_subtotal' => format_store_price($summary->subtotal, $summary->currencyCode),
+                'formatted_discount_total' => format_store_price($summary->discountTotal, $summary->currencyCode),
                 'formatted_tax_total' => format_store_price($summary->taxTotal, $summary->currencyCode),
                 'formatted_shipping_amount' => format_store_price($summary->shippingAmount, $summary->currencyCode),
                 'formatted_grand_total' => format_store_price($summary->grandTotal, $summary->currencyCode),
+                'coupon' => $summary->coupon,
+                'warnings' => $summary->warnings,
             ],
         ]);
     }
@@ -240,6 +244,7 @@ class CheckoutController extends Controller
             'invalid_configuration',
             'invalid_quantity',
             'insufficient_stock',
+            'coupon_invalid',
         ];
 
         if ($code === 'guest_checkout_disabled') {
@@ -247,7 +252,7 @@ class CheckoutController extends Controller
                 ->with('warning', __('shop.checkout.failures.'.$code));
         }
 
-        $route = in_array($code, $cartCodes, true)
+        $route = in_array($code, $cartCodes, true) && $code !== 'coupon_invalid'
             ? 'shop.cart.index'
             : 'shop.checkout.show';
 

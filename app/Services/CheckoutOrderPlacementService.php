@@ -25,6 +25,8 @@ class CheckoutOrderPlacementService
         private CartService $cartService,
         private GuestCartTokenService $guestCartTokenService,
         private CheckoutAddressResolver $addressResolver,
+        private CouponCartService $couponCartService,
+        private CouponUsageService $couponUsageService,
     ) {}
 
     public function place(
@@ -116,9 +118,13 @@ class CheckoutOrderPlacementService
                 return CheckoutOrderPlacementResult::failures($validation->errors);
             }
 
-            $summary = $this->checkoutService->summarizeLocked($validation);
+            $summary = $this->checkoutService->summarizeLocked($validation, $lockedCart, false);
 
             if (! $summary->isValid()) {
+                if (collect($summary->errors)->contains('code', 'coupon_invalid')) {
+                    $this->couponCartService->remove($lockedCart);
+                }
+
                 return CheckoutOrderPlacementResult::failures(
                     array_map(
                         fn (array $error) => new CheckoutValidationError(
@@ -133,17 +139,55 @@ class CheckoutOrderPlacementService
                 );
             }
 
-            $order = $this->orderService->createWithinTransaction(
-                $this->orderData(
+            try {
+                $order = DB::transaction(function () use (
                     $checkoutData,
                     $customer,
-                    $validation->items,
+                    $validation,
                     $summary,
                     $shippingMethod,
                     $resolvedAddress,
                     $timestamp
-                )
-            );
+                ) {
+                    $order = $this->orderService->createWithinTransaction(
+                        $this->orderData(
+                            $checkoutData,
+                            $customer,
+                            $validation->items,
+                            $summary,
+                            $shippingMethod,
+                            $resolvedAddress,
+                            $timestamp
+                        )
+                    );
+
+                    if (! $summary->coupon) {
+                        return $order;
+                    }
+
+                    $this->couponUsageService->create(
+                        (int) $summary->coupon['id'],
+                        $order,
+                        $summary->subtotal,
+                        $summary->discountTotal,
+                        $customer
+                    );
+
+                    return $order;
+                });
+            } catch (ValidationException $exception) {
+                if (! array_key_exists('coupon', $exception->errors())) {
+                    throw $exception;
+                }
+
+                $this->couponCartService->remove($lockedCart);
+
+                return $this->failure(
+                    'coupon_invalid',
+                    'coupon',
+                    __('shop.checkout.coupon.invalid_removed')
+                );
+            }
 
             $this->cartService->clearForCheckout($lockedCart, $timestamp);
 
@@ -251,7 +295,7 @@ class CheckoutOrderPlacementService
             'currency_code' => $summary->currencyCode,
             'payment_method' => $checkoutData['payment_method'],
             'subtotal' => $summary->subtotal,
-            'discount_total' => '0.0000',
+            'discount_total' => $summary->discountTotal,
             'shipping_total' => $summary->shippingAmount,
             'tax_total' => $summary->taxTotal,
             'grand_total' => $summary->grandTotal,
@@ -291,6 +335,7 @@ class CheckoutOrderPlacementService
                     'tax_rate' => $item['tax_rate'],
                     'tax_amount' => $item['tax_amount'],
                     'row_subtotal' => $item['subtotal'],
+                    'discount_amount' => $item['discount_amount'],
                     'row_total' => $item['row_total'],
                     'is_inventory_item' => true,
                     'options' => $item['options'],

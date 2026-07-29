@@ -7,6 +7,7 @@ use App\Enums\CartItemType;
 use App\Enums\ProductType;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\Tax;
 use App\Models\User;
@@ -19,7 +20,10 @@ use RuntimeException;
 
 class CartService
 {
-    public function __construct(private GuestCartTokenService $tokenService) {}
+    public function __construct(
+        private GuestCartTokenService $tokenService,
+        private CouponEligibilityService $couponEligibilityService,
+    ) {}
 
     public function resolve(?User $customer, ?string $guestToken): ?Cart
     {
@@ -355,6 +359,8 @@ class CartService
                 throw new RuntimeException('The carts could not be locked for merging.');
             }
 
+            $survivingCouponId = $customerCart->coupon_id ?: $guestCart->coupon_id;
+
             $warnings = [];
             $guestItems = CartItem::query()
                 ->where('cart_id', $guestCart->getKey())
@@ -410,6 +416,32 @@ class CartService
                 }
             }
 
+            $customerCart->coupon_id = $survivingCouponId;
+
+            if ($survivingCouponId) {
+                $coupon = Coupon::query()->whereKey($survivingCouponId)->lockForUpdate()->first();
+                $customerCart->load([
+                    'items.product',
+                ]);
+                $eligibleSubtotal = number_format(
+                    $customerCart->items->sum(
+                        fn (CartItem $item): float => (float) $item->product?->effectivePrice()
+                            * (float) $item->quantity
+                    ),
+                    4,
+                    '.',
+                    ''
+                );
+                $couponErrors = $coupon
+                    ? $this->couponEligibilityService->validate($coupon, $eligibleSubtotal, $customer)
+                    : ['coupon_not_found'];
+
+                if ($couponErrors !== []) {
+                    $customerCart->coupon_id = null;
+                    $warnings[] = __('shop.cart.warnings.coupon_removed');
+                }
+            }
+
             $this->touch($customerCart, $now);
             $guestCart->delete();
 
@@ -437,6 +469,7 @@ class CartService
         }
 
         $cart->items()->delete();
+        $cart->coupon_id = null;
         $this->touch($cart, $timestamp);
     }
 

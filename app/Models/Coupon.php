@@ -51,6 +51,11 @@ class Coupon extends Model
         return $this->hasMany(CouponUsage::class);
     }
 
+    public function carts(): HasMany
+    {
+        return $this->hasMany(Cart::class);
+    }
+
     public function unreleasedUsages(): HasMany
     {
         return $this->usages()->whereDoesntHave('release');

@@ -4,16 +4,33 @@ namespace App\Services;
 
 use App\DTOs\Checkout\CheckoutSummary;
 use App\DTOs\Checkout\CheckoutValidationResult;
+use App\Models\Coupon;
 use App\Models\Tax;
 
 class CheckoutPricingService
 {
+    public function __construct(private CouponAllocationService $allocationService) {}
+
     public function calculate(
         CheckoutValidationResult $validation,
         string $currencyCode,
         string $taxMode,
-        ?Tax $defaultTax
+        ?Tax $defaultTax,
+        ?Coupon $coupon = null,
+        array $warnings = [],
     ): CheckoutSummary {
+        $allocation = $coupon
+            ? $this->allocationService->allocate(
+                $coupon,
+                collect($validation->items)->map(fn ($validatedItem) => [
+                    'cart_item_id' => (int) $validatedItem->cartItem->getKey(),
+                    'subtotal' => $this->decimal(
+                        (float) $validatedItem->product->effectivePrice()
+                        * (float) $validatedItem->cartItem->quantity
+                    ),
+                ])->all()
+            )
+            : ['discount_total' => '0.0000', 'allocations' => []];
         $items = [];
         $subtotal = 0.0;
         $taxTotal = 0.0;
@@ -24,9 +41,11 @@ class CheckoutPricingService
             $unitPrice = (float) $product->effectivePrice();
             $displayUnitPrice = $product->displayPrice($taxMode, $defaultTax);
             $rowSubtotal = $unitPrice * $quantity;
+            $discountAmount = (float) ($allocation['allocations'][$validatedItem->cartItem->getKey()] ?? 0);
+            $discountedSubtotal = max(0, $rowSubtotal - $discountAmount);
             $taxRate = $product->effectiveTaxRate($defaultTax);
-            $taxAmount = $rowSubtotal * $taxRate / 100;
-            $rowTotal = $rowSubtotal + $taxAmount;
+            $taxAmount = $discountedSubtotal * $taxRate / 100;
+            $rowTotal = $discountedSubtotal + $taxAmount;
             $effectiveTax = $product->use_default_tax ? $defaultTax : $product->tax;
 
             $subtotal += $rowSubtotal;
@@ -41,6 +60,7 @@ class CheckoutPricingService
                 'unit_price' => $this->decimal($unitPrice),
                 'display_unit_price' => $this->decimal($displayUnitPrice),
                 'subtotal' => $this->decimal($rowSubtotal),
+                'discount_amount' => $this->decimal($discountAmount),
                 'tax_name' => $taxRate > 0 ? $effectiveTax?->name : null,
                 'tax_rate' => $this->decimal($taxRate),
                 'tax_amount' => $this->decimal($taxAmount),
@@ -51,11 +71,12 @@ class CheckoutPricingService
         }
 
         $shippingAmount = (float) $validation->shippingMethod->amount;
-        $grandTotal = $subtotal + $taxTotal + $shippingAmount;
+        $grandTotal = $subtotal - (float) $allocation['discount_total'] + $taxTotal + $shippingAmount;
 
         return new CheckoutSummary(
             items: $items,
             subtotal: $this->decimal($subtotal),
+            discountTotal: $allocation['discount_total'],
             taxTotal: $this->decimal($taxTotal),
             shippingAmount: $this->decimal($shippingAmount),
             grandTotal: $this->decimal($grandTotal),
@@ -68,9 +89,25 @@ class CheckoutPricingService
                 'type' => $validation->shippingMethod->type->value,
                 'amount' => $this->decimal($shippingAmount),
             ],
+            coupon: $coupon ? [
+                'id' => $coupon->getKey(),
+                'code' => $coupon->code,
+                'name' => $coupon->name,
+                'type' => $coupon->type->value,
+                'value' => $coupon->value,
+            ] : null,
             tax: ['total' => $this->decimal($taxTotal)],
             errors: [],
+            warnings: $warnings,
         );
+    }
+
+    public function eligibleSubtotal(CheckoutValidationResult $validation): string
+    {
+        return $this->decimal(collect($validation->items)->sum(
+            fn ($item): float => (float) $item->product->effectivePrice()
+                * (float) $item->cartItem->quantity
+        ));
     }
 
     private function decimal(float|int|string $amount): string

@@ -18,6 +18,7 @@ use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\Shop\Account\OrderController as ShopAccountOrderController;
 use App\Http\Controllers\Shop\CartController as ShopCartController;
 use App\Http\Controllers\Shop\CheckoutController as ShopCheckoutController;
+use App\Http\Controllers\Shop\CheckoutCouponController as ShopCheckoutCouponController;
 use App\Http\Controllers\Shop\ProductController as ShopProductController;
 use App\Http\Controllers\Shop\WishlistController as ShopWishlistController;
 use App\Http\Controllers\VariantController;
@@ -38,6 +39,10 @@ Route::middleware(['storefront.cart', ShareStorefrontWishlist::class])->group(fu
     Route::post('/checkout', [ShopCheckoutController::class, 'store'])->name('shop.checkout.store');
     Route::post('/checkout/summary', [ShopCheckoutController::class, 'summary'])
         ->name('shop.checkout.summary');
+    Route::post('/checkout/coupon', [ShopCheckoutCouponController::class, 'store'])
+        ->name('shop.checkout.coupon.store');
+    Route::delete('/checkout/coupon', [ShopCheckoutCouponController::class, 'destroy'])
+        ->name('shop.checkout.coupon.destroy');
     Route::get('/checkout/success/{order}', [ShopCheckoutController::class, 'success'])
         ->name('shop.checkout.success');
 });

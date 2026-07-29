@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\DTOs\Checkout\CheckoutSummary;
+use App\DTOs\Checkout\CheckoutValidationError;
 use App\DTOs\Checkout\CheckoutValidationResult;
 use App\Models\Cart;
 use App\Models\ShippingMethod;
@@ -14,6 +15,7 @@ class CheckoutService
     public function __construct(
         private ?CheckoutCartValidator $cartValidator = null,
         private ?CheckoutPricingService $pricingService = null,
+        private ?CouponCartService $couponCartService = null,
     ) {}
 
     private const ADDRESS_FIELDS = [
@@ -96,11 +98,14 @@ class CheckoutService
             $paymentMethodCode
         );
 
-        return $this->summarizeLocked($validation);
+        return $this->summarizeLocked($validation, $cart);
     }
 
-    public function summarizeLocked(CheckoutValidationResult $validation): CheckoutSummary
-    {
+    public function summarizeLocked(
+        CheckoutValidationResult $validation,
+        ?Cart $cart = null,
+        bool $clearInvalidCoupon = true
+    ): CheckoutSummary {
         $currencyCode = (string) setting('currency.default_currency', 'USD');
         $taxMode = (string) setting('tax.tax_mode', 'b2c');
         $defaultTaxId = setting('tax.default_tax_id');
@@ -117,12 +122,43 @@ class CheckoutService
         }
 
         $pricingService = $this->pricingService ?? app(CheckoutPricingService::class);
+        $couponCartService = $this->couponCartService ?? app(CouponCartService::class);
+        $coupon = null;
+        $warnings = [];
+
+        if ($cart?->coupon_id) {
+            $cart->loadMissing(['coupon', 'user']);
+            $couponErrors = $couponCartService->errors(
+                $cart,
+                $pricingService->eligibleSubtotal($validation),
+                $cart->user
+            );
+
+            if ($couponErrors !== []) {
+                if (! $clearInvalidCoupon) {
+                    return CheckoutSummary::invalid([
+                        new CheckoutValidationError(
+                            'coupon_invalid',
+                            'coupon',
+                            __('shop.checkout.coupon.invalid_removed')
+                        ),
+                    ], $currencyCode, $taxMode);
+                }
+
+                $couponCartService->remove($cart);
+                $warnings[] = __('shop.checkout.coupon.invalid_removed');
+            } else {
+                $coupon = $cart->coupon;
+            }
+        }
 
         return $pricingService->calculate(
             $validation,
             $currencyCode,
             $taxMode,
-            $defaultTax
+            $defaultTax,
+            $coupon,
+            $warnings
         );
     }
 }

@@ -23,9 +23,15 @@
                 </div>
             @endif
 
+            @foreach ($summary->warnings as $warning)
+                <div class="alert alert-warning" role="alert">{{ $warning }}</div>
+            @endforeach
+
             <form action="{{ route('shop.checkout.store') }}" method="POST"
                 data-checkout-form
                 data-summary-url="{{ route('shop.checkout.summary') }}"
+                data-coupon-apply-url="{{ route('shop.checkout.coupon.store') }}"
+                data-coupon-remove-url="{{ route('shop.checkout.coupon.destroy') }}"
                 data-summary-loading="{{ __('shop.checkout.summary_updating') }}"
                 data-summary-error="{{ __('shop.checkout.summary_update_failed') }}">
                 @csrf
@@ -227,9 +233,43 @@
                                         </div>
                                     </div>
                                 @endforeach
+
+                                <div class="border-bottom py-3">
+                                    <label for="checkout_coupon_code" class="form-label fw-semibold">
+                                        {{ __('shop.checkout.coupon.label') }}
+                                    </label>
+                                    <div class="input-group" data-checkout-coupon-entry @if($summary->coupon) hidden @endif>
+                                        <input type="text" id="checkout_coupon_code" name="coupon_code"
+                                            class="form-control" maxlength="100"
+                                            placeholder="{{ __('shop.checkout.coupon.placeholder') }}"
+                                            value="{{ old('coupon_code') }}"
+                                            data-checkout-coupon-code>
+                                        <button type="submit" class="btn btn-outline-primary"
+                                            formaction="{{ route('shop.checkout.coupon.store') }}"
+                                            data-checkout-coupon-apply>
+                                            {{ __('shop.checkout.coupon.apply') }}
+                                        </button>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center gap-2"
+                                        data-checkout-coupon-applied @if(! $summary->coupon) hidden @endif>
+                                        <span>
+                                            {{ __('shop.checkout.coupon.applied_code') }}:
+                                            <strong data-checkout-coupon-name>{{ $summary->coupon['code'] ?? '' }}</strong>
+                                        </span>
+                                        <button type="submit" form="checkout-coupon-remove-form"
+                                            class="btn btn-sm btn-outline-danger"
+                                            data-checkout-coupon-remove>
+                                            {{ __('shop.checkout.coupon.remove') }}
+                                        </button>
+                                    </div>
+                                    <p class="small mt-2 mb-0" role="status" aria-live="polite"
+                                        data-checkout-coupon-status></p>
+                                </div>
                                 <dl class="row g-2 mt-3 mb-0">
                                     <dt class="col-7">{{ __('shop.checkout.subtotal') }}</dt>
                                     <dd class="col-5 text-end" data-checkout-subtotal>{{ format_store_price($summary->subtotal, $summary->currencyCode) }}</dd>
+                                    <dt class="col-7 text-success" data-checkout-discount-label @if((float) $summary->discountTotal <= 0) hidden @endif>{{ __('shop.checkout.discount') }}</dt>
+                                    <dd class="col-5 text-end text-success" data-checkout-discount-total @if((float) $summary->discountTotal <= 0) hidden @endif>-{{ format_store_price($summary->discountTotal, $summary->currencyCode) }}</dd>
                                     <dt class="col-7">{{ __('shop.checkout.tax') }}</dt>
                                     <dd class="col-5 text-end" data-checkout-tax-total>{{ format_store_price($summary->taxTotal, $summary->currencyCode) }}</dd>
                                     <dt class="col-7">{{ __('shop.checkout.shipping') }}</dt>
@@ -248,6 +288,12 @@
                         </div>
                     </div>
                 </div>
+            </form>
+            <form id="checkout-coupon-remove-form" action="{{ route('shop.checkout.coupon.destroy') }}" method="POST" class="d-none">
+                @csrf
+                @method('DELETE')
+                <input type="hidden" name="shipping_method" value="{{ $shippingCode }}">
+                <input type="hidden" name="payment_method" value="{{ $paymentCode }}">
             </form>
         </div>
     </div>

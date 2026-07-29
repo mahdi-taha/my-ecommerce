@@ -17,7 +17,7 @@ class OrderItem extends Model
     protected static function booted(): void
     {
         static::updating(function (OrderItem $item): void {
-            foreach (['tax_name', 'tax_rate', 'tax_amount'] as $field) {
+            foreach (['discount_amount', 'tax_name', 'tax_rate', 'tax_amount'] as $field) {
                 if ($item->isDirty($field)) {
                     throw new LogicException("The Order item {$field} snapshot is immutable.");
                 }
@@ -31,6 +31,7 @@ class OrderItem extends Model
             'configuration' => 'array',
             'tax_rate' => 'decimal:4',
             'tax_amount' => 'decimal:4',
+            'discount_amount' => 'decimal:4',
         ];
     }
 
