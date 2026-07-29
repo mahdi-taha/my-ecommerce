@@ -22,7 +22,7 @@ class CustomerAccountController extends Controller
     {
         $this->customerService->updateProfile($request->user('customer'), $request->validated());
 
-        return back()->with('success', 'Profile updated successfully.');
+        return back()->with('success', __('shop.account.profile.updated'));
     }
 
     public function editPassword(): View

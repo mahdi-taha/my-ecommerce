@@ -12,6 +12,7 @@ class CustomerAddress extends Model
 
     protected $fillable = [
         'user_id',
+        'label',
         'first_name',
         'last_name',
         'company',
@@ -22,13 +23,15 @@ class CustomerAddress extends Model
         'state',
         'postal_code',
         'country_code',
-        'is_default',
+        'is_default_shipping',
+        'is_default_billing',
     ];
 
     protected function casts(): array
     {
         return [
-            'is_default' => 'boolean',
+            'is_default_shipping' => 'boolean',
+            'is_default_billing' => 'boolean',
         ];
     }
 

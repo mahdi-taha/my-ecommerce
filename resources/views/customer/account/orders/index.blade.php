@@ -8,6 +8,7 @@
 </head>
 <body class="bg-light">
 <main class="container py-5">
+    @include('customer.account._navigation')
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <h1 class="h3 mb-0">{{ __('shop.account.orders.my_orders') }}</h1>
         <a class="btn btn-outline-secondary" href="{{ route('customer.account.edit') }}">

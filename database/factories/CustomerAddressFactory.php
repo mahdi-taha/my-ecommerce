@@ -15,16 +15,18 @@ class CustomerAddressFactory extends Factory
     {
         return [
             'user_id' => User::factory()->customer(),
+            'label' => fake()->randomElement(['Home', 'Office']),
             'first_name' => fake()->firstName(),
             'last_name' => fake()->lastName(),
             'phone' => fake()->phoneNumber(),
             'address_line_1' => fake()->streetAddress(),
             'address_line_2' => null,
             'city' => fake()->city(),
-            'state' => null,
+            'state' => fake()->state(),
             'postal_code' => null,
             'country_code' => 'LB',
-            'is_default' => true,
+            'is_default_shipping' => false,
+            'is_default_billing' => false,
         ];
     }
 }

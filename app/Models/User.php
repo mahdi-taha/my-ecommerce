@@ -122,7 +122,18 @@ class User extends Authenticatable
 
     public function defaultAddress(): HasOne
     {
+        return $this->defaultShippingAddress();
+    }
+
+    public function defaultShippingAddress(): HasOne
+    {
         return $this->hasOne(CustomerAddress::class)
-            ->where('is_default', true);
+            ->where('is_default_shipping', true);
+    }
+
+    public function defaultBillingAddress(): HasOne
+    {
+        return $this->hasOne(CustomerAddress::class)
+            ->where('is_default_billing', true);
     }
 }

@@ -5,6 +5,7 @@ use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\AttributeOptionController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerAccountController;
+use App\Http\Controllers\CustomerAddressController;
 use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\HomeController;
@@ -205,6 +206,22 @@ Route::middleware(['auth:customer', 'customer'])->name('customer.')->group(funct
     Route::post('logout', [CustomerAuthController::class, 'logout'])->name('logout');
     Route::get('account/profile', [CustomerAccountController::class, 'edit'])->name('account.edit');
     Route::put('account/profile', [CustomerAccountController::class, 'update'])->name('account.update');
+    Route::get('account/addresses', [CustomerAddressController::class, 'index'])
+        ->name('addresses.index');
+    Route::get('account/addresses/create', [CustomerAddressController::class, 'create'])
+        ->name('addresses.create');
+    Route::post('account/addresses', [CustomerAddressController::class, 'store'])
+        ->name('addresses.store');
+    Route::get('account/addresses/{customerAddress}/edit', [CustomerAddressController::class, 'edit'])
+        ->name('addresses.edit');
+    Route::put('account/addresses/{customerAddress}', [CustomerAddressController::class, 'update'])
+        ->name('addresses.update');
+    Route::delete('account/addresses/{customerAddress}', [CustomerAddressController::class, 'destroy'])
+        ->name('addresses.destroy');
+    Route::patch('account/addresses/{customerAddress}/default-shipping', [CustomerAddressController::class, 'setDefaultShipping'])
+        ->name('addresses.default-shipping');
+    Route::patch('account/addresses/{customerAddress}/default-billing', [CustomerAddressController::class, 'setDefaultBilling'])
+        ->name('addresses.default-billing');
     Route::get('account/password', [CustomerAccountController::class, 'editPassword'])
         ->name('account.password.edit');
     Route::put('account/password', [CustomerAccountController::class, 'updatePassword'])

@@ -78,10 +78,8 @@ class CustomerService
             $this->ensureCustomer($customer);
             $this->ensureAccountEnabled($customer);
             $customer->update([
-                'name' => trim((string) $data['name']),
                 'first_name' => trim((string) $data['first_name']),
                 'last_name' => trim((string) $data['last_name']),
-                'email' => $this->normalizeEmail($data['email'] ?? null),
                 'phone' => $this->normalizePhone($data['phone'] ?? null),
             ]);
 
