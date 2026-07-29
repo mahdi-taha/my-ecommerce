@@ -111,8 +111,8 @@ class CheckoutOrderPlacementConcurrencyTest extends TestCase
             'shipping_method' => $shipping->code,
             'payment_method' => $payment->code,
             'customer' => ['first_name' => 'Concurrent', 'last_name' => 'Customer', 'phone' => '70123456', 'email' => 'concurrent@example.com'],
-            'billing_address' => $address,
-            'shipping_address' => $address,
+            'address_source' => 'manual',
+            'manual_address' => $address,
         ]];
     }
 }

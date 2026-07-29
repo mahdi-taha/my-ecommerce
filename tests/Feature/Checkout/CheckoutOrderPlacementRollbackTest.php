@@ -126,8 +126,8 @@ class CheckoutOrderPlacementRollbackTest extends TestCase
             'shipping_method' => $shipping->code,
             'payment_method' => $payment->code,
             'customer' => ['first_name' => 'Rollback', 'last_name' => 'Customer', 'phone' => '70123456', 'email' => 'rollback@example.com'],
-            'billing_address' => $address,
-            'shipping_address' => $address,
+            'address_source' => 'manual',
+            'manual_address' => $address,
         ];
 
         return [$cart, $product, $customer, $shipping, $payment, $data];

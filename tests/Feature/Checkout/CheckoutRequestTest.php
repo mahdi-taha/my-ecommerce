@@ -32,8 +32,8 @@ class CheckoutRequestTest extends TestCase
             $paymentMethod->code
         ))
             ->assertOk()
-            ->assertJsonPath('billing_address.country_code', 'LB')
-            ->assertJsonPath('shipping_address.country_code', 'LB');
+            ->assertJsonPath('address_source', 'manual')
+            ->assertJsonPath('manual_address.country_code', 'LB');
     }
 
     public function test_shipping_and_payment_methods_must_be_active(): void
@@ -49,7 +49,7 @@ class CheckoutRequestTest extends TestCase
             ->assertJsonValidationErrors(['shipping_method', 'payment_method']);
     }
 
-    public function test_customer_contact_and_both_addresses_are_required(): void
+    public function test_customer_contact_and_manual_address_are_required(): void
     {
         $shippingMethod = ShippingMethod::factory()->create(['is_active' => true]);
         $paymentMethod = PaymentMethod::factory()->create(['is_active' => true]);
@@ -57,8 +57,8 @@ class CheckoutRequestTest extends TestCase
         unset(
             $payload['customer']['first_name'],
             $payload['customer']['phone'],
-            $payload['billing_address']['address_line_1'],
-            $payload['shipping_address']['city']
+            $payload['manual_address']['address_line_1'],
+            $payload['manual_address']['city']
         );
 
         $this->postJson('/testing/checkout-foundation', $payload)
@@ -66,8 +66,8 @@ class CheckoutRequestTest extends TestCase
             ->assertJsonValidationErrors([
                 'customer.first_name',
                 'customer.phone',
-                'billing_address.address_line_1',
-                'shipping_address.city',
+                'manual_address.address_line_1',
+                'manual_address.city',
             ]);
     }
 
@@ -77,14 +77,12 @@ class CheckoutRequestTest extends TestCase
         $paymentMethod = PaymentMethod::factory()->create(['is_active' => true]);
         $payload = $this->payload($shippingMethod->code, $paymentMethod->code);
         $payload['customer']['email'] = '   ';
-        $payload['billing_address']['country_code'] = 'lb';
-        $payload['shipping_address']['country_code'] = 'lb';
+        $payload['manual_address']['country_code'] = 'lb';
 
         $this->postJson('/testing/checkout-foundation', $payload)
             ->assertOk()
             ->assertJsonPath('customer.email', null)
-            ->assertJsonPath('billing_address.country_code', 'LB')
-            ->assertJsonPath('shipping_address.country_code', 'LB');
+            ->assertJsonPath('manual_address.country_code', 'LB');
     }
 
     public function test_browser_supplied_customer_identity_fields_are_prohibited(): void
@@ -111,8 +109,8 @@ class CheckoutRequestTest extends TestCase
                 'phone' => '70123456',
                 'email' => 'guest@example.com',
             ],
-            'billing_address' => $this->address(),
-            'shipping_address' => $this->address(),
+            'address_source' => 'manual',
+            'manual_address' => $this->address(),
         ];
     }
 

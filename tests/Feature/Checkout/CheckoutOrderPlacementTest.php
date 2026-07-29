@@ -271,8 +271,8 @@ class CheckoutOrderPlacementTest extends TestCase
                 'phone' => '70123456',
                 'email' => 'jane@example.com',
             ],
-            'billing_address' => $address,
-            'shipping_address' => $address,
+            'address_source' => 'manual',
+            'manual_address' => $address,
         ];
     }
 
