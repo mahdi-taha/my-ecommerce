@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use LogicException;
 use RuntimeException;
 
 class CartService
@@ -427,6 +428,16 @@ class CartService
         return $ids->isEmpty()
             ? 0
             : Cart::query()->whereKey($ids)->delete();
+    }
+
+    public function clearForCheckout(Cart $cart, mixed $timestamp): void
+    {
+        if (DB::transactionLevel() < 1) {
+            throw new LogicException('Checkout Cart clearing requires an active database transaction.');
+        }
+
+        $cart->items()->delete();
+        $this->touch($cart, $timestamp);
     }
 
     private function lockedCartForMutation(

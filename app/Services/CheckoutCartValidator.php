@@ -11,6 +11,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\PaymentMethod;
 use App\Models\Product;
+use App\Models\ProductInventory;
 use App\Models\ShippingMethod;
 use Illuminate\Support\Collection;
 
@@ -122,6 +123,49 @@ class CheckoutCartValidator
         );
     }
 
+    public function validateLockedItems(
+        Collection $items,
+        Collection $products,
+        Collection $inventories,
+        ?ShippingMethod $shippingMethod,
+        ?PaymentMethod $paymentMethod
+    ): CheckoutValidationResult {
+        $locale = app()->getLocale();
+        $productsById = $products->keyBy(fn (Product $product) => (int) $product->getKey());
+        $inventoriesByProduct = $inventories->keyBy(
+            fn (ProductInventory $inventory) => (int) $inventory->product_id
+        );
+
+        $products->loadMissing([
+            'tax' => fn ($query) => $query->active(),
+            'translations' => fn ($query) => $query->where('locale', $locale),
+            'superAttributes.attribute.translations' => fn ($query) => $query
+                ->where('locale', $locale),
+            'attributeValues' => fn ($query) => $query
+                ->whereNotNull('attribute_option_id')
+                ->with([
+                    'attribute.translations' => fn ($query) => $query->where('locale', $locale),
+                    'option.translations' => fn ($query) => $query->where('locale', $locale),
+                ]),
+        ]);
+
+        foreach ($products as $product) {
+            $product->setRelation('inventory', $inventoriesByProduct->get((int) $product->getKey()));
+            $product->setRelation(
+                'configurable',
+                $product->configurable_id
+                    ? $productsById->get((int) $product->configurable_id)
+                    : null
+            );
+        }
+
+        foreach ($items as $item) {
+            $item->setRelation('product', $productsById->get((int) $item->product_id));
+        }
+
+        return $this->validateLoadedItems($items, $shippingMethod, $paymentMethod);
+    }
+
     private function validateItem(CartItem $item): array
     {
         $product = $item->product;
@@ -192,6 +236,14 @@ class CheckoutCartValidator
             )];
         }
 
+        if ($product->translations->isEmpty()) {
+            return [$this->itemError(
+                'product_unavailable',
+                $item,
+                'The Cart Product is unavailable in the current locale.'
+            )];
+        }
+
         return [];
     }
 
@@ -236,6 +288,14 @@ class CheckoutCartValidator
                 'product_not_visible',
                 $item,
                 'The Configurable Product is not storefront-visible.'
+            )];
+        }
+
+        if ($parent->translations->isEmpty()) {
+            return [$this->itemError(
+                'product_unavailable',
+                $item,
+                'The Configurable Product is unavailable in the current locale.'
             )];
         }
 

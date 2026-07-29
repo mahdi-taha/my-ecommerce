@@ -12,6 +12,7 @@ use App\Models\PaymentMethod;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use LogicException;
 
 class OrderService
 {
@@ -27,19 +28,7 @@ class OrderService
         for ($attempt = 1; $attempt <= self::MAX_ORDER_NUMBER_ATTEMPTS; $attempt++) {
             try {
                 return DB::transaction(function () use ($data) {
-                    $paymentMethod = $this->paymentMethod($data['payment_method'] ?? null);
-                    $order = $this->createOrder(
-                        $data,
-                        $this->orderNumberGenerator->generate(),
-                        $paymentMethod
-                    );
-
-                    $this->createItems($order, $data['items']);
-                    $this->createAddresses($order, $data);
-                    $this->createPayment($order, $paymentMethod);
-                    $this->createInitialHistory($order);
-
-                    return $order;
+                    return $this->writeOrder($data);
                 });
             } catch (QueryException $exception) {
                 if (! $this->isOrderNumberUniqueViolation($exception)
@@ -49,7 +38,34 @@ class OrderService
             }
         }
 
-        throw new \LogicException('Order creation retry loop ended unexpectedly.');
+        throw new LogicException('Order creation retry loop ended unexpectedly.');
+    }
+
+    public function createWithinTransaction(array $data): Order
+    {
+        if (DB::transactionLevel() < 1) {
+            throw new LogicException('Order creation requires an active database transaction.');
+        }
+
+        return $this->writeOrder($data);
+    }
+
+    private function writeOrder(array $data): Order
+    {
+        $paymentMethod = $this->paymentMethod($data['payment_method'] ?? null);
+        $order = $this->createOrder(
+            $data,
+            $this->orderNumberGenerator->generate(),
+            $paymentMethod
+        );
+
+        $this->createAddresses($order, $data);
+        $this->createShipping($order, $data);
+        $this->createItems($order, $data['items']);
+        $this->createPayment($order, $paymentMethod);
+        $this->createInitialHistory($order);
+
+        return $order;
     }
 
     private function createOrder(
@@ -62,6 +78,7 @@ class OrderService
             $orderData['items'],
             $orderData['billing_address'],
             $orderData['shipping_address'],
+            $orderData['shipping'],
             $orderData['payment']
         );
 
@@ -79,10 +96,12 @@ class OrderService
     {
         foreach ($items as $item) {
             $children = $item['children'] ?? [];
-            unset($item['children']);
+            $options = $item['options'] ?? [];
+            unset($item['children'], $item['options']);
             $item['unit_cost'] = null;
 
             $parent = $order->items()->create($item);
+            $parent->options()->createMany($options);
 
             foreach ($children as $child) {
                 $this->createChildItem($order, $parent, $child);
@@ -107,6 +126,13 @@ class OrderService
         $order->addresses()->create(array_merge($data['shipping_address'], [
             'type' => 'shipping',
         ]));
+    }
+
+    private function createShipping(Order $order, array $data): void
+    {
+        if (isset($data['shipping'])) {
+            $order->shipping()->create($data['shipping']);
+        }
     }
 
     private function createPayment(

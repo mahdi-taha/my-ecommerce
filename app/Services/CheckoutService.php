@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\DTOs\Checkout\CheckoutSummary;
+use App\DTOs\Checkout\CheckoutValidationResult;
 use App\Models\Cart;
 use App\Models\ShippingMethod;
 use App\Models\Tax;
@@ -88,19 +89,24 @@ class CheckoutService
         string $shippingMethodCode,
         string $paymentMethodCode
     ): CheckoutSummary {
+        $cartValidator = $this->cartValidator ?? app(CheckoutCartValidator::class);
+        $validation = $cartValidator->validate(
+            $cart,
+            $shippingMethodCode,
+            $paymentMethodCode
+        );
+
+        return $this->summarizeLocked($validation);
+    }
+
+    public function summarizeLocked(CheckoutValidationResult $validation): CheckoutSummary
+    {
         $currencyCode = (string) setting('currency.default_currency', 'USD');
         $taxMode = (string) setting('tax.tax_mode', 'b2c');
         $defaultTaxId = setting('tax.default_tax_id');
         $defaultTax = $defaultTaxId
             ? Tax::query()->active()->find($defaultTaxId)
             : null;
-        $cartValidator = $this->cartValidator ?? app(CheckoutCartValidator::class);
-        $pricingService = $this->pricingService ?? app(CheckoutPricingService::class);
-        $validation = $cartValidator->validate(
-            $cart,
-            $shippingMethodCode,
-            $paymentMethodCode
-        );
 
         if (! $validation->isValid()) {
             return CheckoutSummary::invalid(
@@ -109,6 +115,8 @@ class CheckoutService
                 $taxMode
             );
         }
+
+        $pricingService = $this->pricingService ?? app(CheckoutPricingService::class);
 
         return $pricingService->calculate(
             $validation,
