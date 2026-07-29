@@ -128,6 +128,17 @@
               </a>
             </li>
             <li class="sidebar-item">
+              <a class="sidebar-link justify-content-between {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}"
+                href="{{ route('admin.coupons.index') }}" aria-expanded="false">
+                <div class="d-flex align-items-center gap-3">
+                  <span class="d-flex">
+                    <i class="ti ti-ticket"></i>
+                  </span>
+                  <span class="hide-menu">Coupons</span>
+                </div>
+              </a>
+            </li>
+            <li class="sidebar-item">
               <a class="sidebar-link justify-content-between {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}"
                 href="{{ route('admin.customers.index') }}" aria-expanded="false">
                 <div class="d-flex align-items-center gap-3">

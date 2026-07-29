@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\AttributeOptionController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CouponController;
 use App\Http\Controllers\CustomerAccountController;
 use App\Http\Controllers\CustomerAddressController;
 use App\Http\Controllers\CustomerAuthController;
@@ -113,6 +114,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('shipping-methods.update');
         Route::patch('shipping-methods/{shippingMethod}/status', [ShippingMethodController::class, 'updateStatus'])
             ->name('shipping-methods.status.update');
+
+        Route::patch('coupons/{coupon}/deactivate', [CouponController::class, 'deactivate'])
+            ->name('coupons.deactivate');
+        Route::resource('coupons', CouponController::class)
+            ->except(['show']);
 
         Route::resource('attributes', AttributeController::class)
             ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
