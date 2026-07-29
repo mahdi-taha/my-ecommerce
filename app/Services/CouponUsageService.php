@@ -2,8 +2,12 @@
 
 namespace App\Services;
 
+use App\DTOs\Promotions\CouponUsageReleaseResult;
+use App\Enums\FulfillmentStatus;
+use App\Enums\OrderStatus;
 use App\Models\Coupon;
 use App\Models\CouponUsage;
+use App\Models\CouponUsageRelease;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -49,8 +53,67 @@ class CouponUsageService
         ]);
     }
 
-    public function release(CouponUsage $usage, string $reason): never
+    public function release(Order $lockedOrder, string $reason): CouponUsageReleaseResult
     {
-        throw new LogicException('Coupon usage releases are implemented in Promotions Slice 3.');
+        if (DB::transactionLevel() < 1) {
+            throw new LogicException('Coupon usage release requires an active database transaction.');
+        }
+
+        if (! $this->isEligibleTransition($lockedOrder, $reason)) {
+            return new CouponUsageReleaseResult(CouponUsageReleaseResult::NOT_APPLICABLE);
+        }
+
+        $usage = CouponUsage::query()
+            ->where('order_id', $lockedOrder->getKey())
+            ->lockForUpdate()
+            ->first();
+
+        if (! $usage) {
+            return new CouponUsageReleaseResult(CouponUsageReleaseResult::NOT_APPLICABLE);
+        }
+
+        $existing = CouponUsageRelease::query()
+            ->where('coupon_usage_id', $usage->getKey())
+            ->lockForUpdate()
+            ->first();
+
+        if ($existing) {
+            return new CouponUsageReleaseResult(
+                CouponUsageReleaseResult::ALREADY_RELEASED,
+                $existing
+            );
+        }
+
+        $timestamp = now();
+        $inserted = DB::table('coupon_usage_releases')->insertOrIgnore([
+            'coupon_usage_id' => $usage->getKey(),
+            'reason' => $reason,
+            'released_at' => $timestamp,
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
+        ]);
+        $release = CouponUsageRelease::query()
+            ->where('coupon_usage_id', $usage->getKey())
+            ->firstOrFail();
+
+        return new CouponUsageReleaseResult(
+            $inserted === 1
+                ? CouponUsageReleaseResult::RELEASED
+                : CouponUsageReleaseResult::ALREADY_RELEASED,
+            $release
+        );
+    }
+
+    private function isEligibleTransition(Order $order, string $reason): bool
+    {
+        return match ($reason) {
+            'order_cancelled' => in_array($order->status, [
+                OrderStatus::Pending->value,
+                OrderStatus::Processing->value,
+            ], true) && $order->fulfillment_status === FulfillmentStatus::Unfulfilled->value,
+            'delivery_failed' => $order->status === OrderStatus::Processing->value
+                && $order->fulfillment_status === FulfillmentStatus::OutForDelivery->value,
+            default => false,
+        };
     }
 }

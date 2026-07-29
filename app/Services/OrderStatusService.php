@@ -20,7 +20,8 @@ class OrderStatusService
 {
     public function __construct(
         private InventoryService $inventoryService,
-        private OrderCompletionService $orderCompletionService
+        private OrderCompletionService $orderCompletionService,
+        private CouponUsageService $couponUsageService,
     ) {}
 
     public function process(Order $order): Order
@@ -190,6 +191,8 @@ class OrderStatusService
                 $this->cancelPayment($lockedOrder, $userId);
             }
 
+            $this->couponUsageService->release($lockedOrder, 'delivery_failed');
+
             if (! $lockedOrder->update([
                 'status' => OrderStatus::Cancelled->value,
                 'fulfillment_status' => FulfillmentStatus::DeliveryFailed->value,
@@ -267,6 +270,7 @@ class OrderStatusService
             }
 
             $this->cancelPayment($lockedOrder, $userId);
+            $this->couponUsageService->release($lockedOrder, 'order_cancelled');
 
             if (! $lockedOrder->update([
                 'status' => OrderStatus::Cancelled->value,
