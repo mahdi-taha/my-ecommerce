@@ -72,6 +72,15 @@ class CheckoutController extends Controller
             $shippingCode,
             $paymentCode
         );
+        $savedAddresses = $customer
+            ? $customer->customerAddresses()
+                ->orderByDesc('is_default_shipping')
+                ->orderByDesc('is_default_billing')
+                ->latest('created_at')
+                ->latest('id')
+                ->get()
+            : collect();
+        $defaultShippingAddress = $savedAddresses->firstWhere('is_default_shipping', true);
 
         return view('shop.pages.checkout', compact(
             'customer',
@@ -79,7 +88,9 @@ class CheckoutController extends Controller
             'paymentMethods',
             'shippingCode',
             'paymentCode',
-            'summary'
+            'summary',
+            'savedAddresses',
+            'defaultShippingAddress'
         ));
     }
 

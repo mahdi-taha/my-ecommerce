@@ -63,41 +63,113 @@
                             </div>
                         </div>
 
-                        @foreach (['billing_address' => 'billing_address', 'shipping_address' => 'shipping_address'] as $prefix => $heading)
-                            <div class="card border-0 shadow-sm mb-4" data-address-section="{{ $prefix }}">
-                                <div class="card-body p-4">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h2 class="h5 mb-0">{{ __('shop.checkout.'.$heading) }}</h2>
-                                        @if ($prefix === 'shipping_address')
+                        @php
+                            $initialAddressSource = old('address_source', $customer && $defaultShippingAddress ? 'saved' : 'manual');
+                            $initialSavedAddress = old('saved_address_id', $defaultShippingAddress?->getKey());
+                        @endphp
+
+                        <div class="card border-0 shadow-sm mb-4" data-checkout-addresses>
+                            <div class="card-body p-4">
+                                <h2 class="h5 mb-3">{{ __('shop.checkout.addresses.title') }}</h2>
+
+                                @if ($customer)
+                                    <h3 class="h6">{{ __('shop.checkout.addresses.saved') }}</h3>
+                                    @forelse ($savedAddresses as $address)
+                                        <div class="border rounded p-3 mb-2">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="same_as_billing">
-                                                <label class="form-check-label" for="same_as_billing">{{ __('shop.checkout.same_as_billing') }}</label>
+                                                <input class="form-check-input" type="radio" name="saved_address_id"
+                                                    id="saved_address_{{ $address->id }}" value="{{ $address->id }}"
+                                                    @checked((string) $initialSavedAddress === (string) $address->id)>
+                                                <label class="form-check-label w-100" for="saved_address_{{ $address->id }}">
+                                                    <span class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                                        <strong>{{ $address->label ?: __('shop.checkout.addresses.saved') }}</strong>
+                                                        @if ($address->is_default_shipping)
+                                                            <span class="badge bg-primary">{{ __('shop.checkout.addresses.default_shipping') }}</span>
+                                                        @endif
+                                                        @if ($address->is_default_billing)
+                                                            <span class="badge bg-secondary">{{ __('shop.checkout.addresses.default_billing') }}</span>
+                                                        @endif
+                                                    </span>
+                                                    <span class="d-block">{{ $address->first_name }} {{ $address->last_name }} · {{ $address->phone }}</span>
+                                                    <small class="text-muted">
+                                                        {{ collect([$address->address_line_1, $address->address_line_2, $address->city, $address->state, $address->country_code])->filter()->implode(', ') }}
+                                                    </small>
+                                                </label>
                                             </div>
-                                        @endif
+                                        </div>
+                                    @empty
+                                        <p class="text-muted">{{ __('shop.checkout.addresses.none_saved') }}</p>
+                                    @endforelse
+
+                                    @if ($savedAddresses->isNotEmpty())
+                                        <div class="form-check mt-3">
+                                            <input class="form-check-input" type="radio" name="address_source"
+                                                id="address_source_saved" value="saved" @checked($initialAddressSource === 'saved')>
+                                            <label class="form-check-label" for="address_source_saved">
+                                                {{ __('shop.checkout.addresses.use_selected') }}
+                                            </label>
+                                        </div>
+                                    @endif
+
+                                    <div class="d-flex align-items-center gap-3 my-4" aria-hidden="true">
+                                        <hr class="flex-grow-1 my-0">
+                                        <span class="text-muted small">{{ __('shop.checkout.addresses.or_manual') }}</span>
+                                        <hr class="flex-grow-1 my-0">
                                     </div>
-                                    <div class="row g-3">
-                                        @foreach (['first_name', 'last_name', 'company', 'email', 'phone', 'address_line_1', 'address_line_2', 'city', 'state', 'postal_code', 'country_code'] as $field)
-                                            @php
-                                                $required = in_array($field, ['first_name', 'last_name', 'address_line_1', 'city', 'country_code'], true);
-                                                $column = in_array($field, ['address_line_1', 'address_line_2'], true) ? 'col-12' : 'col-md-6';
-                                            @endphp
-                                            <div class="{{ $column }}">
-                                                <label class="form-label" for="{{ $prefix }}_{{ $field }}">{{ __('shop.checkout.fields.'.$field) }}</label>
-                                                <input
-                                                    type="{{ $field === 'email' ? 'email' : 'text' }}"
-                                                    id="{{ $prefix }}_{{ $field }}"
-                                                    name="{{ $prefix }}[{{ $field }}]"
-                                                    value="{{ old($prefix.'.'.$field, in_array($field, ['first_name', 'last_name', 'email', 'phone'], true) ? $customer?->{$field} : null) }}"
-                                                    class="form-control @error($prefix.'.'.$field) is-invalid @enderror"
-                                                    @if ($required) required @endif
-                                                    @if ($field === 'country_code') maxlength="2" @endif>
-                                                @error($prefix.'.'.$field)<div class="invalid-feedback">{{ $message }}</div>@enderror
-                                            </div>
-                                        @endforeach
-                                    </div>
+                                @endif
+
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="radio" name="address_source"
+                                        id="address_source_manual" value="manual" @checked($initialAddressSource === 'manual') required>
+                                    <label class="form-check-label fw-semibold" for="address_source_manual">
+                                        {{ __('shop.checkout.addresses.new') }}
+                                    </label>
                                 </div>
+
+                                <div class="row g-3" data-manual-address>
+                                    @foreach (['label', 'first_name', 'last_name', 'company', 'email', 'phone', 'address_line_1', 'address_line_2', 'city', 'state', 'postal_code', 'country_code'] as $field)
+                                        @php
+                                            $required = in_array($field, ['first_name', 'last_name', 'address_line_1', 'city', 'country_code'], true);
+                                            $column = in_array($field, ['address_line_1', 'address_line_2'], true) ? 'col-12' : 'col-md-6';
+                                        @endphp
+                                        <div class="{{ $column }}">
+                                            <label class="form-label" for="manual_address_{{ $field }}">{{ __('shop.checkout.fields.'.$field) }}</label>
+                                            <input
+                                                type="{{ $field === 'email' ? 'email' : 'text' }}"
+                                                id="manual_address_{{ $field }}"
+                                                name="manual_address[{{ $field }}]"
+                                                value="{{ old('manual_address.'.$field) }}"
+                                                class="form-control @error('manual_address.'.$field) is-invalid @enderror"
+                                                @if ($field === 'country_code') maxlength="2" @endif>
+                                            @error('manual_address.'.$field)<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                @if ($customer)
+                                    <div class="form-check mt-3">
+                                        <input class="form-check-input" type="checkbox" name="save_address" value="1"
+                                            id="save_address" @checked(old('save_address'))>
+                                        <label class="form-check-label" for="save_address">{{ __('shop.checkout.addresses.save') }}</label>
+                                    </div>
+                                    <div class="mt-2 {{ old('save_address') ? '' : 'd-none' }}" data-address-defaults>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="make_default_shipping" value="1"
+                                                id="make_default_shipping" @checked(old('make_default_shipping'))>
+                                            <label class="form-check-label" for="make_default_shipping">{{ __('shop.checkout.addresses.make_default_shipping') }}</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="make_default_billing" value="1"
+                                                id="make_default_billing" @checked(old('make_default_billing'))>
+                                            <label class="form-check-label" for="make_default_billing">{{ __('shop.checkout.addresses.make_default_billing') }}</label>
+                                        </div>
+                                    </div>
+                                @endif
+                                @error('address_source')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+                                @error('saved_address_id')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+                                @error('manual_address')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
                             </div>
-                        @endforeach
+                        </div>
 
                         <div class="card border-0 shadow-sm mb-4">
                             <div class="card-body p-4">
@@ -183,12 +255,14 @@
 
 @push('scripts')
     <script>
-        document.getElementById('same_as_billing')?.addEventListener('change', function () {
-            if (!this.checked) return;
-            document.querySelectorAll('[name^="billing_address["]').forEach(function (source) {
-                const target = document.querySelector('[name="shipping_address[' + source.name.slice(16) + '"]');
-                if (target) target.value = source.value;
+        document.querySelectorAll('[name="saved_address_id"]').forEach(function (address) {
+            address.addEventListener('change', function () {
+                const source = document.getElementById('address_source_saved');
+                if (source) source.checked = true;
             });
+        });
+        document.getElementById('save_address')?.addEventListener('change', function () {
+            document.querySelector('[data-address-defaults]')?.classList.toggle('d-none', !this.checked);
         });
     </script>
 @endpush

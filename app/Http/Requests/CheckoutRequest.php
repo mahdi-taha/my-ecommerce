@@ -15,13 +15,25 @@ class CheckoutRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->merge([
+        $normalized = [
             'shipping_method' => $this->trimmed('shipping_method'),
             'payment_method' => $this->trimmed('payment_method'),
+            'address_source' => $this->trimmed('address_source'),
+            'manual_address' => $this->normalizedAddress('manual_address'),
             'customer' => $this->normalizedCustomer(),
-            'billing_address' => $this->normalizedAddress('billing_address'),
-            'shipping_address' => $this->normalizedAddress('shipping_address'),
-        ]);
+        ];
+
+        foreach (['saved_address_id', 'save_address', 'make_default_shipping', 'make_default_billing'] as $field) {
+            if (! $this->has($field)) {
+                continue;
+            }
+
+            $normalized[$field] = $field === 'saved_address_id'
+                ? $this->input($field)
+                : $this->boolean($field);
+        }
+
+        $this->merge($normalized);
     }
 
     public function rules(): array
@@ -51,27 +63,56 @@ class CheckoutRequest extends FormRequest
             'customer.email' => ['nullable', 'email', 'max:255'],
             'customer.user_id' => ['prohibited'],
             'customer.account_type' => ['prohibited'],
-            'billing_address' => ['required', 'array'],
-            'shipping_address' => ['required', 'array'],
-            ...$this->addressRules('billing_address'),
-            ...$this->addressRules('shipping_address'),
+            'address_source' => ['required', Rule::in(['saved', 'manual'])],
+            'saved_address_id' => [
+                Rule::requiredIf(fn () => $this->input('address_source') === 'saved'),
+                Rule::prohibitedIf(fn () => $this->input('address_source') !== 'saved' || ! $this->customer()),
+                'integer',
+                Rule::exists('customer_addresses', 'id')->where(
+                    fn ($query) => $query->where('user_id', $this->customer()?->getKey() ?? 0)
+                ),
+            ],
+            'manual_address' => [
+                Rule::requiredIf(fn () => $this->input('address_source') === 'manual'),
+                Rule::prohibitedIf(fn () => $this->input('address_source') !== 'manual'),
+                'array',
+            ],
+            ...$this->addressRules('manual_address'),
+            'save_address' => [
+                Rule::prohibitedIf(fn () => ! $this->authenticatedManualFlow()),
+                'boolean',
+            ],
+            'make_default_shipping' => [
+                Rule::prohibitedIf(fn () => ! $this->savingManualAddress()),
+                'boolean',
+            ],
+            'make_default_billing' => [
+                Rule::prohibitedIf(fn () => ! $this->savingManualAddress()),
+                'boolean',
+            ],
         ];
     }
 
     private function addressRules(string $prefix): array
     {
+        $requiredForManual = Rule::requiredIf(
+            fn () => $this->input('address_source') === 'manual'
+        );
+        $requiredWhenSaving = Rule::requiredIf(fn () => $this->savingManualAddress());
+
         return [
-            "{$prefix}.first_name" => ['required', 'string', 'max:255'],
-            "{$prefix}.last_name" => ['required', 'string', 'max:255'],
+            "{$prefix}.first_name" => [$requiredForManual, 'string', 'max:255'],
+            "{$prefix}.last_name" => [$requiredForManual, 'string', 'max:255'],
             "{$prefix}.company" => ['nullable', 'string', 'max:255'],
             "{$prefix}.email" => ['nullable', 'email', 'max:255'],
-            "{$prefix}.phone" => ['nullable', 'string', 'max:255'],
-            "{$prefix}.address_line_1" => ['required', 'string', 'max:255'],
+            "{$prefix}.phone" => [$requiredWhenSaving, 'nullable', 'string', 'max:255'],
+            "{$prefix}.address_line_1" => [$requiredForManual, 'string', 'max:255'],
             "{$prefix}.address_line_2" => ['nullable', 'string', 'max:255'],
-            "{$prefix}.city" => ['required', 'string', 'max:255'],
-            "{$prefix}.state" => ['nullable', 'string', 'max:255'],
+            "{$prefix}.city" => [$requiredForManual, 'string', 'max:255'],
+            "{$prefix}.state" => [$requiredWhenSaving, 'nullable', 'string', 'max:255'],
             "{$prefix}.postal_code" => ['nullable', 'string', 'max:255'],
-            "{$prefix}.country_code" => ['required', 'string', 'size:2', 'alpha'],
+            "{$prefix}.country_code" => [$requiredForManual, 'string', 'size:2', 'alpha'],
+            "{$prefix}.label" => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -114,6 +155,7 @@ class CheckoutRequest extends FormRequest
             'state',
             'postal_code',
             'country_code',
+            'label',
         ] as $field) {
             $normalized[$field] = in_array($field, ['company', 'email', 'phone', 'address_line_2', 'state', 'postal_code'], true)
                 ? $this->nullableTrimmedValue($address[$field] ?? null)
@@ -124,7 +166,9 @@ class CheckoutRequest extends FormRequest
             $normalized['country_code'] = strtoupper($normalized['country_code']);
         }
 
-        return $normalized;
+        return collect($normalized)->contains(
+            fn ($value) => $value !== null && $value !== ''
+        ) ? $normalized : [];
     }
 
     private function trimmed(string $key): mixed
@@ -142,5 +186,20 @@ class CheckoutRequest extends FormRequest
         $value = $this->trimmedValue($value);
 
         return $value === '' ? null : $value;
+    }
+
+    private function customer(): mixed
+    {
+        return $this->user('customer');
+    }
+
+    private function authenticatedManualFlow(): bool
+    {
+        return $this->customer() !== null && $this->input('address_source') === 'manual';
+    }
+
+    private function savingManualAddress(): bool
+    {
+        return $this->authenticatedManualFlow() && $this->boolean('save_address');
     }
 }

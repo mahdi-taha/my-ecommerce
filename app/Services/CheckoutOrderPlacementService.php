@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\DTOs\Checkout\CheckoutOrderPlacementResult;
 use App\DTOs\Checkout\CheckoutValidationError;
-use App\Enums\AccountType;
 use App\Enums\CartItemType;
 use App\Models\Cart;
 use App\Models\CartItem;
@@ -15,6 +14,7 @@ use App\Models\ShippingMethod;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class CheckoutOrderPlacementService
 {
@@ -24,6 +24,7 @@ class CheckoutOrderPlacementService
         private OrderService $orderService,
         private CartService $cartService,
         private GuestCartTokenService $guestCartTokenService,
+        private CheckoutAddressResolver $addressResolver,
     ) {}
 
     public function place(
@@ -54,6 +55,17 @@ class CheckoutOrderPlacementService
 
             if (! $customer && ! $this->guestCheckoutAllowed()) {
                 return $this->failure('guest_checkout_disabled', 'customer', 'Guest Checkout is disabled.');
+            }
+
+            try {
+                $resolvedAddress = $this->addressResolver->resolve($checkoutData, $customer);
+            } catch (ValidationException $exception) {
+                $errors = $exception->errors();
+                $field = (string) array_key_first($errors);
+                $message = $errors[$field][0] ?? __('shop.checkout.failures.order_placement_failed');
+                $code = $field === 'customer' ? 'customer_unavailable' : 'address_unavailable';
+
+                return $this->failure($code, $field ?: 'address', $message);
             }
 
             $items = CartItem::query()
@@ -128,6 +140,7 @@ class CheckoutOrderPlacementService
                     $validation->items,
                     $summary,
                     $shippingMethod,
+                    $resolvedAddress,
                     $timestamp
                 )
             );
@@ -143,10 +156,7 @@ class CheckoutOrderPlacementService
     private function ownsCart(Cart $cart, ?User $customer, ?string $guestToken): bool
     {
         if ($customer) {
-            return $customer->account_type === AccountType::Customer
-                && $customer->has_account
-                && $customer->is_active
-                && (int) $cart->user_id === (int) $customer->getKey()
+            return (int) $cart->user_id === (int) $customer->getKey()
                 && $cart->guest_token_hash === null;
         }
 
@@ -226,6 +236,7 @@ class CheckoutOrderPlacementService
         array $validatedItems,
         object $summary,
         ShippingMethod $shippingMethod,
+        array $resolvedAddress,
         mixed $timestamp
     ): array {
         $summaryItems = collect($summary->items)->keyBy('cart_item_id');
@@ -248,11 +259,11 @@ class CheckoutOrderPlacementService
             'admin_notes' => null,
             'placed_at' => $timestamp,
             'billing_address' => $this->checkoutService->prepareAddressSnapshot(
-                $checkoutData['billing_address'],
+                $resolvedAddress,
                 'billing'
             ),
             'shipping_address' => $this->checkoutService->prepareAddressSnapshot(
-                $checkoutData['shipping_address'],
+                $resolvedAddress,
                 'shipping'
             ),
             'shipping' => $this->checkoutService->prepareShippingSnapshot($shippingMethod),
