@@ -12,15 +12,49 @@ class OrderItem extends Model
 {
     use HasFactory;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'order_id',
+        'parent_order_item_id',
+        'product_id',
+        'product_type',
+        'sku',
+        'product_number',
+        'name',
+        'option_summary',
+        'image_path',
+        'configuration',
+        'quantity',
+        'original_unit_price',
+        'unit_price',
+        'tax_name',
+        'tax_rate',
+        'tax_amount',
+        'row_subtotal',
+        'discount_amount',
+        'row_total',
+        'unit_cost',
+        'is_inventory_item',
+    ];
 
     protected static function booted(): void
     {
         static::updating(function (OrderItem $item): void {
-            foreach (['discount_amount', 'tax_name', 'tax_rate', 'tax_amount'] as $field) {
-                if ($item->isDirty($field)) {
+            foreach (array_keys($item->getDirty()) as $field) {
+                if (! in_array($field, ['unit_cost', 'updated_at'], true)) {
                     throw new LogicException("The Order item {$field} snapshot is immutable.");
                 }
+            }
+
+            if (! $item->isDirty('unit_cost')) {
+                return;
+            }
+
+            if ($item->getRawOriginal('unit_cost') !== null) {
+                throw new LogicException('The Order item unit_cost snapshot has already been captured.');
+            }
+
+            if ($item->unit_cost === null) {
+                throw new LogicException('The Order item unit_cost snapshot cannot be cleared.');
             }
         });
     }
