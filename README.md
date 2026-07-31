@@ -97,6 +97,12 @@ php artisan migrate:status
 The CI workflow runs the test suite with SQLite and separately against MySQL.
 It also verifies Pint formatting and the Vite production build.
 
+## Production deployment
+
+Production releases MUST follow the backup, forward-migration, queue, scheduler,
+cache, asset-build, health-check, and rollback procedures in the
+[production deployment guide](docs/production-deployment.md).
+
 ## Correlation IDs
 
 Every HTTP response includes an `X-Correlation-ID` header. A safe incoming
