@@ -54,11 +54,6 @@ class CheckoutOrderPlacementConcurrencyTest extends TestCase
         $this->assertDatabaseHas('cart_items', ['cart_id' => $cart->id, 'quantity' => 2]);
     }
 
-    public function test_sqlite_suite_does_not_claim_parallel_row_locking_guarantees(): void
-    {
-        $this->markTestSkipped('True concurrent lock blocking must be verified against MySQL; SQLite provides sequential regression coverage only.');
-    }
-
     private function scenario(): array
     {
         foreach ([

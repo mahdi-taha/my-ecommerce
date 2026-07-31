@@ -99,15 +99,6 @@ class DocumentNumberServiceTest extends TestCase
         $this->assertSame(42, DocumentSequence::where('document_type', 'order')->value('last_number'));
     }
 
-    public function test_database_locking_concurrency_is_deferred_on_sqlite(): void
-    {
-        $this->markTestSkipped(
-            DB::getDriverName() === 'sqlite'
-                ? 'SQLite does not provide row-level lockForUpdate concurrency semantics.'
-                : 'Run the dedicated parallel database concurrency check for this database driver.'
-        );
-    }
-
     private function legacyOrder(string $orderNumber): array
     {
         return [
