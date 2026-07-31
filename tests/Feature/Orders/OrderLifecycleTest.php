@@ -109,27 +109,9 @@ class OrderLifecycleTest extends TestCase
 
     public function test_bundle_parent_remains_without_cost_while_child_receives_cost(): void
     {
-        [$order] = $this->orderWithInventory();
-        $child = $order->items()->firstOrFail();
-        $parent = OrderItem::create([
-            'order_id' => $order->id,
-            'product_id' => null,
-            'product_type' => 'bundle',
-            'sku' => 'BUNDLE-PARENT',
-            'name' => 'Bundle Parent',
-            'quantity' => 1,
-            'original_unit_price' => 0,
-            'unit_price' => 0,
-            'tax_amount' => 0,
-            'row_subtotal' => 0,
-            'row_total' => 0,
-            'unit_cost' => null,
-            'is_inventory_item' => false,
-        ]);
-        $child->update([
-            'parent_order_item_id' => $parent->id,
-            'product_type' => 'bundle_item',
-        ]);
+        [$order] = $this->orderWithInventory(withBundleParent: true);
+        $parent = $order->items()->where('product_type', 'bundle')->firstOrFail();
+        $child = $order->items()->where('product_type', 'bundle_item')->firstOrFail();
 
         $this->orderStatusService->process($order);
 
@@ -242,8 +224,9 @@ class OrderLifecycleTest extends TestCase
 
     public function test_prepayment_required_order_cannot_process_until_paid(): void
     {
-        [$order, $product] = $this->orderWithInventory();
-        $order->update(['requires_payment_before_processing' => true]);
+        [$order, $product] = $this->orderWithInventory(orderOverrides: [
+            'requires_payment_before_processing' => true,
+        ]);
 
         try {
             $this->orderStatusService->process($order);
@@ -497,8 +480,9 @@ class OrderLifecycleTest extends TestCase
     public function test_order_details_disables_processing_when_prepayment_is_missing(): void
     {
         $this->actingAs(User::factory()->create());
-        [$order] = $this->orderWithInventory();
-        $order->update(['requires_payment_before_processing' => true]);
+        [$order] = $this->orderWithInventory(orderOverrides: [
+            'requires_payment_before_processing' => true,
+        ]);
 
         $this->get(route('admin.orders.show', $order))
             ->assertOk()
@@ -586,11 +570,12 @@ class OrderLifecycleTest extends TestCase
     {
         $admin = User::factory()->create();
         $this->actingAs($admin);
-        [$order] = $this->orderWithInventory();
+        [$order] = $this->orderWithInventory(orderOverrides: [
+            'payment_method' => 'manual_wallet_transfer',
+        ]);
         $this->paymentStatusService->markFailed($order);
         $failedPayment = $order->payment->attempts()->firstOrFail()->fresh();
         $failedUpdatedAt = $failedPayment->updated_at;
-        $order->update(['payment_method' => 'manual_wallet_transfer']);
 
         $retried = $this->paymentStatusService->retry($order);
         $newPayment = $order->payment->attempts()->latest('attempt_number')->firstOrFail();
@@ -820,8 +805,12 @@ class OrderLifecycleTest extends TestCase
         }
     }
 
-    private function orderWithInventory(float $stock = 10, array $itemQuantities = [2]): array
-    {
+    private function orderWithInventory(
+        float $stock = 10,
+        array $itemQuantities = [2],
+        array $orderOverrides = [],
+        bool $withBundleParent = false,
+    ): array {
         $product = Product::create([
             'type' => 'simple',
             'sku' => 'SKU-'.uniqid(),
@@ -838,7 +827,7 @@ class OrderLifecycleTest extends TestCase
             'low_stock_alert' => null,
         ]);
 
-        $order = Order::create([
+        $order = Order::create(array_merge([
             'order_number' => 'ORD-'.str_pad((string) random_int(1, 99999999), 8, '0', STR_PAD_LEFT),
             'customer_email' => 'customer@example.com',
             'customer_first_name' => 'Test',
@@ -855,13 +844,32 @@ class OrderLifecycleTest extends TestCase
             'tax_total' => 0,
             'grand_total' => 20,
             'placed_at' => now(),
-        ]);
+        ], $orderOverrides));
+
+        $bundleParent = $withBundleParent
+            ? OrderItem::create([
+                'order_id' => $order->id,
+                'product_id' => null,
+                'product_type' => 'bundle',
+                'sku' => 'BUNDLE-PARENT',
+                'name' => 'Bundle Parent',
+                'quantity' => 1,
+                'original_unit_price' => 0,
+                'unit_price' => 0,
+                'tax_amount' => 0,
+                'row_subtotal' => 0,
+                'row_total' => 0,
+                'unit_cost' => null,
+                'is_inventory_item' => false,
+            ])
+            : null;
 
         foreach ($itemQuantities as $index => $quantity) {
             OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $product->id,
-                'product_type' => 'simple',
+                'parent_order_item_id' => $bundleParent?->id,
+                'product_type' => $bundleParent === null ? 'simple' : 'bundle_item',
                 'sku' => $product->sku,
                 'name' => 'Snapshot Product '.($index + 1),
                 'quantity' => $quantity,
@@ -879,8 +887,10 @@ class OrderLifecycleTest extends TestCase
             'payment_number' => 'PAY-'.now()->format('Y').'-'.str_pad((string) random_int(1, 999999), 6, '0', STR_PAD_LEFT),
             'order_id' => $order->id,
             'payment_method_id' => null,
-            'method_code' => 'cash_on_delivery',
-            'method_name' => 'Cash on Delivery',
+            'method_code' => $order->payment_method,
+            'method_name' => $order->payment_method === 'cash_on_delivery'
+                ? 'Cash on Delivery'
+                : 'Manual Wallet Transfer',
             'method_type' => 'offline',
             'status' => PaymentStatus::Pending,
             'amount' => $order->grand_total,
