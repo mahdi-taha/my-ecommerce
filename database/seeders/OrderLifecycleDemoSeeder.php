@@ -234,7 +234,6 @@ class OrderLifecycleDemoSeeder extends Seeder
             'tax_total' => 0,
             'grand_total' => $grandTotal,
             'customer_notes' => null,
-            'admin_notes' => 'Demo lifecycle scenario: '.$scenario['description'].'.',
             'placed_at' => now()->toDateTimeString(),
             'items' => [$item],
             'billing_address' => $this->address($firstName, $lastName, $scenario['email']),

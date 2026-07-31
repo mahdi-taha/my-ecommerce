@@ -295,7 +295,7 @@ class CheckoutOrderPlacementService
 
         return [
             'user_id' => $customer?->getKey(),
-            'customer_email' => $checkoutData['customer']['email'] ?? $customer?->email ?? '',
+            'customer_email' => $checkoutData['customer']['email'] ?? $customer?->email,
             'customer_first_name' => $checkoutData['customer']['first_name'],
             'customer_last_name' => $checkoutData['customer']['last_name'],
             'customer_phone' => $checkoutData['customer']['phone'] ?? null,
@@ -308,7 +308,6 @@ class CheckoutOrderPlacementService
             'tax_total' => $summary->taxTotal,
             'grand_total' => $summary->grandTotal,
             'customer_notes' => null,
-            'admin_notes' => null,
             'placed_at' => $timestamp,
             'billing_address' => $this->checkoutService->prepareAddressSnapshot(
                 $resolvedAddress,

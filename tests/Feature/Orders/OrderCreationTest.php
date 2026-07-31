@@ -136,7 +136,6 @@ class OrderCreationTest extends TestCase
             'tax_total' => 0,
             'grand_total' => 10,
             'customer_notes' => null,
-            'admin_notes' => null,
             'placed_at' => now(),
             'items' => [[
                 'product_id' => null,
