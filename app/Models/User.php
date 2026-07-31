@@ -120,6 +120,11 @@ class User extends Authenticatable
         return $this->hasMany(CustomerAddress::class);
     }
 
+    public function databaseNotifications(): HasMany
+    {
+        return $this->hasMany(DatabaseNotification::class);
+    }
+
     public function defaultAddress(): HasOne
     {
         return $this->defaultShippingAddress();

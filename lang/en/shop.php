@@ -318,6 +318,56 @@ return [
         ],
     ],
 
+    'notifications' => [
+        'title' => 'Notifications',
+        'empty' => 'No notifications are available.',
+        'unread' => 'Unread',
+        'mark_read' => 'Mark as read',
+        'marked_read' => 'Notification marked as read.',
+        'events' => [
+            'order_placed' => [
+                'title' => 'Order placed',
+                'body' => 'Order #:order_number has been placed.',
+            ],
+            'order_completed' => [
+                'title' => 'Order completed',
+                'body' => 'Order #:order_number has been completed.',
+            ],
+            'order_cancelled' => [
+                'title' => 'Order cancelled',
+                'body' => 'Order #:order_number has been cancelled.',
+            ],
+            'delivery_failed' => [
+                'title' => 'Delivery failed',
+                'body' => 'Delivery for Order #:order_number was unsuccessful.',
+            ],
+            'payment_paid' => [
+                'title' => 'Payment received',
+                'body' => 'Payment :payment_number for Order #:order_number has been paid.',
+            ],
+            'payment_failed' => [
+                'title' => 'Payment failed',
+                'body' => 'Payment :payment_number for Order #:order_number has failed.',
+            ],
+            'payment_cancelled' => [
+                'title' => 'Payment cancelled',
+                'body' => 'Payment :payment_number for Order #:order_number has been cancelled.',
+            ],
+            'cancellation_request_submitted' => [
+                'title' => 'Cancellation requested',
+                'body' => 'A cancellation request was submitted for Order #:order_number.',
+            ],
+            'cancellation_request_approved' => [
+                'title' => 'Cancellation request approved',
+                'body' => 'The cancellation request for Order #:order_number was approved.',
+            ],
+            'cancellation_request_rejected' => [
+                'title' => 'Cancellation request rejected',
+                'body' => 'The cancellation request for Order #:order_number was rejected.',
+            ],
+        ],
+    ],
+
     'navigation' => [
         'brand' => 'Electro',
         'home' => 'Home',

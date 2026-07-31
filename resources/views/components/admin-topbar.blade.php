@@ -8,20 +8,20 @@
               </a>
             </li>
             <li class="nav-item dropdown">
-              <a class="nav-link " href="javascript:void(0)" id="drop1" data-bs-toggle="dropdown" aria-expanded="false">
+              @php
+                $adminNotificationCount = auth('admin')->user()?->databaseNotifications()
+                  ->where('audience_code', \App\Enums\NotificationAudienceCode::Administrator->value)
+                  ->whereNull('read_at')
+                  ->count() ?? 0;
+              @endphp
+              <a class="nav-link position-relative" href="{{ route('admin.notifications.index') }}" aria-label="Notifications">
                 <i class="ti ti-bell"></i>
-                <div class="notification bg-primary rounded-circle"></div>
+                @if ($adminNotificationCount > 0)
+                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {{ $adminNotificationCount }}
+                  </span>
+                @endif
               </a>
-              <div class="dropdown-menu dropdown-menu-animate-up" aria-labelledby="drop1">
-                <div class="message-body">
-                  <a href="javascript:void(0)" class="dropdown-item">
-                    Item 1
-                  </a>
-                  <a href="javascript:void(0)" class="dropdown-item">
-                    Item 2
-                  </a>
-                </div>
-              </div>
             </li>
           </ul>
           <div class="navbar-collapse justify-content-end px-0" id="navbarNav">

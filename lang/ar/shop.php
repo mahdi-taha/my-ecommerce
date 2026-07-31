@@ -318,6 +318,56 @@ return [
         ],
     ],
 
+    'notifications' => [
+        'title' => 'الإشعارات',
+        'empty' => 'لا توجد إشعارات.',
+        'unread' => 'غير مقروء',
+        'mark_read' => 'تحديد كمقروء',
+        'marked_read' => 'تم تحديد الإشعار كمقروء.',
+        'events' => [
+            'order_placed' => [
+                'title' => 'تم تقديم الطلب',
+                'body' => 'تم تقديم الطلب رقم :order_number.',
+            ],
+            'order_completed' => [
+                'title' => 'اكتمل الطلب',
+                'body' => 'اكتمل الطلب رقم :order_number.',
+            ],
+            'order_cancelled' => [
+                'title' => 'أُلغي الطلب',
+                'body' => 'أُلغي الطلب رقم :order_number.',
+            ],
+            'delivery_failed' => [
+                'title' => 'فشل التوصيل',
+                'body' => 'تعذر توصيل الطلب رقم :order_number.',
+            ],
+            'payment_paid' => [
+                'title' => 'تم استلام الدفعة',
+                'body' => 'تم دفع الدفعة :payment_number للطلب رقم :order_number.',
+            ],
+            'payment_failed' => [
+                'title' => 'فشلت الدفعة',
+                'body' => 'فشلت الدفعة :payment_number للطلب رقم :order_number.',
+            ],
+            'payment_cancelled' => [
+                'title' => 'أُلغيت الدفعة',
+                'body' => 'أُلغيت الدفعة :payment_number للطلب رقم :order_number.',
+            ],
+            'cancellation_request_submitted' => [
+                'title' => 'تم طلب الإلغاء',
+                'body' => 'تم تقديم طلب إلغاء للطلب رقم :order_number.',
+            ],
+            'cancellation_request_approved' => [
+                'title' => 'تمت الموافقة على طلب الإلغاء',
+                'body' => 'تمت الموافقة على طلب إلغاء الطلب رقم :order_number.',
+            ],
+            'cancellation_request_rejected' => [
+                'title' => 'تم رفض طلب الإلغاء',
+                'body' => 'تم رفض طلب إلغاء الطلب رقم :order_number.',
+            ],
+        ],
+    ],
+
     'navigation' => [
         'brand' => 'إلكترو',
         'home' => 'الرئيسية',

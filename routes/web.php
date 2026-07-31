@@ -1,7 +1,8 @@
 <?php
 
-use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\OrderCancellationRequestController as AdminOrderCancellationRequestController;
+use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\AttributeOptionController;
 use App\Http\Controllers\CategoryController;
@@ -16,8 +17,9 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ShippingMethodController;
-use App\Http\Controllers\Shop\Account\OrderController as ShopAccountOrderController;
+use App\Http\Controllers\Shop\Account\NotificationController as ShopAccountNotificationController;
 use App\Http\Controllers\Shop\Account\OrderCancellationRequestController as ShopOrderCancellationRequestController;
+use App\Http\Controllers\Shop\Account\OrderController as ShopAccountOrderController;
 use App\Http\Controllers\Shop\CartController as ShopCartController;
 use App\Http\Controllers\Shop\CheckoutController as ShopCheckoutController;
 use App\Http\Controllers\Shop\CheckoutCouponController as ShopCheckoutCouponController;
@@ -84,6 +86,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 
     Route::middleware(['auth:admin', 'admin'])->group(function () {
+        Route::get('notifications', [AdminNotificationController::class, 'index'])
+            ->name('notifications.index');
+        Route::patch('notifications/{databaseNotification}/read', [AdminNotificationController::class, 'markAsRead'])
+            ->name('notifications.read');
+
         Route::get('customers', [CustomerController::class, 'index'])
             ->name('customers.index');
         Route::get('customers/create', [CustomerController::class, 'create'])
@@ -213,6 +220,10 @@ Route::middleware(['auth:customer', 'customer'])
     ->prefix('account')
     ->name('shop.account.')
     ->group(function () {
+        Route::get('notifications', [ShopAccountNotificationController::class, 'index'])
+            ->name('notifications.index');
+        Route::patch('notifications/{databaseNotification}/read', [ShopAccountNotificationController::class, 'markAsRead'])
+            ->name('notifications.read');
         Route::get('orders', [ShopAccountOrderController::class, 'index'])
             ->name('orders.index');
         Route::get('orders/{order}', [ShopAccountOrderController::class, 'show'])
