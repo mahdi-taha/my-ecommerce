@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateNotificationConfigurationRequest;
 use App\Models\Setting;
 use App\Models\Tax;
-use Illuminate\Http\Request;
+use App\Services\NotificationConfigurationService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Validation\Rule;
 
 class SettingsController extends Controller
 {
+    public function __construct(private NotificationConfigurationService $notifications) {}
+
     public function index()
     {
         $settings = Setting::pluck('value', 'key');
@@ -17,41 +19,16 @@ class SettingsController extends Controller
             ->active()
             ->orderBy('name')
             ->get(['id', 'name', 'rate']);
+        $notificationEvents = $this->notifications->administrationMatrix();
 
-        return view('admin.settings.index', compact('settings', 'taxes'));
+        return view('admin.settings.index', compact('settings', 'taxes', 'notificationEvents'));
     }
 
-    public function update(Request $request, Setting $setting)
+    public function update(UpdateNotificationConfigurationRequest $request, Setting $setting)
     {
-        $validated = $request->validate([
-            'store_name' => 'required|string|max:255',
-            'store_email' => 'nullable|email|max:255',
-            'store_phone' => 'nullable|string|max:50',
-            'store_address' => 'nullable|string',
-            'default_locale' => 'required|in:en,ar',
-            'timezone' => 'required|string|max:100',
-            'default_currency' => 'required|in:USD,LBP',
-            'tax_mode' => 'required|in:b2b,b2c',
-            'default_tax_id' => [
-                'nullable',
-                Rule::exists('taxes', 'id')->where(fn ($query) => $query->where('status', true)),
-            ],
-            'manage_stock' => 'nullable|boolean',
-            'allow_backorders' => 'nullable|boolean',
-            'allow_guest_checkout' => 'nullable|boolean',
-            'manual_whatsapp_number' => 'nullable|string|max:50',
-            'manual_wallet_title' => 'nullable|string|max:255',
-            'manual_wallet_name' => 'nullable|string|max:255',
-            'manual_wallet_number' => 'nullable|string|max:255',
-            'manual_wallet_instructions' => 'nullable|string|max:2000',
-            'manual_bank_title' => 'nullable|string|max:255',
-            'manual_bank_name' => 'nullable|string|max:255',
-            'manual_bank_account_name' => 'nullable|string|max:255',
-            'manual_bank_account_number' => 'nullable|string|max:255',
-            'manual_bank_iban' => 'nullable|string|max:255',
-            'manual_bank_swift' => 'nullable|string|max:255',
-            'manual_bank_instructions' => 'nullable|string|max:2000',
-        ]);
+        $validated = $request->validated();
+        $enabledNotificationRules = $validated['notification_rules'];
+        unset($validated['notification_rules']);
 
         $validated['manage_stock'] = $request->boolean('manage_stock');
         $validated['allow_backorders'] = $request->boolean('allow_backorders');
@@ -68,6 +45,8 @@ class SettingsController extends Controller
                 Cache::forget("setting.{$setting->group}.{$setting->key}");
             }
         }
+
+        $this->notifications->updateEnabledRules($enabledNotificationRules);
 
         return back()->with('success', 'Settings updated successfully.');
     }

@@ -260,6 +260,64 @@
                                 </div>
                             </div>
 
+                            {{-- Notification Configuration --}}
+                            <div class="col-12 mb-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Notifications</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="text-muted">
+                                            These rules configure future delivery channels. No notifications are sent in this version.
+                                        </p>
+
+                                        @foreach ($notificationEvents->groupBy('category') as $category => $events)
+                                            <h6 class="text-uppercase mt-4">{{ str_replace('_', ' ', $category) }}</h6>
+                                            <div class="table-responsive mb-3">
+                                                <table class="table table-bordered align-middle mb-0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Event</th>
+                                                            <th>Audience</th>
+                                                            <th>Channels</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($events as $notificationEvent)
+                                                            @foreach ($notificationEvent->rules->groupBy('notification_audience_id') as $audienceRules)
+                                                                <tr>
+                                                                    <td>{{ $notificationEvent->name }}</td>
+                                                                    <td>{{ $audienceRules->first()->audience->name }}</td>
+                                                                    <td>
+                                                                        <div class="d-flex flex-wrap gap-3">
+                                                                            @foreach ($audienceRules as $notificationRule)
+                                                                                <div class="form-check form-switch">
+                                                                                    <input class="form-check-input" type="checkbox"
+                                                                                        id="notification-rule-{{ $notificationRule->id }}"
+                                                                                        name="notification_rules[]"
+                                                                                        value="{{ $notificationRule->id }}"
+                                                                                        @checked(in_array($notificationRule->id, old('notification_rules', $notificationEvent->rules->where('is_enabled', true)->pluck('id')->all())))>
+                                                                                    <label class="form-check-label" for="notification-rule-{{ $notificationRule->id }}">
+                                                                                        {{ $notificationRule->channel->name }}
+                                                                                    </label>
+                                                                                </div>
+                                                                            @endforeach
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        @endforeach
+                                        @error('notification_rules.*')
+                                            <div class="text-danger mt-2">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
 
                         <div class="text-end">

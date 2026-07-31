@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             PaymentMethodSeeder::class,
             ShippingMethodSeeder::class,
             TaxSeeder::class,
+            NotificationConfigurationSeeder::class,
             AdminUserSeeder::class,
         ]);
 
