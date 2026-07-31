@@ -26,6 +26,7 @@ class CustomerAuthController extends Controller
     public function login(CustomerLoginRequest $request): RedirectResponse
     {
         $credentials = $request->validated();
+        $request->ensureIsNotRateLimited();
         $remember = (bool) ($credentials['remember'] ?? false);
         unset($credentials['remember']);
         $credentials['account_type'] = AccountType::Customer->value;
@@ -33,11 +34,14 @@ class CustomerAuthController extends Controller
         $credentials['is_active'] = true;
 
         if (! Auth::guard('customer')->attempt($credentials, $remember)) {
+            $request->hitRateLimiter();
+
             return back()->withErrors([
                 'email' => 'The provided credentials are invalid.',
             ])->onlyInput('email');
         }
 
+        $request->clearRateLimiter();
         $request->session()->regenerate();
         $customer = $request->user('customer');
         $customer->update(['last_login_at' => now()]);

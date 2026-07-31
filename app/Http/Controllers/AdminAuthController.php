@@ -19,6 +19,7 @@ class AdminAuthController extends Controller
     public function login(AdminLoginRequest $request): RedirectResponse
     {
         $credentials = $request->validated();
+        $request->ensureIsNotRateLimited();
 
         $remember = (bool) ($credentials['remember'] ?? false);
         unset($credentials['remember']);
@@ -27,6 +28,8 @@ class AdminAuthController extends Controller
         $credentials['is_active'] = true;
 
         if (! Auth::guard('admin')->attempt($credentials, $remember)) {
+            $request->hitRateLimiter();
+
             return back()
                 ->withErrors([
                     'email' => 'The provided credentials are invalid.',
@@ -34,6 +37,7 @@ class AdminAuthController extends Controller
                 ->onlyInput('email');
         }
 
+        $request->clearRateLimiter();
         $request->session()->regenerate();
         $request->user('admin')->update([
             'last_login_at' => now(),

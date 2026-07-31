@@ -2,10 +2,13 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ThrottlesLoginAttempts;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CustomerLoginRequest extends FormRequest
 {
+    use ThrottlesLoginAttempts;
+
     public function authorize(): bool
     {
         return true;
@@ -18,5 +21,10 @@ class CustomerLoginRequest extends FormRequest
             'password' => ['required', 'string'],
             'remember' => ['nullable', 'boolean'],
         ];
+    }
+
+    protected function loginLimiterNamespace(): string
+    {
+        return 'customer-login';
     }
 }
