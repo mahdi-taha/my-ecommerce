@@ -32,6 +32,49 @@
                         </div>
                     @endif
 
+                    @if ($order->cancellationRequests->isNotEmpty())
+                        <div class="card shadow mb-4">
+                            <div class="card-header"><h5 class="mb-0">Customer Cancellation Requests</h5></div>
+                            <div class="card-body">
+                                @foreach ($order->cancellationRequests as $cancellationRequest)
+                                    <div class="border rounded p-3 mb-3">
+                                        <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+                                            <strong>{{ ucfirst($cancellationRequest->status->value) }}</strong>
+                                            <span class="text-muted">{{ $cancellationRequest->created_at?->format('Y-m-d H:i') }}</span>
+                                        </div>
+                                        <p class="mb-1"><strong>Requester:</strong> {{ $cancellationRequest->requester?->name }} ({{ $cancellationRequest->requester?->email }})</p>
+                                        <p class="mb-2"><strong>Reason:</strong> {{ $cancellationRequest->reason }}</p>
+                                        @if ($cancellationRequest->admin_note)
+                                            <p class="mb-2"><strong>Admin Note:</strong> {{ $cancellationRequest->admin_note }}</p>
+                                        @endif
+                                        @if ($cancellationRequest->reviewed_at)
+                                            <p class="text-muted mb-2">Reviewed by {{ $cancellationRequest->reviewer?->name ?? 'Deleted administrator' }} at {{ $cancellationRequest->reviewed_at->format('Y-m-d H:i') }}</p>
+                                        @endif
+
+                                        @if ($cancellationRequest->status === \App\Enums\OrderCancellationRequestStatus::Pending)
+                                            <div class="d-flex flex-wrap gap-3 align-items-start">
+                                                <form method="POST" action="{{ route('admin.orders.cancellation-requests.approve', [$order, $cancellationRequest]) }}">
+                                                    @csrf
+                                                    <button class="btn btn-danger" type="submit">Approve Cancellation</button>
+                                                </form>
+                                                <form class="flex-grow-1" method="POST" action="{{ route('admin.orders.cancellation-requests.reject', [$order, $cancellationRequest]) }}">
+                                                    @csrf
+                                                    <label class="form-label" for="admin-note-{{ $cancellationRequest->id }}">Rejection Note</label>
+                                                    <div class="input-group">
+                                                        <input class="form-control @error('admin_note') is-invalid @enderror"
+                                                            id="admin-note-{{ $cancellationRequest->id }}" name="admin_note" required maxlength="2000">
+                                                        <button class="btn btn-outline-secondary" type="submit">Reject Request</button>
+                                                    </div>
+                                                    @error('admin_note')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                                                </form>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     @if (in_array(true, $availableActions, true))
                         <div class="card shadow mb-4">
                             <div class="card-header"><h5 class="mb-0">Actions</h5></div>

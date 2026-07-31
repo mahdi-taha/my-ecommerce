@@ -303,6 +303,18 @@ return [
             'timeline' => 'سجل الطلب',
             'no_history' => 'لا يتوفر سجل لهذا الطلب.',
             'totals' => 'إجماليات الطلب',
+            'cancellation' => [
+                'title' => 'طلبات الإلغاء',
+                'request_button' => 'طلب إلغاء',
+                'reason' => 'سبب الإلغاء',
+                'rejection_reason' => 'سبب الرفض',
+                'requested' => 'تم إرسال طلب الإلغاء للمراجعة.',
+                'already_pending' => 'يوجد طلب إلغاء قيد المراجعة لهذا الطلب.',
+                'not_eligible' => 'هذا الطلب غير مؤهل لطلب الإلغاء.',
+                'status_pending' => 'قيد المراجعة',
+                'status_approved' => 'تمت الموافقة',
+                'status_rejected' => 'مرفوض',
+            ],
         ],
     ],
 

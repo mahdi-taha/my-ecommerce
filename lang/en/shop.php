@@ -303,6 +303,18 @@ return [
             'timeline' => 'Order Timeline',
             'no_history' => 'No Order history is available.',
             'totals' => 'Order Totals',
+            'cancellation' => [
+                'title' => 'Cancellation Requests',
+                'request_button' => 'Request Cancellation',
+                'reason' => 'Cancellation Reason',
+                'rejection_reason' => 'Rejection Reason',
+                'requested' => 'Your cancellation request was submitted for review.',
+                'already_pending' => 'A cancellation request for this Order is already pending.',
+                'not_eligible' => 'This Order is not eligible for a cancellation request.',
+                'status_pending' => 'Pending Review',
+                'status_approved' => 'Approved',
+                'status_rejected' => 'Rejected',
+            ],
         ],
     ],
 

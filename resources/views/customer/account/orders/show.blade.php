@@ -34,6 +34,46 @@
         </div>
     </div></div>
 
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+            <h2 class="h5 mb-3">{{ __('shop.account.orders.cancellation.title') }}</h2>
+
+            @if (session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+
+            @foreach ($order->cancellationRequests as $cancellationRequest)
+                <div class="border rounded p-3 mb-3">
+                    <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+                        <strong>{{ __('shop.account.orders.cancellation.status_'.$cancellationRequest->status->value) }}</strong>
+                        <small class="text-muted">{{ $cancellationRequest->created_at?->format('Y-m-d H:i') }}</small>
+                    </div>
+                    <p class="mb-1"><strong>{{ __('shop.account.orders.cancellation.reason') }}:</strong> {{ $cancellationRequest->reason }}</p>
+                    @if ($cancellationRequest->status === \App\Enums\OrderCancellationRequestStatus::Rejected)
+                        <p class="mb-0 text-danger"><strong>{{ __('shop.account.orders.cancellation.rejection_reason') }}:</strong> {{ $cancellationRequest->admin_note }}</p>
+                    @endif
+                </div>
+            @endforeach
+
+            @if ($canRequestCancellation)
+                <form method="POST" action="{{ route('shop.account.orders.cancellation-requests.store', $order) }}">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label" for="cancellation-reason">{{ __('shop.account.orders.cancellation.reason') }}</label>
+                        <textarea id="cancellation-reason" name="reason" rows="4"
+                            class="form-control @error('reason') is-invalid @enderror" required maxlength="2000">{{ old('reason') }}</textarea>
+                        @error('reason')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <button class="btn btn-outline-danger" type="submit">
+                        {{ __('shop.account.orders.cancellation.request_button') }}
+                    </button>
+                </form>
+            @elseif ($order->cancellationRequests->isEmpty())
+                <p class="text-muted mb-0">{{ __('shop.account.orders.cancellation.not_eligible') }}</p>
+            @endif
+        </div>
+    </div>
+
     <div class="row g-4 mb-4">
         @foreach ([['address' => $billingAddress, 'label' => 'billing_address'], ['address' => $shippingAddress, 'label' => 'shipping_address']] as $block)
             <div class="col-md-6">

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\Admin\OrderCancellationRequestController as AdminOrderCancellationRequestController;
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\AttributeOptionController;
 use App\Http\Controllers\CategoryController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\Shop\Account\OrderController as ShopAccountOrderController;
+use App\Http\Controllers\Shop\Account\OrderCancellationRequestController as ShopOrderCancellationRequestController;
 use App\Http\Controllers\Shop\CartController as ShopCartController;
 use App\Http\Controllers\Shop\CheckoutController as ShopCheckoutController;
 use App\Http\Controllers\Shop\CheckoutCouponController as ShopCheckoutCouponController;
@@ -161,6 +163,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('orders.delivery-failed');
         Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])
             ->name('orders.cancel');
+        Route::post('orders/{order}/cancellation-requests/{cancellationRequest}/approve', [AdminOrderCancellationRequestController::class, 'approve'])
+            ->name('orders.cancellation-requests.approve');
+        Route::post('orders/{order}/cancellation-requests/{cancellationRequest}/reject', [AdminOrderCancellationRequestController::class, 'reject'])
+            ->name('orders.cancellation-requests.reject');
         Route::post('orders/{order}/payments/paid', [OrderController::class, 'markPaid'])
             ->name('orders.payments.paid');
         Route::post('orders/{order}/payments/failed', [OrderController::class, 'markFailed'])
@@ -211,6 +217,8 @@ Route::middleware(['auth:customer', 'customer'])
             ->name('orders.index');
         Route::get('orders/{order}', [ShopAccountOrderController::class, 'show'])
             ->name('orders.show');
+        Route::post('orders/{order}/cancellation-requests', [ShopOrderCancellationRequestController::class, 'store'])
+            ->name('orders.cancellation-requests.store');
     });
 
 Route::middleware(['auth:customer', 'customer'])->name('customer.')->group(function () {

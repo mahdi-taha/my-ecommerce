@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\FulfillmentStatus;
+use App\Enums\OrderCancellationRequestStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
+use App\Services\OrderCancellationRequestService;
 use App\Services\OrderStatusService;
 use App\Services\PaymentStatusService;
 use Illuminate\Http\Request;
@@ -18,7 +20,8 @@ class OrderController extends Controller
 {
     public function __construct(
         private OrderStatusService $orderStatusService,
-        private PaymentStatusService $paymentStatusService
+        private PaymentStatusService $paymentStatusService,
+        private OrderCancellationRequestService $cancellationRequests
     ) {}
 
     public function index(Request $request)
@@ -124,6 +127,10 @@ class OrderController extends Controller
                 'attempts' => fn ($query) => $query->latest('attempt_number'),
             ]),
             'statusHistory' => fn ($query) => $query->with('user:id,name')->latest('created_at'),
+            'cancellationRequests' => fn ($query) => $query
+                ->with(['requester:id,name,email', 'reviewer:id,name'])
+                ->latest('created_at')
+                ->latest('id'),
         ]);
 
         $rootItems = $order->items
@@ -192,7 +199,9 @@ class OrderController extends Controller
                 && $order->fulfillment_status === FulfillmentStatus::OutForDelivery->value,
             'delivery_failed' => $order->status === OrderStatus::Processing->value
                 && $order->fulfillment_status === FulfillmentStatus::OutForDelivery->value,
-            'cancel' => ($order->status === OrderStatus::Pending->value
+            'cancel' => ! $order->cancellationRequests->contains(
+                fn ($request) => $request->status === OrderCancellationRequestStatus::Pending
+            ) && ($order->status === OrderStatus::Pending->value
                 || ($order->status === OrderStatus::Processing->value
                     && $order->fulfillment_status === FulfillmentStatus::Unfulfilled->value))
                 && $order->payment_status !== PaymentStatus::Paid->value
@@ -248,7 +257,7 @@ class OrderController extends Controller
     {
         return $this->runLifecycleAction(
             $order,
-            fn () => $this->orderStatusService->cancel($order),
+            fn () => $this->cancellationRequests->cancelDirectly($order),
             'Order cancelled successfully.'
         );
     }

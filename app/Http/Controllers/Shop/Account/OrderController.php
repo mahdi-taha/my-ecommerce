@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Shop\Account;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Presenters\ManualPaymentInstructionsPresenter;
+use App\Services\OrderCancellationRequestService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class OrderController extends Controller
 {
-    public function __construct(private ManualPaymentInstructionsPresenter $paymentInstructions) {}
+    public function __construct(
+        private ManualPaymentInstructionsPresenter $paymentInstructions,
+        private OrderCancellationRequestService $cancellationRequests
+    ) {}
 
     public function index(Request $request): View
     {
@@ -38,10 +42,19 @@ class OrderController extends Controller
             'statusHistory' => fn ($query) => $query
                 ->latest('created_at')
                 ->latest('id'),
+            'cancellationRequests' => fn ($query) => $query
+                ->with('reviewer:id,name')
+                ->latest('created_at')
+                ->latest('id'),
         ]);
 
         $manualPayment = $this->paymentInstructions->present($order);
+        $canRequestCancellation = $this->cancellationRequests->canRequest($order);
 
-        return view('customer.account.orders.show', compact('order', 'manualPayment'));
+        return view('customer.account.orders.show', compact(
+            'order',
+            'manualPayment',
+            'canRequestCancellation'
+        ));
     }
 }

@@ -67,4 +67,9 @@ class Order extends Model
     {
         return $this->hasOne(CouponUsage::class);
     }
+
+    public function cancellationRequests(): HasMany
+    {
+        return $this->hasMany(OrderCancellationRequest::class);
+    }
 }
