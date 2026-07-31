@@ -38,6 +38,9 @@ class NotificationConfigurationService
                 'audience:id,code',
                 'channel:id,code',
             ])
+            ->orderBy('notification_event_id')
+            ->orderBy('notification_audience_id')
+            ->orderBy('notification_channel_id')
             ->get()
             ->map(fn (NotificationRule $rule) => [
                 'event' => $rule->event->code,
@@ -45,6 +48,19 @@ class NotificationConfigurationService
                 'channel' => $rule->channel->code,
             ])
             ->all());
+    }
+
+    public function enabledRulesFor(string $eventCode): array
+    {
+        return collect($this->enabledRules())
+            ->where('event', $eventCode)
+            ->map(fn (array $rule) => [
+                'audience' => $rule['audience'],
+                'channel' => $rule['channel'],
+            ])
+            ->sortBy(fn (array $rule) => $rule['audience'].'|'.$rule['channel'])
+            ->values()
+            ->all();
     }
 
     public function updateEnabledRules(array $enabledRuleIds): void

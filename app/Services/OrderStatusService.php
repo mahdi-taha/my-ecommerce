@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Enums\FulfillmentStatus;
+use App\Enums\NotificationEventCode;
 use App\Enums\OrderHistoryType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentAttemptStatus;
 use App\Enums\PaymentStatus;
+use App\Events\CommerceEventOccurred;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderPayment;
@@ -216,6 +218,12 @@ class OrderStatusService
                 $userId
             );
 
+            CommerceEventOccurred::dispatch(
+                NotificationEventCode::DeliveryFailed,
+                'order',
+                (int) $lockedOrder->getKey()
+            );
+
             return $lockedOrder->fresh();
         });
     }
@@ -287,6 +295,12 @@ class OrderStatusService
                 'created_by' => $userId,
                 'comment' => null,
             ]);
+
+            CommerceEventOccurred::dispatch(
+                NotificationEventCode::OrderCancelled,
+                'order',
+                (int) $lockedOrder->getKey()
+            );
 
             return $lockedOrder->fresh();
         });
@@ -450,6 +464,12 @@ class OrderStatusService
             $fromStatus,
             PaymentStatus::Cancelled->value,
             $userId
+        );
+
+        CommerceEventOccurred::dispatch(
+            NotificationEventCode::PaymentCancelled,
+            'order_payment',
+            (int) $payment->getKey()
         );
     }
 

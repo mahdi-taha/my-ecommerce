@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Enums\NotificationEventCode;
 use App\Enums\OrderHistoryType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentAttemptStatus;
 use App\Enums\PaymentStatus;
+use App\Events\CommerceEventOccurred;
 use App\Models\Order;
 use App\Models\OrderPayment;
 use App\Models\OrderStatusHistory;
@@ -151,6 +153,14 @@ class PaymentStatusService
                 PaymentStatus::Pending,
                 $targetStatus,
                 $userId
+            );
+
+            CommerceEventOccurred::dispatch(
+                $targetStatus === PaymentStatus::Paid
+                    ? NotificationEventCode::PaymentPaid
+                    : NotificationEventCode::PaymentFailed,
+                'order_payment',
+                (int) $payment->getKey()
             );
 
             if ($targetStatus === PaymentStatus::Paid) {

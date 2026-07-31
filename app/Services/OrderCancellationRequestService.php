@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Enums\FulfillmentStatus;
+use App\Enums\NotificationEventCode;
 use App\Enums\OrderCancellationRequestStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Events\CommerceEventOccurred;
 use App\Models\Order;
 use App\Models\OrderCancellationRequest;
 use App\Models\User;
@@ -33,13 +35,21 @@ class OrderCancellationRequestService
                 ]);
             }
 
-            return OrderCancellationRequest::query()->create([
+            $cancellationRequest = OrderCancellationRequest::query()->create([
                 'order_id' => $lockedOrder->getKey(),
                 'user_id' => $customer->getKey(),
                 'reason' => trim($reason),
                 'status' => OrderCancellationRequestStatus::Pending,
                 'pending_marker' => true,
             ]);
+
+            CommerceEventOccurred::dispatch(
+                NotificationEventCode::CancellationRequestSubmitted,
+                'order_cancellation_request',
+                (int) $cancellationRequest->getKey()
+            );
+
+            return $cancellationRequest;
         });
     }
 
@@ -63,6 +73,12 @@ class OrderCancellationRequestService
                 'reviewed_at' => $timestamp,
             ]);
 
+            CommerceEventOccurred::dispatch(
+                NotificationEventCode::CancellationRequestApproved,
+                'order_cancellation_request',
+                (int) $lockedRequest->getKey()
+            );
+
             return $lockedRequest->fresh(['requester', 'reviewer']);
         });
     }
@@ -85,6 +101,12 @@ class OrderCancellationRequestService
                 'reviewed_by' => $administrator->getKey(),
                 'reviewed_at' => now(),
             ]);
+
+            CommerceEventOccurred::dispatch(
+                NotificationEventCode::CancellationRequestRejected,
+                'order_cancellation_request',
+                (int) $lockedRequest->getKey()
+            );
 
             return $lockedRequest->fresh(['requester', 'reviewer']);
         });

@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Enums\FulfillmentStatus;
+use App\Enums\NotificationEventCode;
 use App\Enums\OrderHistoryType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Events\CommerceEventOccurred;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use Illuminate\Support\Facades\DB;
@@ -43,5 +45,11 @@ class OrderCompletionService
             'created_by' => $userId,
             'comment' => null,
         ]);
+
+        CommerceEventOccurred::dispatch(
+            NotificationEventCode::OrderCompleted,
+            'order',
+            (int) $order->getKey()
+        );
     }
 }

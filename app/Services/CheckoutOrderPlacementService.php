@@ -5,6 +5,8 @@ namespace App\Services;
 use App\DTOs\Checkout\CheckoutOrderPlacementResult;
 use App\DTOs\Checkout\CheckoutValidationError;
 use App\Enums\CartItemType;
+use App\Enums\NotificationEventCode;
+use App\Events\CommerceEventOccurred;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\PaymentMethod;
@@ -190,6 +192,12 @@ class CheckoutOrderPlacementService
             }
 
             $this->cartService->clearForCheckout($lockedCart, $timestamp);
+
+            CommerceEventOccurred::dispatch(
+                NotificationEventCode::OrderPlaced,
+                'order',
+                (int) $order->getKey()
+            );
 
             return CheckoutOrderPlacementResult::success(
                 $order->load(['addresses', 'shipping', 'items.options', 'payment', 'statusHistory'])
