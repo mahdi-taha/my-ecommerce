@@ -22,7 +22,7 @@ return new class extends Migration
             $table->text('body');
             $table->json('payload')->nullable();
             $table->timestamp('read_at')->nullable();
-            $table->timestamp('created_at');
+            $table->timestamp('created_at')->useCurrent();
 
             $table->index(['user_id', 'read_at', 'created_at']);
             $table->index('event_code');
