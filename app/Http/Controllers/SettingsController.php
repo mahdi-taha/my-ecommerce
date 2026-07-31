@@ -23,8 +23,6 @@ class SettingsController extends Controller
         'default_currency' => ['currency', 'default_currency'],
         'tax_mode' => ['tax', 'tax_mode'],
         'default_tax_id' => ['tax', 'default_tax_id'],
-        'manage_stock' => ['inventory', 'manage_stock'],
-        'allow_backorders' => ['inventory', 'allow_backorders'],
         'allow_guest_checkout' => ['checkout', 'allow_guest_checkout'],
         'manual_whatsapp_number' => ['payments', 'manual_whatsapp_number'],
         'manual_wallet_title' => ['payments', 'manual_wallet_title'],
@@ -74,8 +72,6 @@ class SettingsController extends Controller
         $enabledNotificationRules = $validated['notification_rules'];
         unset($validated['notification_rules']);
 
-        $validated['manage_stock'] = $request->boolean('manage_stock');
-        $validated['allow_backorders'] = $request->boolean('allow_backorders');
         $validated['allow_guest_checkout'] = $request->boolean('allow_guest_checkout');
 
         foreach ($validated as $field => $value) {

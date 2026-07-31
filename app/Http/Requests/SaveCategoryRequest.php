@@ -23,7 +23,8 @@ class SaveCategoryRequest extends FormRequest
         return [
             'parent_id' => ['nullable', 'integer', Rule::exists('categories', 'id'), Rule::notIn($category ? [$category->id] : [])],
             'position' => ['required', 'integer', 'min:0'], 'status' => ['required', 'boolean'],
-            'logo' => ['nullable', 'image'], 'banner' => ['nullable', 'image'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'banner' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'category_name_en' => ['required', 'string', 'max:255'],
             'category_slug_en' => ['required', 'string', 'max:255', Rule::unique('category_translations', 'slug')->where('locale', 'en')->ignore($english?->id)],
             'meta_title_en' => ['nullable', 'string', 'max:255'], 'meta_description_en' => ['nullable', 'string'], 'meta_keywords_en' => ['nullable', 'string'],

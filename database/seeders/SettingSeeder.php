@@ -31,10 +31,6 @@ class SettingSeeder extends Seeder
             ['group' => 'tax', 'key' => 'tax_mode', 'value' => 'b2c', 'type' => 'select'],
             ['group' => 'tax', 'key' => 'default_tax_id', 'value' => null, 'type' => 'select'],
 
-            // Inventory
-            ['group' => 'inventory', 'key' => 'manage_stock', 'value' => '1', 'type' => 'boolean'],
-            ['group' => 'inventory', 'key' => 'allow_backorders', 'value' => '0', 'type' => 'boolean'],
-
             // Cart
             ['group' => 'cart', 'key' => 'lifetime_days', 'value' => '30', 'type' => 'integer'],
 

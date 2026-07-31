@@ -139,37 +139,6 @@
                                 </div>
                             </div>
 
-                            {{-- Inventory --}}
-                            <div class="col-12 mb-4">
-                                <div class="card shadow-sm">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">Inventory</h5>
-                                    </div>
-
-                                    <div class="card-body">
-
-                                        <div class="form-check form-switch mb-3">
-                                            <input class="form-check-input" type="checkbox" id="manage_stock"
-                                                name="manage_stock" value="1" @checked(($settings['manage_stock'] ?? 0) == 1)>
-
-                                            <label class="form-check-label" for="manage_stock">
-                                                Manage Stock
-                                            </label>
-                                        </div>
-
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="allow_backorders"
-                                                name="allow_backorders" value="1" @checked(($settings['allow_backorders'] ?? 0) == 1)>
-
-                                            <label class="form-check-label" for="allow_backorders">
-                                                Allow Backorders
-                                            </label>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-
                             {{-- Checkout --}}
                             <div class="col-12 mb-4">
                                 <div class="card shadow-sm">

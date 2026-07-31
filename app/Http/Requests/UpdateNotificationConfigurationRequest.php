@@ -34,8 +34,6 @@ class UpdateNotificationConfigurationRequest extends FormRequest
                 'nullable',
                 Rule::exists('taxes', 'id')->where(fn ($query) => $query->where('status', true)),
             ],
-            'manage_stock' => ['nullable', 'boolean'],
-            'allow_backorders' => ['nullable', 'boolean'],
             'allow_guest_checkout' => ['nullable', 'boolean'],
             'manual_whatsapp_number' => ['nullable', 'string', 'max:50'],
             'manual_wallet_title' => ['nullable', 'string', 'max:255'],
