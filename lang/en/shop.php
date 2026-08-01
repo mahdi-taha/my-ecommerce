@@ -2,6 +2,7 @@
 
 return [
     'auth' => [
+        'account_inactive' => 'Your customer account is inactive. Please contact support or sign in with an active account.',
         'login' => [
             'title' => 'Customer Login',
             'email' => 'Email',

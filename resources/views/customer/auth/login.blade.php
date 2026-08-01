@@ -13,6 +13,9 @@
             <div class="card shadow-sm">
                 <div class="card-body p-4">
                     <h1 class="h4 mb-4">{{ __('shop.auth.login.title') }}</h1>
+                    @if (session('error'))
+                        <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+                    @endif
                     <form method="POST" action="{{ route('customer.login.store') }}">
                         @csrf
                         <div class="mb-3">

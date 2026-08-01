@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AssignCorrelationId;
+use App\Http\Middleware\EnforceActiveCustomerSession;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsCustomer;
 use App\Http\Middleware\ResolveStorefrontCart;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(AssignCorrelationId::class);
+        $middleware->web(append: [EnforceActiveCustomerSession::class]);
 
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
