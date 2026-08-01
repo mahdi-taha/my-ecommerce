@@ -65,6 +65,90 @@
     padding-left: 0 !important;
 }
 
+/* Scalable storefront category navigation. */
+.storefront-category-menu .storefront-category-mega-menu {
+    inset: 100% auto auto 0 !important;
+    width: min(960px, calc(100vw - 280px));
+    min-width: 680px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 0 0 .625rem .625rem;
+    background: var(--bs-light);
+    box-shadow: 0 .75rem 2rem rgba(0, 0, 0, .12);
+}
+
+.storefront-category-roots,
+.storefront-category-panels {
+    max-height: min(65vh, 560px);
+    overflow-y: auto;
+}
+
+.storefront-category-roots {
+    padding: .75rem 0;
+    border-inline-end: 1px solid rgba(0, 0, 0, .1);
+    background: rgba(var(--bs-primary-rgb), .06);
+}
+
+.storefront-category-root {
+    padding: .75rem 1rem;
+    color: var(--bs-dark);
+    background: transparent;
+    overflow-wrap: anywhere;
+}
+
+.storefront-category-root:hover,
+.storefront-category-root:focus-visible,
+.storefront-category-root.active {
+    color: var(--bs-white);
+    background: var(--bs-primary);
+}
+
+.storefront-category-panels {
+    padding: 1.5rem;
+}
+
+.storefront-category-panel[hidden] {
+    display: none;
+}
+
+.storefront-category-branch {
+    padding-inline-start: .75rem;
+}
+
+.storefront-category-branch li + li {
+    margin-top: .4rem;
+}
+
+.storefront-category-branch .storefront-category-branch {
+    margin-top: .4rem;
+    padding-inline-start: 1rem;
+    border-inline-start: 1px solid rgba(0, 0, 0, .1);
+}
+
+.storefront-category-branch a,
+.storefront-category-panel > a {
+    overflow-wrap: anywhere;
+}
+
+.storefront-mobile-category > .categories-bars-item {
+    background: transparent;
+}
+
+.storefront-mobile-category > button.categories-bars-item[aria-expanded="true"] {
+    color: var(--bs-white);
+    background: var(--bs-primary);
+}
+
+[dir="rtl"] .storefront-category-menu .storefront-category-mega-menu {
+    right: 0 !important;
+    left: auto !important;
+}
+
+[dir="rtl"] .storefront-category-root,
+[dir="rtl"] .storefront-mobile-category .categories-bars-item {
+    text-align: right !important;
+}
+
 @media (min-width: 992px) {
     [dir="rtl"] .storefront-topbar .text-lg-start,
     [dir="rtl"] .storefront-header-main .text-lg-start {

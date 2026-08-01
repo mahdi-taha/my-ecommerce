@@ -34,11 +34,12 @@
                         </a>
 
                         <div class="nav-item dropdown d-block d-lg-none">
-                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
-                                aria-expanded="false">
+                            <button class="nav-link dropdown-toggle border-0 bg-transparent w-100 text-start"
+                                type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                aria-expanded="false" aria-controls="mobileCategoriesMenu">
                                 {{ __('shop.navigation.all_categories') }}
-                            </a>
-                            <div class="dropdown-menu m-0 px-3">
+                            </button>
+                            <div class="dropdown-menu m-0 px-3" id="mobileCategoriesMenu">
                                 @include('shop.components.category-tree', ['categories' => $storefrontCategoryTree])
                             </div>
                         </div>
