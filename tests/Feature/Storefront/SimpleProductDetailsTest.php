@@ -56,8 +56,8 @@ class SimpleProductDetailsTest extends TestCase
         app()->setLocale('en');
         $this->get(route('shop.products.show', 'camera-ar'))->assertNotFound();
 
-        app()->setLocale('ar');
-        $this->get(route('shop.products.show', 'camera-ar'))
+        $this->withSession(['storefront_locale' => 'ar'])
+            ->get(route('shop.products.show', 'camera-ar'))
             ->assertOk()
             ->assertSee('كاميرا محلية');
     }

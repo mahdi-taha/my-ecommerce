@@ -24,9 +24,8 @@ class AccessibilityMarkupTest extends TestCase
             ->assertSee('autocomplete="tel"', false)
             ->assertSee('autocomplete="new-password"', false);
 
-        app()->setLocale('ar');
-
-        $this->get(route('customer.password.request'))
+        $this->withSession(['storefront_locale' => 'ar'])
+            ->get(route('customer.password.request'))
             ->assertOk()
             ->assertSee('<html lang="ar" dir="rtl">', false)
             ->assertSee('autocomplete="email"', false);

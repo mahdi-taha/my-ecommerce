@@ -22,9 +22,8 @@ class CustomerPasswordResetTest extends TestCase
             ->assertSee(__('shop.auth.password.forgot_title'))
             ->assertSee(route('customer.password.email'), false);
 
-        app()->setLocale('ar');
-
-        $this->get(route('customer.password.reset', ['token' => 'token', 'email' => 'test@example.test']))
+        $this->withSession(['storefront_locale' => 'ar'])
+            ->get(route('customer.password.reset', ['token' => 'token', 'email' => 'test@example.test']))
             ->assertOk()
             ->assertSee('<html lang="ar" dir="rtl">', false)
             ->assertSee(__('shop.auth.password.reset_title'))

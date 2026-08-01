@@ -82,8 +82,8 @@ class PaymentStatusPresentationTest extends TestCase
         }
 
         foreach (['en', 'ar'] as $locale) {
-            app()->setLocale($locale);
-            $history = $this->actingAs($customer, 'customer')
+            $history = $this->withSession(['storefront_locale' => $locale])
+                ->actingAs($customer, 'customer')
                 ->get(route('shop.account.orders.index'));
 
             foreach (PaymentStatus::cases() as $status) {

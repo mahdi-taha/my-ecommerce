@@ -28,9 +28,8 @@ class CustomerRegistrationTest extends TestCase
             ->assertSee(route('customer.register.store'), false)
             ->assertSee(route('customer.login'), false);
 
-        app()->setLocale('ar');
-
-        $this->get(route('customer.register'))
+        $this->withSession(['storefront_locale' => 'ar'])
+            ->get(route('customer.register'))
             ->assertOk()
             ->assertSee('<html lang="ar" dir="rtl">', false)
             ->assertSee(__('shop.auth.register.title'));
