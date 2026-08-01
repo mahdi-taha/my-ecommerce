@@ -1,11 +1,9 @@
-<!doctype html>
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
-<head>
-    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ __('shop.account.profile.change_password') }}</title>
-    @vite(['resources/css/app.css', 'resources/css/styles.min.css', 'resources/js/app.js'])
-</head>
-<body class="bg-light"><main class="container py-5"><div class="row justify-content-center"><div class="col-lg-6">
+@extends('customer.account.layout')
+
+@section('title', __('shop.account.profile.change_password'))
+
+@section('account-content')
+<div class="row justify-content-center"><div class="col-lg-6">
     <div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h3 mb-0">{{ __('shop.account.profile.change_password') }}</h1><a class="btn btn-outline-secondary" href="{{ route('customer.account.edit') }}">{{ __('shop.account.password.back') }}</a></div>
     @if (session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
     <div class="card shadow-sm"><div class="card-body"><form method="POST" action="{{ route('customer.account.password.update') }}">
@@ -15,4 +13,5 @@
         <div class="mb-3"><label class="form-label" for="password_confirmation">{{ __('shop.account.password.confirm_password') }}</label><input class="form-control" id="password_confirmation" name="password_confirmation" type="password" required></div>
         <button class="btn btn-primary">{{ __('shop.account.password.update') }}</button>
     </form></div></div>
-</div></div></main></body></html>
+</div></div>
+@endsection

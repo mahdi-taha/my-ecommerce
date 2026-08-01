@@ -1,14 +1,8 @@
-<!doctype html>
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ __('shop.account.orders.my_orders') }}</title>
-    @vite(['resources/css/app.css', 'resources/css/styles.min.css', 'resources/js/app.js'])
-</head>
-<body class="bg-light">
-<main class="container py-5">
-    @include('customer.account._navigation')
+@extends('customer.account.layout')
+
+@section('title', __('shop.account.orders.my_orders'))
+
+@section('account-content')
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <h1 class="h3 mb-0">{{ __('shop.account.orders.my_orders') }}</h1>
         <a class="btn btn-outline-secondary" href="{{ route('customer.account.edit') }}">
@@ -63,6 +57,4 @@
     @if ($orders->hasPages())
         <div class="mt-4">{{ $orders->links('pagination::bootstrap-5') }}</div>
     @endif
-</main>
-</body>
-</html>
+@endsection

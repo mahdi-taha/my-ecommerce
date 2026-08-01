@@ -1,11 +1,8 @@
-@extends('shop.layouts.app')
+@extends('customer.account.layout')
 
 @section('title', __('shop.wishlist.title'))
 
-@section('content')
-    <div class="container-fluid py-5">
-        <div class="container py-4">
-            @include('customer.account._navigation')
+@section('account-content')
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h3 mb-0">{{ __('shop.wishlist.title') }}</h1>
             </div>
@@ -88,6 +85,4 @@
 
                 <div class="mt-4">{{ $items->links() }}</div>
             @endif
-        </div>
-    </div>
 @endsection

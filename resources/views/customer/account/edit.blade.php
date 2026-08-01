@@ -1,21 +1,9 @@
-<!doctype html>
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ __('shop.account.profile.title') }}</title>
-    @vite(['resources/css/app.css', 'resources/css/styles.min.css', 'resources/js/app.js'])
-</head>
-<body class="bg-light">
-<main class="container py-5">
-    @include('customer.account._navigation')
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h3 mb-0">{{ __('shop.account.profile.title') }}</h1>
-        <div class="d-flex gap-2">
-            <a class="btn btn-outline-primary" href="{{ route('customer.account.password.edit') }}">{{ __('shop.account.profile.change_password') }}</a>
-            <form method="POST" action="{{ route('customer.logout') }}">@csrf<button class="btn btn-outline-danger">{{ __('shop.account.profile.logout') }}</button></form>
-        </div>
-    </div>
+@extends('customer.account.layout')
+
+@section('title', __('shop.account.profile.title'))
+
+@section('account-content')
+    <h1 class="h3 mb-3">{{ __('shop.account.profile.title') }}</h1>
     @if (session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
     <div class="card shadow-sm"><div class="card-body">
         <form method="POST" action="{{ route('customer.account.update') }}">
@@ -34,6 +22,4 @@
             <button class="btn btn-primary">{{ __('shop.account.profile.save') }}</button>
         </form>
     </div></div>
-</main>
-</body>
-</html>
+@endsection
