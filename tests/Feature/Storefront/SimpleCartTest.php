@@ -19,6 +19,20 @@ class SimpleCartTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_ajax_add_returns_authoritative_count_and_preserves_guest_cookie(): void
+    {
+        $product = $this->product(stock: 5);
+
+        $this->postJson(route('shop.cart.items.store'), [
+            'product_type' => ProductType::Simple->value,
+            'product_id' => $product->id,
+            'quantity' => 1,
+        ])->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('cart_count', 1)
+            ->assertCookie(GuestCartTokenService::COOKIE_NAME);
+    }
+
     public function test_guest_can_add_an_eligible_simple_product_without_changing_inventory(): void
     {
         $product = $this->product(stock: 5);

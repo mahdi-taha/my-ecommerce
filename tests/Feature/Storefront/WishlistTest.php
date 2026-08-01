@@ -19,6 +19,23 @@ class WishlistTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_ajax_add_and_remove_return_authoritative_wishlist_state(): void
+    {
+        $customer = User::factory()->customer()->create();
+        $product = $this->product();
+
+        $this->actingAs($customer, 'customer')
+            ->postJson(route('shop.wishlist.store'), ['product_id' => $product->id])
+            ->assertOk()
+            ->assertJsonPath('wishlist_count', 1)
+            ->assertJsonPath('wishlisted', true);
+
+        $this->deleteJson(route('shop.wishlist.destroy', $product))
+            ->assertOk()
+            ->assertJsonPath('wishlist_count', 0)
+            ->assertJsonPath('wishlisted', false);
+    }
+
     public function test_authenticated_add_lazily_creates_one_wishlist_and_is_duplicate_safe(): void
     {
         $customer = User::factory()->customer()->create();
