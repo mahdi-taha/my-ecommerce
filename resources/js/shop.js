@@ -8,6 +8,8 @@ async function initializeStorefront() {
         throw new Error('Storefront initialization failed: window.jQuery is unavailable.');
     }
 
+    initializeCategoryMegaMenu();
+
     // const wowModule = await import('../../public/shop/lib/wow/wow.min.js');
     // const WOW = wowModule.default?.default ?? wowModule.default ?? window.WOW;
 
@@ -26,7 +28,6 @@ async function initializeStorefront() {
     await import('../../public/shop/js/main.js');
     initializeConfigurableProducts();
     initializeCheckoutSummary();
-    initializeCategoryMegaMenu();
 }
 
 initializeStorefront().catch((error) => {

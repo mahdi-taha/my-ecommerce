@@ -33,14 +33,26 @@
                             {{ __('shop.navigation.contact') }}
                         </a>
 
-                        <div class="nav-item dropdown d-block d-lg-none">
-                            <button class="nav-link dropdown-toggle border-0 bg-transparent w-100 text-start"
-                                type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside"
-                                aria-expanded="false" aria-controls="mobileCategoriesMenu">
+                        <div class="nav-item d-block d-lg-none" data-category-navigation-mobile>
+                            <button class="nav-link border-0 bg-transparent w-100 text-start"
+                                id="mobileCategoriesToggle" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#mobileCategoriesMenu" aria-expanded="false"
+                                aria-controls="mobileCategoriesMenu">
                                 {{ __('shop.navigation.all_categories') }}
                             </button>
-                            <div class="dropdown-menu m-0 px-3" id="mobileCategoriesMenu">
-                                @include('shop.components.category-tree', ['categories' => $storefrontCategoryTree])
+                            <div class="collapse" id="mobileCategoriesMenu" aria-labelledby="mobileCategoriesToggle">
+                                <div class="storefront-mobile-category-browser px-3 pb-3">
+                                    <button class="btn btn-sm btn-link px-0 text-decoration-none" type="button"
+                                        data-mobile-category-back hidden>
+                                        <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                                        {{ __('shop.navigation.back') }}
+                                    </button>
+                                    <nav aria-label="{{ __('shop.navigation.category_children') }}">
+                                        <ol class="breadcrumb small mb-2" data-mobile-category-breadcrumb></ol>
+                                    </nav>
+                                    <div class="storefront-category-list" id="mobileCategoryLevel"
+                                        data-mobile-category-level></div>
+                                </div>
                             </div>
                         </div>
 

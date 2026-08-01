@@ -64,9 +64,19 @@ class AppServiceProvider extends ServiceProvider
                 });
             };
 
+            $categoryTree = $buildTree($categoriesByParent->get(0, collect()));
+            $toNavigationArray = function ($nodes) use (&$toNavigationArray): array {
+                return $nodes->map(fn (Category $category): array => [
+                    'id' => $category->id,
+                    'name' => $category->translations->first()->name,
+                    'children' => $toNavigationArray($category->children),
+                ])->values()->all();
+            };
+
             $view->with([
                 'navbarStoreName' => setting('store.store_name', config('app.name')),
-                'storefrontCategoryTree' => $buildTree($categoriesByParent->get(0, collect())),
+                'storefrontCategoryTree' => $categoryTree,
+                'storefrontCategoryNavigation' => $toNavigationArray($categoryTree),
             ]);
         });
 
