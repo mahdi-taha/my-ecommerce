@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\OrderService;
 use App\Services\OrderStatusService;
 use App\Services\PaymentStatusService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -173,7 +174,7 @@ class OrderLifecycleDemoSeeder extends Seeder
         }
     }
 
-    private function eligibleProducts()
+    private function eligibleProducts(): Builder
     {
         return Product::query()
             ->where('type', 'simple')

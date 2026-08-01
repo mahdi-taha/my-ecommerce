@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\CategoryTranslation;
 use App\Services\CategoryService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Yajra\DataTables\Facades\DataTables;
@@ -54,7 +55,7 @@ class CategoryController extends Controller
         return view('admin.categories.create', $this->formData());
     }
 
-    public function store(SaveCategoryRequest $request)
+    public function store(SaveCategoryRequest $request): RedirectResponse
     {
         $this->categoryService->create($request->validated());
 
@@ -69,7 +70,7 @@ class CategoryController extends Controller
         return view('admin.categories.edit', array_merge($this->formData($excluded), compact('category')));
     }
 
-    public function update(SaveCategoryRequest $request, Category $category)
+    public function update(SaveCategoryRequest $request, Category $category): RedirectResponse
     {
         $this->categoryService->update($category, $request->validated());
 

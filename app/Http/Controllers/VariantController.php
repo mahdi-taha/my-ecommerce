@@ -7,15 +7,18 @@ use App\Http\Requests\StoreVariantRequest;
 use App\Http\Requests\UpdateVariantRequest;
 use App\Models\Product;
 use App\Services\ProductService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 use Yajra\DataTables\Facades\DataTables;
 
 class VariantController extends Controller
 {
     public function __construct(private ProductService $productService) {}
 
-    public function index(Request $request, Product $product)
+    public function index(Request $request, Product $product): JsonResponse|View
     {
         $this->ensureConfigurableParent($product);
 
@@ -105,7 +108,7 @@ class VariantController extends Controller
         return view('admin.products.variants.index', compact('product'));
     }
 
-    public function store(StoreVariantRequest $request, Product $product)
+    public function store(StoreVariantRequest $request, Product $product): RedirectResponse
     {
         $this->ensureConfigurableParent($product);
         $this->productService->createMissingVariant(
@@ -121,7 +124,7 @@ class VariantController extends Controller
     public function bulkUpdate(
         BulkUpdateVariantsRequest $request,
         Product $product
-    ) {
+    ): RedirectResponse {
         $this->ensureConfigurableParent($product);
         $this->productService->bulkUpdateVariants(
             $product,
@@ -133,7 +136,7 @@ class VariantController extends Controller
             ->with('success', 'Selected variants updated successfully.');
     }
 
-    public function edit(Product $product, Product $variant)
+    public function edit(Product $product, Product $variant): View
     {
         $this->ensureVariantBelongsToProduct($product, $variant);
 
@@ -155,7 +158,7 @@ class VariantController extends Controller
         UpdateVariantRequest $request,
         Product $product,
         Product $variant
-    ) {
+    ): RedirectResponse {
         $this->ensureVariantBelongsToProduct($product, $variant);
 
         $this->productService->updateVariant(

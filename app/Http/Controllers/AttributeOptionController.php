@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SaveAttributeOptionsRequest;
 use App\Models\Attribute;
 use App\Services\AttributeService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
 class AttributeOptionController extends Controller
 {
@@ -13,7 +15,7 @@ class AttributeOptionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Attribute $attribute)
+    public function index(Attribute $attribute): View
     {
         abort_unless(
             in_array($attribute->type, ['select', 'multiselect']),
@@ -36,7 +38,7 @@ class AttributeOptionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function save(SaveAttributeOptionsRequest $request, Attribute $attribute)
+    public function save(SaveAttributeOptionsRequest $request, Attribute $attribute): JsonResponse
     {
         abort_unless(
             in_array($attribute->type, ['select', 'multiselect']),

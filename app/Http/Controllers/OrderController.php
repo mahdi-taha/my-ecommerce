@@ -11,8 +11,11 @@ use App\Services\OrderCancellationRequestService;
 use App\Services\OrderStatusService;
 use App\Services\PaymentStatusService;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 use LogicException;
 use RuntimeException;
 use Yajra\DataTables\Facades\DataTables;
@@ -25,7 +28,7 @@ class OrderController extends Controller
         private OrderCancellationRequestService $cancellationRequests
     ) {}
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse|View
     {
         if ($request->ajax()) {
             $orders = Order::query()
@@ -124,7 +127,7 @@ class OrderController extends Controller
         return view('admin.orders.index');
     }
 
-    public function show(Order $order)
+    public function show(Order $order): View
     {
         $order->load([
             'items' => fn ($query) => $query->orderBy('id'),
@@ -232,7 +235,7 @@ class OrderController extends Controller
         ));
     }
 
-    public function process(Order $order)
+    public function process(Order $order): RedirectResponse
     {
         return $this->runLifecycleAction(
             $order,
@@ -241,7 +244,7 @@ class OrderController extends Controller
         );
     }
 
-    public function fulfill(Order $order)
+    public function fulfill(Order $order): RedirectResponse
     {
         return $this->runLifecycleAction(
             $order,
@@ -250,7 +253,7 @@ class OrderController extends Controller
         );
     }
 
-    public function markOutForDelivery(Order $order)
+    public function markOutForDelivery(Order $order): RedirectResponse
     {
         return $this->runLifecycleAction(
             $order,
@@ -259,7 +262,7 @@ class OrderController extends Controller
         );
     }
 
-    public function markDeliveryFailed(Order $order)
+    public function markDeliveryFailed(Order $order): RedirectResponse
     {
         return $this->runLifecycleAction(
             $order,
@@ -268,7 +271,7 @@ class OrderController extends Controller
         );
     }
 
-    public function cancel(Order $order)
+    public function cancel(Order $order): RedirectResponse
     {
         return $this->runLifecycleAction(
             $order,
@@ -277,7 +280,7 @@ class OrderController extends Controller
         );
     }
 
-    public function markPaid(Order $order)
+    public function markPaid(Order $order): RedirectResponse
     {
         return $this->runLifecycleAction(
             $order,
@@ -286,7 +289,7 @@ class OrderController extends Controller
         );
     }
 
-    public function markFailed(Order $order)
+    public function markFailed(Order $order): RedirectResponse
     {
         return $this->runLifecycleAction(
             $order,
@@ -295,7 +298,7 @@ class OrderController extends Controller
         );
     }
 
-    public function retryPayment(Order $order)
+    public function retryPayment(Order $order): RedirectResponse
     {
         return $this->runLifecycleAction(
             $order,
@@ -304,7 +307,7 @@ class OrderController extends Controller
         );
     }
 
-    private function runLifecycleAction(Order $order, callable $action, string $successMessage)
+    private function runLifecycleAction(Order $order, callable $action, string $successMessage): RedirectResponse
     {
         try {
             $action();

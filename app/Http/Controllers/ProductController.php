@@ -11,15 +11,17 @@ use App\Models\Product;
 use App\Models\Tax;
 use App\Services\ProductService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 use Yajra\DataTables\Facades\DataTables;
 
 class ProductController extends Controller
 {
     public function __construct(private ProductService $productService) {}
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse|View
     {
         if ($request->ajax()) {
             $data = Product::query()
@@ -155,12 +157,12 @@ class ProductController extends Controller
         return view('admin.products.index');
     }
 
-    public function create()
+    public function create(): View
     {
         return view('admin.products.create');
     }
 
-    public function store(StoreProductRequest $request)
+    public function store(StoreProductRequest $request): RedirectResponse
     {
         $product = $this->productService->create($request->validated());
 
@@ -174,7 +176,7 @@ class ProductController extends Controller
             ->with('success', 'Product created successfully.');
     }
 
-    public function edit(Product $product)
+    public function edit(Product $product): View
     {
         abort_if($product->configurable_id !== null, 404);
 
@@ -285,7 +287,7 @@ class ProductController extends Controller
     public function update(
         UpdateProductRequest $request,
         Product $product
-    ) {
+    ): RedirectResponse {
         abort_if($product->configurable_id !== null, 404);
 
         $this->productService->update(
@@ -307,7 +309,7 @@ class ProductController extends Controller
         ]);
     }
 
-    public function configure(Product $product)
+    public function configure(Product $product): RedirectResponse|View
     {
         abort_unless(
             $product->type === 'configurable' &&
@@ -344,7 +346,7 @@ class ProductController extends Controller
     public function generateConfiguration(
         ConfigureProductRequest $request,
         Product $product
-    ) {
+    ): RedirectResponse {
         abort_unless(
             $product->type === 'configurable' &&
             $product->configurable_id === null,

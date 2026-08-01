@@ -11,6 +11,7 @@ use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\Tax;
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -803,7 +804,7 @@ class CartService
         ]);
     }
 
-    private function expirationFrom(mixed $timestamp): mixed
+    private function expirationFrom(mixed $timestamp): CarbonInterface
     {
         $days = max(1, (int) setting('cart.lifetime_days', 30));
 

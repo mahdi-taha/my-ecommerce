@@ -7,7 +7,9 @@ use App\Http\Requests\UpdateAttributeRequest;
 use App\Models\Attribute;
 use App\Services\AttributeService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 use Yajra\DataTables\Facades\DataTables;
 
 class AttributeController extends Controller
@@ -17,7 +19,7 @@ class AttributeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse|View
     {
         if ($request->ajax()) {
 
@@ -98,7 +100,7 @@ class AttributeController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): View
     {
         return view('admin.attributes.create');
     }
@@ -106,7 +108,7 @@ class AttributeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreAttributeRequest $request)
+    public function store(StoreAttributeRequest $request): RedirectResponse
     {
         $validated = $request->validated();
         $attribute = $this->attributeService->create($validated);
@@ -125,7 +127,7 @@ class AttributeController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Attribute $attribute)
+    public function show(Attribute $attribute): void
     {
         //
     }
@@ -133,7 +135,7 @@ class AttributeController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Attribute $attribute)
+    public function edit(Attribute $attribute): View
     {
         $attribute->load('translations');
         $en_name = $attribute->translations->firstWhere('locale', 'en');
@@ -145,7 +147,7 @@ class AttributeController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateAttributeRequest $request, Attribute $attribute)
+    public function update(UpdateAttributeRequest $request, Attribute $attribute): RedirectResponse
     {
         $this->attributeService->update($attribute, $request->validated());
 

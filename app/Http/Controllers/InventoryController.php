@@ -11,14 +11,19 @@ use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\InventoryService;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 use Yajra\DataTables\Facades\DataTables;
 
 class InventoryController extends Controller
 {
     public function __construct(private InventoryService $inventoryService) {}
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse|View
     {
         if ($request->ajax()) {
             $products = $this->inventoryProductsQuery();
@@ -60,7 +65,7 @@ class InventoryController extends Controller
         return view('admin.inventory.index');
     }
 
-    public function history(Request $request)
+    public function history(Request $request): JsonResponse|View
     {
         if ($request->ajax()) {
             $movements = InventoryMovement::query()
@@ -131,7 +136,7 @@ class InventoryController extends Controller
         return view('admin.inventory.history', compact('products'));
     }
 
-    public function receive(Request $request)
+    public function receive(Request $request): View
     {
         return view('admin.inventory.receive', [
             'products' => $this->inventoryProducts(),
@@ -139,7 +144,7 @@ class InventoryController extends Controller
         ]);
     }
 
-    public function storeReceive(StoreInventoryReceiptRequest $request)
+    public function storeReceive(StoreInventoryReceiptRequest $request): RedirectResponse
     {
         $data = $request->validated();
         $product = Product::findOrFail($data['product_id']);
@@ -148,7 +153,7 @@ class InventoryController extends Controller
         return redirect()->route('admin.inventory.index')->with('success', 'Stock received successfully.');
     }
 
-    public function adjustment(Request $request)
+    public function adjustment(Request $request): View
     {
         return view('admin.inventory.adjustment', [
             'products' => $this->inventoryProducts(),
@@ -156,7 +161,7 @@ class InventoryController extends Controller
         ]);
     }
 
-    public function storeAdjustment(StoreInventoryAdjustmentRequest $request)
+    public function storeAdjustment(StoreInventoryAdjustmentRequest $request): RedirectResponse
     {
         $data = $request->validated();
         $product = Product::findOrFail($data['product_id']);
@@ -165,7 +170,7 @@ class InventoryController extends Controller
         return redirect()->route('admin.inventory.index')->with('success', 'Inventory adjusted successfully.');
     }
 
-    public function opening(Request $request)
+    public function opening(Request $request): View
     {
         $products = $this->inventoryProductsQuery()
             ->whereDoesntHave('inventoryMovements')
@@ -177,7 +182,7 @@ class InventoryController extends Controller
         ]);
     }
 
-    public function storeOpening(StoreOpeningStockRequest $request)
+    public function storeOpening(StoreOpeningStockRequest $request): RedirectResponse
     {
         $data = $request->validated();
         $product = Product::findOrFail($data['product_id']);
@@ -186,7 +191,7 @@ class InventoryController extends Controller
         return redirect()->route('admin.inventory.index')->with('success', 'Opening stock recorded successfully.');
     }
 
-    public function stockCount(Request $request)
+    public function stockCount(Request $request): View
     {
         return view('admin.inventory.stock-count', [
             'products' => $this->inventoryProducts(),
@@ -194,7 +199,7 @@ class InventoryController extends Controller
         ]);
     }
 
-    public function storeStockCount(StoreStockCountRequest $request)
+    public function storeStockCount(StoreStockCountRequest $request): RedirectResponse
     {
         $data = $request->validated();
         $product = Product::findOrFail($data['product_id']);
@@ -203,7 +208,7 @@ class InventoryController extends Controller
         return redirect()->route('admin.inventory.index')->with('success', 'Stock count recorded successfully.');
     }
 
-    public function updateLowStockAlert(UpdateLowStockAlertRequest $request, Product $product)
+    public function updateLowStockAlert(UpdateLowStockAlertRequest $request, Product $product): RedirectResponse
     {
         $this->inventoryService->updateLowStockAlert(
             $product,
@@ -213,12 +218,12 @@ class InventoryController extends Controller
         return redirect()->route('admin.inventory.index')->with('success', 'Low-stock threshold updated successfully.');
     }
 
-    private function inventoryProducts()
+    private function inventoryProducts(): Collection
     {
         return $this->inventoryProductsQuery()->get();
     }
 
-    private function inventoryProductsQuery()
+    private function inventoryProductsQuery(): Builder
     {
         return Product::query()
             ->where('type', 'simple')
