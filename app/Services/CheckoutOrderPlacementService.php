@@ -142,6 +142,8 @@ class CheckoutOrderPlacementService
             }
 
             try {
+                // This savepoint rolls back a speculative Order aggregate while allowing
+                // the outer transaction to commit removal of a newly invalid Coupon.
                 $order = DB::transaction(function () use (
                     $checkoutData,
                     $customer,
