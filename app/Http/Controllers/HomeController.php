@@ -77,7 +77,7 @@ class HomeController extends Controller
             'topSellingProducts',
             'currencyCode',
             'taxMode',
-            'defaultTax'
+            'defaultTax',
         ));
     }
 }
