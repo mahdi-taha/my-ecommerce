@@ -28,13 +28,13 @@
                     <table class="table align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>{{ __('shop.account.orders.order_number') }}</th>
-                                <th>{{ __('shop.account.orders.order_date') }}</th>
-                                <th>{{ __('shop.checkout.grand_total') }}</th>
-                                <th>{{ __('shop.account.orders.status') }}</th>
-                                <th>{{ __('shop.checkout.confirmation.payment_status') }}</th>
-                                <th>{{ __('shop.checkout.confirmation.fulfillment_status') }}</th>
-                                <th class="text-end">{{ __('shop.account.orders.actions') }}</th>
+                                <th scope="col">{{ __('shop.account.orders.order_number') }}</th>
+                                <th scope="col">{{ __('shop.account.orders.order_date') }}</th>
+                                <th scope="col">{{ __('shop.checkout.grand_total') }}</th>
+                                <th scope="col">{{ __('shop.account.orders.status') }}</th>
+                                <th scope="col">{{ __('shop.checkout.confirmation.payment_status') }}</th>
+                                <th scope="col">{{ __('shop.checkout.confirmation.fulfillment_status') }}</th>
+                                <th scope="col" class="text-end">{{ __('shop.account.orders.actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>

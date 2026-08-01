@@ -44,26 +44,30 @@
                                     <div class="col-md-6">
                                         <label class="form-label" for="customer_first_name">{{ __('shop.checkout.fields.first_name') }}</label>
                                         <input id="customer_first_name" name="customer[first_name]" class="form-control @error('customer.first_name') is-invalid @enderror"
-                                            value="{{ old('customer.first_name', $customer?->first_name) }}" required>
-                                        @error('customer.first_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                            value="{{ old('customer.first_name', $customer?->first_name) }}" autocomplete="given-name" required
+                                            @error('customer.first_name') aria-invalid="true" aria-describedby="customer-first-name-error" @enderror>
+                                        @error('customer.first_name')<div id="customer-first-name-error" class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label" for="customer_last_name">{{ __('shop.checkout.fields.last_name') }}</label>
                                         <input id="customer_last_name" name="customer[last_name]" class="form-control @error('customer.last_name') is-invalid @enderror"
-                                            value="{{ old('customer.last_name', $customer?->last_name) }}" required>
-                                        @error('customer.last_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                            value="{{ old('customer.last_name', $customer?->last_name) }}" autocomplete="family-name" required
+                                            @error('customer.last_name') aria-invalid="true" aria-describedby="customer-last-name-error" @enderror>
+                                        @error('customer.last_name')<div id="customer-last-name-error" class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label" for="customer_phone">{{ __('shop.checkout.fields.phone') }}</label>
                                         <input id="customer_phone" name="customer[phone]" class="form-control @error('customer.phone') is-invalid @enderror"
-                                            value="{{ old('customer.phone', $customer?->phone) }}" required>
-                                        @error('customer.phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                            value="{{ old('customer.phone', $customer?->phone) }}" autocomplete="tel" required
+                                            @error('customer.phone') aria-invalid="true" aria-describedby="customer-phone-error" @enderror>
+                                        @error('customer.phone')<div id="customer-phone-error" class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label" for="customer_email">{{ __('shop.checkout.fields.email_optional') }}</label>
                                         <input type="email" id="customer_email" name="customer[email]" class="form-control @error('customer.email') is-invalid @enderror"
-                                            value="{{ old('customer.email', $customer?->email) }}">
-                                        @error('customer.email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                            value="{{ old('customer.email', $customer?->email) }}" autocomplete="email"
+                                            @error('customer.email') aria-invalid="true" aria-describedby="customer-email-error" @enderror>
+                                        @error('customer.email')<div id="customer-email-error" class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
                                 </div>
                             </div>
@@ -137,6 +141,20 @@
                                         @php
                                             $required = in_array($field, ['first_name', 'last_name', 'address_line_1', 'city', 'country_code'], true);
                                             $column = in_array($field, ['address_line_1', 'address_line_2'], true) ? 'col-12' : 'col-md-6';
+                                            $autocomplete = match ($field) {
+                                                'first_name' => 'given-name',
+                                                'last_name' => 'family-name',
+                                                'company' => 'organization',
+                                                'email' => 'email',
+                                                'phone' => 'tel',
+                                                'address_line_1' => 'address-line1',
+                                                'address_line_2' => 'address-line2',
+                                                'city' => 'address-level2',
+                                                'state' => 'address-level1',
+                                                'postal_code' => 'postal-code',
+                                                'country_code' => 'country',
+                                                default => 'off',
+                                            };
                                         @endphp
                                         <div class="{{ $column }}">
                                             <label class="form-label" for="manual_address_{{ $field }}">{{ __('shop.checkout.fields.'.$field) }}</label>
@@ -146,8 +164,10 @@
                                                 name="manual_address[{{ $field }}]"
                                                 value="{{ old('manual_address.'.$field) }}"
                                                 class="form-control @error('manual_address.'.$field) is-invalid @enderror"
+                                                autocomplete="{{ $autocomplete }}"
+                                                @error('manual_address.'.$field) aria-invalid="true" aria-describedby="manual-address-{{ str_replace('_', '-', $field) }}-error" @enderror
                                                 @if ($field === 'country_code') maxlength="2" @endif>
-                                            @error('manual_address.'.$field)<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                            @error('manual_address.'.$field)<div id="manual-address-{{ str_replace('_', '-', $field) }}-error" class="invalid-feedback">{{ $message }}</div>@enderror
                                         </div>
                                     @endforeach
                                 </div>

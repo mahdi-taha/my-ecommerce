@@ -113,11 +113,11 @@
         <h2 class="h5 mb-3">{{ __('shop.checkout.confirmation.items') }}</h2>
         <div class="table-responsive"><table class="table align-middle mb-0">
             <thead><tr>
-                <th>{{ __('shop.account.orders.product') }}</th>
-                <th>{{ __('shop.account.orders.sku') }}</th>
-                <th class="text-end">{{ __('shop.product_details.quantity') }}</th>
-                <th class="text-end">{{ __('shop.cart.unit_price') }}</th>
-                <th class="text-end">{{ __('shop.cart.line_total') }}</th>
+                <th scope="col">{{ __('shop.account.orders.product') }}</th>
+                <th scope="col">{{ __('shop.account.orders.sku') }}</th>
+                <th scope="col" class="text-end">{{ __('shop.product_details.quantity') }}</th>
+                <th scope="col" class="text-end">{{ __('shop.cart.unit_price') }}</th>
+                <th scope="col" class="text-end">{{ __('shop.cart.line_total') }}</th>
             </tr></thead>
             <tbody>
                 @foreach ($order->items as $item)

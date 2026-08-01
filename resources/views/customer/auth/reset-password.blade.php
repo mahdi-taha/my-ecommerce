@@ -19,19 +19,21 @@
                         <div class="mb-3">
                             <label for="email" class="form-label">{{ __('shop.auth.password.email_label') }}</label>
                             <input id="email" name="email" type="email" value="{{ old('email', $email) }}"
-                                class="form-control @error('email') is-invalid @enderror" required autofocus>
-                            @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                class="form-control @error('email') is-invalid @enderror" autocomplete="email" required autofocus
+                                @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
+                            @error('email')<div id="email-error" class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">{{ __('shop.auth.password.new_password') }}</label>
                             <input id="password" name="password" type="password"
-                                class="form-control @error('password') is-invalid @enderror" required>
-                            @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                class="form-control @error('password') is-invalid @enderror" autocomplete="new-password" required
+                                @error('password') aria-invalid="true" aria-describedby="password-error" @enderror>
+                            @error('password')<div id="password-error" class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="mb-3">
                             <label for="password_confirmation" class="form-label">{{ __('shop.auth.password.confirm_password') }}</label>
                             <input id="password_confirmation" name="password_confirmation" type="password"
-                                class="form-control" required>
+                                class="form-control" autocomplete="new-password" required>
                         </div>
                         <button class="btn btn-primary w-100" type="submit">{{ __('shop.auth.password.reset_submit') }}</button>
                     </form>

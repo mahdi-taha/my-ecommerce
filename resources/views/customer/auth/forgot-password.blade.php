@@ -22,8 +22,9 @@
                         <div class="mb-3">
                             <label for="email" class="form-label">{{ __('shop.auth.password.email_label') }}</label>
                             <input id="email" name="email" type="email" value="{{ old('email') }}"
-                                class="form-control @error('email') is-invalid @enderror" required autofocus>
-                            @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                class="form-control @error('email') is-invalid @enderror" autocomplete="email" required autofocus
+                                @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
+                            @error('email')<div id="email-error" class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <button class="btn btn-primary w-100" type="submit">{{ __('shop.auth.password.send_link') }}</button>
                     </form>

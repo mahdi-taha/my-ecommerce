@@ -19,39 +19,45 @@
                             <div class="col-md-6 mb-3">
                                 <label for="first_name" class="form-label">{{ __('shop.auth.register.first_name') }}</label>
                                 <input id="first_name" name="first_name" type="text" value="{{ old('first_name') }}"
-                                    class="form-control @error('first_name') is-invalid @enderror" required autofocus>
-                                @error('first_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    class="form-control @error('first_name') is-invalid @enderror" autocomplete="given-name" required autofocus
+                                    @error('first_name') aria-invalid="true" aria-describedby="first-name-error" @enderror>
+                                @error('first_name')<div id="first-name-error" class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="last_name" class="form-label">{{ __('shop.auth.register.last_name') }}</label>
                                 <input id="last_name" name="last_name" type="text" value="{{ old('last_name') }}"
-                                    class="form-control @error('last_name') is-invalid @enderror" required>
-                                @error('last_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    class="form-control @error('last_name') is-invalid @enderror" autocomplete="family-name" required
+                                    @error('last_name') aria-invalid="true" aria-describedby="last-name-error" @enderror>
+                                @error('last_name')<div id="last-name-error" class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">{{ __('shop.auth.register.email') }}</label>
                             <input id="email" name="email" type="email" value="{{ old('email') }}"
-                                class="form-control @error('email') is-invalid @enderror" required>
-                            @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                class="form-control @error('email') is-invalid @enderror" autocomplete="email" required
+                                @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
+                            @error('email')<div id="email-error" class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="mb-3">
                             <label for="phone" class="form-label">{{ __('shop.auth.register.phone') }}</label>
                             <input id="phone" name="phone" type="text" value="{{ old('phone') }}"
-                                class="form-control @error('phone') is-invalid @enderror">
-                            <div class="form-text">{{ __('shop.auth.register.phone_optional') }}</div>
-                            @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                class="form-control @error('phone') is-invalid @enderror" autocomplete="tel"
+                                aria-describedby="phone-help @error('phone') phone-error @enderror"
+                                @error('phone') aria-invalid="true" @enderror>
+                            <div id="phone-help" class="form-text">{{ __('shop.auth.register.phone_optional') }}</div>
+                            @error('phone')<div id="phone-error" class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">{{ __('shop.auth.register.password') }}</label>
                             <input id="password" name="password" type="password"
-                                class="form-control @error('password') is-invalid @enderror" required>
-                            @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                class="form-control @error('password') is-invalid @enderror" autocomplete="new-password" required
+                                @error('password') aria-invalid="true" aria-describedby="password-error" @enderror>
+                            @error('password')<div id="password-error" class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="mb-3">
                             <label for="password_confirmation" class="form-label">{{ __('shop.auth.register.password_confirmation') }}</label>
                             <input id="password_confirmation" name="password_confirmation" type="password"
-                                class="form-control" required>
+                                class="form-control" autocomplete="new-password" required>
                         </div>
                         <button class="btn btn-primary w-100" type="submit">{{ __('shop.auth.register.submit') }}</button>
                     </form>
