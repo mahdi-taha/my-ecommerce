@@ -46,6 +46,39 @@ class ProductManagementTest extends TestCase
         $this->assertNull($product->inventory);
     }
 
+    public function test_product_price_rejects_more_than_four_decimal_places(): void
+    {
+        $this->actingAs(User::factory()->create(), 'admin')
+            ->post(route('admin.products.store'), [
+                'type' => 'configurable',
+                'sku' => 'DECIMAL-SCALE',
+                'product_name_en' => 'Decimal Scale',
+                'product_name_ar' => 'Decimal Scale',
+                'price' => '12.12345',
+            ])
+            ->assertSessionHasErrors('price');
+
+        $this->assertDatabaseMissing('products', ['sku' => 'DECIMAL-SCALE']);
+    }
+
+    public function test_product_price_accepts_four_decimal_places(): void
+    {
+        $this->actingAs(User::factory()->create(), 'admin')
+            ->post(route('admin.products.store'), [
+                'type' => 'configurable',
+                'sku' => 'DECIMAL-FOUR',
+                'product_name_en' => 'Decimal Four',
+                'product_name_ar' => 'Decimal Four',
+                'price' => '12.1234',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', [
+            'sku' => 'DECIMAL-FOUR',
+            'price' => '12.1234',
+        ]);
+    }
+
     public function test_bundle_product_type_is_rejected(): void
     {
         $this->actingAs(User::factory()->create(), 'admin')

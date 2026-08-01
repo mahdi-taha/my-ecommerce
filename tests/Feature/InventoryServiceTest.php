@@ -2,11 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Http\Requests\StoreInventoryAdjustmentRequest;
+use App\Http\Requests\StoreInventoryReceiptRequest;
+use App\Http\Requests\StoreOpeningStockRequest;
+use App\Http\Requests\StoreStockCountRequest;
+use App\Http\Requests\UpdateLowStockAlertRequest;
 use App\Models\InventoryMovement;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\InventoryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -24,6 +30,45 @@ class InventoryServiceTest extends TestCase
 
         $this->inventoryService = app(InventoryService::class);
         $this->user = User::factory()->create();
+    }
+
+    public function test_inventory_requests_reject_more_than_four_decimal_places(): void
+    {
+        $product = $this->simpleProduct();
+        $cases = [
+            [new StoreOpeningStockRequest, ['product_id' => $product->id, 'quantity' => '1.12345', 'unit_cost' => '1.0000'], 'quantity'],
+            [new StoreOpeningStockRequest, ['product_id' => $product->id, 'quantity' => '1.0000', 'unit_cost' => '1.12345'], 'unit_cost'],
+            [new StoreInventoryReceiptRequest, ['product_id' => $product->id, 'quantity' => '1.12345', 'unit_cost' => '1.0000'], 'quantity'],
+            [new StoreInventoryAdjustmentRequest, ['product_id' => $product->id, 'direction' => 'increase', 'quantity' => '1.12345', 'notes' => 'Scale'], 'quantity'],
+            [new StoreStockCountRequest, ['product_id' => $product->id, 'counted_quantity' => '1.12345', 'notes' => 'Scale'], 'counted_quantity'],
+            [new UpdateLowStockAlertRequest, ['low_stock_alert' => '1.12345'], 'low_stock_alert'],
+        ];
+
+        foreach ($cases as [$request, $data, $field]) {
+            $this->assertTrue(
+                Validator::make($data, $request->rules())->errors()->has($field),
+                "Expected {$field} to reject more than four decimal places."
+            );
+        }
+    }
+
+    public function test_inventory_requests_accept_four_decimal_places(): void
+    {
+        $product = $this->simpleProduct();
+        $cases = [
+            [new StoreOpeningStockRequest, ['product_id' => $product->id, 'quantity' => '1.1234', 'unit_cost' => '1.1234']],
+            [new StoreInventoryReceiptRequest, ['product_id' => $product->id, 'quantity' => '1.1234', 'unit_cost' => '1.1234']],
+            [new StoreInventoryAdjustmentRequest, ['product_id' => $product->id, 'direction' => 'increase', 'quantity' => '1.1234', 'notes' => 'Scale']],
+            [new StoreStockCountRequest, ['product_id' => $product->id, 'counted_quantity' => '1.1234', 'notes' => 'Scale']],
+            [new UpdateLowStockAlertRequest, ['low_stock_alert' => '1.1234']],
+        ];
+
+        foreach ($cases as [$request, $data]) {
+            $this->assertTrue(
+                Validator::make($data, $request->rules())->passes(),
+                'Expected four-decimal inventory input to pass validation.'
+            );
+        }
     }
 
     public function test_opening_stock_sets_inventory_and_creates_one_movement(): void

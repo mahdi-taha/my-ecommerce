@@ -29,6 +29,38 @@ class ConfigurableProductTest extends TestCase
         $this->assertTrue($parent->variants()->get()->every(fn (Product $variant) => ! $variant->is_visible_individually));
     }
 
+    public function test_variant_price_inputs_reject_more_than_four_decimal_places(): void
+    {
+        [$parent] = $this->configuredProduct();
+        $variant = $parent->variants()->firstOrFail();
+        $admin = User::factory()->create();
+
+        $this->actingAs($admin, 'admin')
+            ->put(route('admin.products.variants.update', [$parent, $variant]), [
+                'sku' => $variant->sku,
+                'price' => '10.12345',
+                'special_price' => '9.12345',
+                'status' => true,
+            ])
+            ->assertSessionHasErrors(['price', 'special_price']);
+
+        $this->actingAs($admin, 'admin')
+            ->patch(route('admin.products.variants.bulk-update', $parent), [
+                'action' => 'prices',
+                'variant_ids' => [$variant->id],
+                'variants' => [
+                    $variant->id => [
+                        'price' => '10.12345',
+                        'special_price' => '9.12345',
+                    ],
+                ],
+            ])
+            ->assertSessionHasErrors([
+                "variants.{$variant->id}.price",
+                "variants.{$variant->id}.special_price",
+            ]);
+    }
+
     public function test_add_variant_page_shows_all_options_of_assigned_attributes_only(): void
     {
         [$parent, $color, $red, $black, $blue] = $this->configuredProduct();

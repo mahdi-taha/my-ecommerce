@@ -132,6 +132,29 @@ class CheckoutPricingServiceTest extends TestCase
         $this->assertSame('105.0000', $summary->grandTotal);
     }
 
+    public function test_row_amounts_are_normalized_before_summary_aggregation(): void
+    {
+        $tax = Tax::create(['name' => 'Precision Tax', 'rate' => 10, 'status' => true]);
+        $this->settings('b2b', $tax);
+        [$cart] = $this->cartWithProduct(0.0006, 1);
+        $this->addProductToCart($cart, 0.0006, 1);
+
+        $summary = app(CheckoutService::class)->summarize(
+            $cart,
+            $this->shipping('0.0000')->code,
+            $this->payment()->code
+        );
+
+        $this->assertSame(['0.0001', '0.0001'], array_column($summary->items, 'tax_amount'));
+        $this->assertSame('0.0012', $summary->subtotal);
+        $this->assertSame('0.0002', $summary->taxTotal);
+        $this->assertSame('0.0014', $summary->grandTotal);
+        $this->assertSame(
+            $summary->taxTotal,
+            number_format(array_sum(array_column($summary->items, 'tax_amount')), 4, '.', '')
+        );
+    }
+
     public function test_invalid_cart_returns_errors_without_partial_pricing(): void
     {
         $this->settings('b2c');
@@ -160,6 +183,17 @@ class CheckoutPricingServiceTest extends TestCase
             'last_activity_at' => now(),
             'expires_at' => now()->addDays(30),
         ]);
+        $product = $this->addProductToCart($cart, $price, $quantity, $state);
+
+        return [$cart, $product];
+    }
+
+    private function addProductToCart(
+        Cart $cart,
+        float $price,
+        int $quantity,
+        array $state = []
+    ): Product {
         $product = Product::factory()->create(array_merge([
             'type' => ProductType::Simple->value,
             'configurable_id' => null,
@@ -186,7 +220,7 @@ class CheckoutPricingServiceTest extends TestCase
             'quantity' => $quantity,
         ]);
 
-        return [$cart, $product];
+        return $product;
     }
 
     private function shipping(string $amount): ShippingMethod
