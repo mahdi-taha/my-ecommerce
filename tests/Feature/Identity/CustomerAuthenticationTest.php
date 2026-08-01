@@ -49,7 +49,7 @@ class CustomerAuthenticationTest extends TestCase
         $customer = User::factory()->customer()->create();
         $this->actingAs($customer, 'customer')
             ->post(route('customer.logout'))
-            ->assertRedirect(route('customer.login'));
+            ->assertRedirect(route('shop.home'));
         $this->assertGuest('customer');
     }
 

@@ -23,7 +23,7 @@ class GuardIsolationTest extends TestCase
         $this->get(route('admin.customers.index'))->assertOk();
         $this->get(route('customer.account.edit'))->assertOk();
 
-        $this->post(route('customer.logout'))->assertRedirect(route('customer.login'));
+        $this->post(route('customer.logout'))->assertRedirect(route('shop.home'));
 
         $this->assertAuthenticatedAs($admin, 'admin');
         $this->assertGuest('customer');
