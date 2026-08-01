@@ -107,15 +107,22 @@ class SimpleProductDetailsTest extends TestCase
 
         $product->categories()->attach([$later->id, $selected->id]);
 
-        $this->get(route('shop.products.show', 'camera-en'))
+        $response = $this->get(route('shop.products.show', 'camera-en'));
+
+        $response
             ->assertOk()
             ->assertSeeInOrder([
                 'Home',
                 'Electronics',
                 'Cameras',
                 'Localized Camera',
-            ])
-            ->assertDontSee('Later Category');
+            ]);
+        $this->assertSame(
+            ['Electronics', 'Cameras'],
+            $response->viewData('breadcrumbCategories')
+                ->map(fn (Category $category) => $category->translations->first()->name)
+                ->all()
+        );
     }
 
     public function test_non_empty_front_visible_attributes_render_with_localized_labels(): void
