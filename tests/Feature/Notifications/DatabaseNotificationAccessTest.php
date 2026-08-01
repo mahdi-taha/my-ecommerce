@@ -67,7 +67,7 @@ class DatabaseNotificationAccessTest extends TestCase
             ->assertNotFound();
     }
 
-    public function test_customer_navigation_counts_owned_unread_customer_notifications_once(): void
+    public function test_customer_storefront_shell_and_navigation_share_one_owned_unread_count_query(): void
     {
         $customer = User::factory()->customer()->create();
         $other = User::factory()->customer()->create();
@@ -87,10 +87,11 @@ class DatabaseNotificationAccessTest extends TestCase
             }
         });
 
-        $this->actingAs($customer, 'customer');
-        $html = view('customer.account._navigation')->render();
+        $response = $this->actingAs($customer, 'customer')
+            ->get(route('customer.account.edit'));
 
-        $this->assertMatchesRegularExpression('/badge[^>]*>\s*1\s*<\/span>/', $html);
+        $response->assertOk();
+        $this->assertMatchesRegularExpression('/badge[^>]*>\s*1\s*<\/span>/', $response->getContent());
         $this->assertSame(1, $countQueries);
     }
 
