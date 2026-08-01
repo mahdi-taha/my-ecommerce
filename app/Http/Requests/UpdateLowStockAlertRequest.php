@@ -14,7 +14,7 @@ class UpdateLowStockAlertRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'low_stock_alert' => ['nullable', 'numeric', 'min:0'],
+            'low_stock_alert' => ['nullable', 'numeric', 'decimal:0,4', 'min:0'],
         ];
     }
 }

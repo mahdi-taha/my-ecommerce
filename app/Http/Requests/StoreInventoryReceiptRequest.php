@@ -16,8 +16,8 @@ class StoreInventoryReceiptRequest extends FormRequest
     {
         return [
             'product_id' => ['required', 'integer', Rule::exists('products', 'id')->where('type', 'simple')],
-            'quantity' => ['required', 'numeric', 'gt:0'],
-            'unit_cost' => ['required', 'numeric', 'min:0'],
+            'quantity' => ['required', 'numeric', 'decimal:0,4', 'gt:0'],
+            'unit_cost' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
             'notes' => ['nullable', 'string'],
         ];
     }

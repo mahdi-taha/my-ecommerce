@@ -33,6 +33,7 @@ class StoreProductRequest extends FormRequest
                 'nullable',
                 'required_if:type,'.ProductType::Configurable->value,
                 'numeric',
+                'decimal:0,4',
                 'min:0',
             ],
         ];

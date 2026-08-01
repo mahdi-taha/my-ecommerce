@@ -16,7 +16,7 @@ class StoreStockCountRequest extends FormRequest
     {
         return [
             'product_id' => ['required', 'integer', Rule::exists('products', 'id')->where('type', 'simple')],
-            'counted_quantity' => ['required', 'numeric', 'min:0'],
+            'counted_quantity' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
             'notes' => ['required', 'string'],
         ];
     }

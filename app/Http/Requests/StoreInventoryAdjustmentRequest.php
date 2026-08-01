@@ -17,7 +17,7 @@ class StoreInventoryAdjustmentRequest extends FormRequest
         return [
             'product_id' => ['required', 'integer', Rule::exists('products', 'id')->where('type', 'simple')],
             'direction' => ['required', Rule::in(['increase', 'decrease'])],
-            'quantity' => ['required', 'numeric', 'gt:0'],
+            'quantity' => ['required', 'numeric', 'decimal:0,4', 'gt:0'],
             'notes' => ['required', 'string'],
         ];
     }

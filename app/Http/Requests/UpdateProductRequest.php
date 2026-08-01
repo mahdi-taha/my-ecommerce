@@ -119,8 +119,8 @@ class UpdateProductRequest extends FormRequest
 
         if ($isStandaloneSimple) {
             $rules = array_merge($rules, [
-                'price' => ['required', 'numeric', 'min:0'],
-                'special_price' => ['nullable', 'numeric', 'min:0', 'lte:price'],
+                'price' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
+                'special_price' => ['nullable', 'numeric', 'decimal:0,4', 'min:0', 'lte:price'],
                 'special_price_from' => ['nullable', 'date'],
                 'special_price_to' => ['nullable', 'date', 'after_or_equal:special_price_from'],
                 'use_default_tax' => ['required', 'boolean'],
@@ -144,7 +144,7 @@ class UpdateProductRequest extends FormRequest
         }
 
         if ($isConfigurableParent) {
-            $rules['price'] = ['required', 'numeric', 'min:0'];
+            $rules['price'] = ['required', 'numeric', 'decimal:0,4', 'min:0'];
         }
 
         $attributes = Attribute::query()
