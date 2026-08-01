@@ -10,6 +10,7 @@ use App\Http\Controllers\CouponController;
 use App\Http\Controllers\CustomerAccountController;
 use App\Http\Controllers\CustomerAddressController;
 use App\Http\Controllers\CustomerAuthController;
+use App\Http\Controllers\CustomerPasswordResetController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InventoryController;
@@ -210,6 +211,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 Route::middleware('guest:customer')->group(function () {
+    Route::get('forgot-password', [CustomerPasswordResetController::class, 'create'])
+        ->name('customer.password.request');
+    Route::post('forgot-password', [CustomerPasswordResetController::class, 'store'])
+        ->name('customer.password.email');
+    Route::get('reset-password/{token}', [CustomerPasswordResetController::class, 'edit'])
+        ->name('customer.password.reset');
+    Route::post('reset-password', [CustomerPasswordResetController::class, 'update'])
+        ->name('customer.password.store');
     Route::get('register', [CustomerAuthController::class, 'showRegistration'])
         ->name('customer.register');
     Route::post('register', [CustomerAuthController::class, 'register'])

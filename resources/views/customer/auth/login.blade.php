@@ -27,6 +27,9 @@
                         <div class="mb-3">
                             <label for="password" class="form-label">{{ __('shop.auth.login.password') }}</label>
                             <input id="password" name="password" type="password" class="form-control" required>
+                            <div class="text-end mt-1">
+                                <a href="{{ route('customer.password.request') }}">{{ __('shop.auth.password.forgot_link') }}</a>
+                            </div>
                         </div>
                         <div class="form-check mb-3">
                             <input type="checkbox" class="form-check-input" id="remember" name="remember" value="1">

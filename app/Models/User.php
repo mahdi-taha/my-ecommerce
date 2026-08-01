@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\AccountType;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\CustomerResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -90,9 +91,15 @@ class User extends Authenticatable
 
     public function scopeEligibleForPasswordReset(Builder $query): Builder
     {
-        return $query->where('has_account', true)
+        return $query->customers()
+            ->where('has_account', true)
             ->whereNotNull('email')
             ->where('is_active', true);
+    }
+
+    public function sendCustomerPasswordResetNotification(string $token, string $locale): void
+    {
+        $this->notify((new CustomerResetPasswordNotification($token))->locale($locale));
     }
 
     public function inventoryMovements(): HasMany
