@@ -466,6 +466,22 @@ return [
         'contact_phone' => '+0123 456 7890',
     ],
 
+    'topbar' => [
+        'call_us' => 'اتصل بنا:',
+        'currency' => 'العملة: :currency',
+        'language' => 'اللغة',
+        'english' => 'الإنجليزية',
+        'arabic' => 'العربية',
+        'guest' => 'زائر',
+        'customer_menu' => 'قائمة حساب العميل',
+        'store_logo' => 'شعار :store',
+        'facebook' => 'فيسبوك',
+        'instagram' => 'إنستغرام',
+        'whatsapp' => 'واتساب',
+        'cart' => 'سلة التسوق',
+        'wishlist' => 'قائمة الرغبات',
+    ],
+
     'hero' => [
         'image_alt' => 'منتج ترويجي',
         'first_saving' => 'وفّر حتى 400 دولار',

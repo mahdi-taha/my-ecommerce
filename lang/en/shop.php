@@ -466,6 +466,22 @@ return [
         'contact_phone' => '+0123 456 7890',
     ],
 
+    'topbar' => [
+        'call_us' => 'Call Us:',
+        'currency' => 'Currency: :currency',
+        'language' => 'Language',
+        'english' => 'English',
+        'arabic' => 'Arabic',
+        'guest' => 'Guest',
+        'customer_menu' => 'Customer account menu',
+        'store_logo' => ':store logo',
+        'facebook' => 'Facebook',
+        'instagram' => 'Instagram',
+        'whatsapp' => 'WhatsApp',
+        'cart' => 'Shopping Cart',
+        'wishlist' => 'Wishlist',
+    ],
+
     'hero' => [
         'image_alt' => 'Promotional product',
         'first_saving' => 'Save Up To $400',

@@ -5,6 +5,7 @@ use App\Http\Middleware\EnforceActiveCustomerSession;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsCustomer;
 use App\Http\Middleware\ResolveStorefrontCart;
+use App\Http\Middleware\SetStorefrontLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(AssignCorrelationId::class);
-        $middleware->web(append: [EnforceActiveCustomerSession::class]);
+        $middleware->web(append: [SetStorefrontLocale::class, EnforceActiveCustomerSession::class]);
 
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,

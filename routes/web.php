@@ -24,12 +24,16 @@ use App\Http\Controllers\Shop\Account\OrderController as ShopAccountOrderControl
 use App\Http\Controllers\Shop\CartController as ShopCartController;
 use App\Http\Controllers\Shop\CheckoutController as ShopCheckoutController;
 use App\Http\Controllers\Shop\CheckoutCouponController as ShopCheckoutCouponController;
+use App\Http\Controllers\Shop\LocaleController as ShopLocaleController;
 use App\Http\Controllers\Shop\ProductController as ShopProductController;
 use App\Http\Controllers\Shop\WishlistController as ShopWishlistController;
 use App\Http\Controllers\VariantController;
 use App\Http\Middleware\ShareStorefrontWishlist;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
+
+Route::post('/locale/{locale}', ShopLocaleController::class)
+    ->name('shop.locale.update');
 
 Route::middleware(['storefront.cart', ShareStorefrontWishlist::class])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('shop.home');
