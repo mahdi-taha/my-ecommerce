@@ -16,44 +16,7 @@
         <div class="collapse navbar-collapse rounded-bottom" id="allCat">
             <div class="navbar-nav ms-auto py-0">
 
-                <ul class="list-unstyled categories-bars">
-
-                    <li>
-                        <div class="categories-bars-item">
-                            <a href="#">{{ __('shop.categories.accessories') }}</a>
-                            <span>(3)</span>
-                        </div>
-                    </li>
-
-                    <li>
-                        <div class="categories-bars-item">
-                            <a href="#">{{ __('shop.categories.electronics_computers') }}</a>
-                            <span>(5)</span>
-                        </div>
-                    </li>
-
-                    <li>
-                        <div class="categories-bars-item">
-                            <a href="#">{{ __('shop.categories.laptops_desktops') }}</a>
-                            <span>(2)</span>
-                        </div>
-                    </li>
-
-                    <li>
-                        <div class="categories-bars-item">
-                            <a href="#">{{ __('shop.categories.mobiles_tablets') }}</a>
-                            <span>(8)</span>
-                        </div>
-                    </li>
-
-                    <li>
-                        <div class="categories-bars-item">
-                            <a href="#">{{ __('shop.categories.smartphones_tvs') }}</a>
-                            <span>(5)</span>
-                        </div>
-                    </li>
-
-                </ul>
+                @include('shop.components.category-tree', ['categories' => $storefrontCategoryTree])
 
             </div>
         </div>

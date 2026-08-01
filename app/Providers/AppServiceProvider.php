@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Enums\NotificationAudienceCode;
+use App\Models\Category;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -23,6 +24,34 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        View::composer('shop.components.navbar', function (IlluminateView $view): void {
+            $categories = Category::query()
+                ->where('status', true)
+                ->with(['translations' => fn ($query) => $query
+                    ->where('locale', app()->getLocale())])
+                ->orderBy('position')
+                ->orderBy('id')
+                ->get()
+                ->filter(fn (Category $category): bool => $category->translations->isNotEmpty());
+
+            $categoriesByParent = $categories->groupBy(
+                fn (Category $category): int => (int) ($category->parent_id ?? 0)
+            );
+            $buildTree = function ($nodes) use (&$buildTree, $categoriesByParent) {
+                return $nodes->each(function (Category $category) use (&$buildTree, $categoriesByParent): void {
+                    $category->setRelation(
+                        'children',
+                        $buildTree($categoriesByParent->get($category->id, collect()))
+                    );
+                });
+            };
+
+            $view->with([
+                'navbarStoreName' => setting('store.store_name', config('app.name')),
+                'storefrontCategoryTree' => $buildTree($categoriesByParent->get(0, collect())),
+            ]);
+        });
+
         View::composer('shop.components.topbar', function (IlluminateView $view): void {
             $customer = auth('customer')->user();
             $logoPath = (string) setting('store.store_logo_path', '');
