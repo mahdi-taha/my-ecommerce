@@ -43,6 +43,21 @@ class CheckoutCartValidatorTest extends TestCase
         }
     }
 
+    public function test_zero_effective_price_returns_product_unavailable(): void
+    {
+        $cart = $this->cart();
+        $product = $this->product(5, ['price' => 100, 'special_price' => 0]);
+        $this->item($cart, $product, 1);
+
+        $result = $this->validator()->validate(
+            $cart,
+            $this->shippingMethod()->code,
+            $this->paymentMethod()->code
+        );
+
+        $this->assertSame('product_unavailable', $result->errors[0]->code);
+    }
+
     public function test_inactive_shipping_and_payment_methods_return_structured_errors(): void
     {
         $cart = $this->cart();

@@ -114,6 +114,31 @@ class SimpleCartTest extends TestCase
         $this->assertDatabaseCount('cart_items', 0);
     }
 
+    public function test_zero_effective_price_cannot_be_added_or_updated(): void
+    {
+        $this->actingAs($this->customer(), 'customer');
+        $product = $this->product(stock: 5);
+        $this->post(route('shop.cart.items.store'), [
+            'product_id' => $product->id,
+            'quantity' => 1,
+        ])->assertRedirect();
+        $item = Cart::query()->firstOrFail()->items()->firstOrFail();
+
+        $product->update(['special_price' => 0, 'special_price_from' => now()->subMinute()]);
+
+        $this->get(route('shop.cart.index'))
+            ->assertOk()
+            ->assertSee('Cart Product '.$product->id);
+
+        $this->post(route('shop.cart.items.store'), [
+            'product_id' => $product->id,
+            'quantity' => 1,
+        ])->assertSessionHasErrors('product_id');
+        $this->patch(route('shop.cart.items.update', $item), ['quantity' => 2])
+            ->assertSessionHasErrors('product_id');
+        $this->assertSame('1.0000', $item->fresh()->quantity);
+    }
+
     public function test_customer_can_update_remove_and_clear_owned_items(): void
     {
         $customer = $this->customer();

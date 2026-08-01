@@ -142,6 +142,26 @@ class CheckoutOrderPlacementTest extends TestCase
         $this->assertSame('93.0000', $result->order->grand_total);
     }
 
+    public function test_zero_price_product_is_rejected_before_order_and_inventory_changes(): void
+    {
+        [$cart, $product, $customer, $shipping, $payment] = $this->scenario();
+        $product->update(['special_price' => 0, 'special_price_from' => now()->subMinute()]);
+        $quantity = $product->inventory->quantity;
+
+        $result = app(CheckoutOrderPlacementService::class)->place(
+            $cart,
+            $this->checkoutData($shipping, $payment),
+            $customer
+        );
+
+        $this->assertFalse($result->successful);
+        $this->assertSame('product_unavailable', $result->errors[0]->code);
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('inventory_movements', 0);
+        $this->assertSame($quantity, $product->inventory->fresh()->quantity);
+        $this->assertDatabaseHas('cart_items', ['cart_id' => $cart->id]);
+    }
+
     public function test_configurable_line_snapshots_variant_and_current_options(): void
     {
         [$cart, $standalone, $customer, $shipping, $payment] = $this->scenario();

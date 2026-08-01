@@ -49,6 +49,18 @@ class SimpleProductDetailsTest extends TestCase
             ->assertSee('disabled', false);
     }
 
+    public function test_zero_effective_price_is_visible_but_purchase_controls_are_unavailable(): void
+    {
+        $product = $this->product(['price' => 100, 'special_price' => 0]);
+        $product->inventory()->create(['quantity' => 5, 'average_cost' => 10, 'low_stock_alert' => 1]);
+
+        $this->get(route('shop.products.show', 'camera-en'))
+            ->assertOk()
+            ->assertSee(__('shop.product.unavailable'))
+            ->assertSee('name="quantity"', false)
+            ->assertSee('disabled', false);
+    }
+
     public function test_product_resolution_is_locale_specific_without_fallback(): void
     {
         $this->product();

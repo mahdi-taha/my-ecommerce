@@ -43,6 +43,18 @@ class ProductCardActionsTest extends TestCase
             ->assertSee(__('shop.product.out_of_stock'));
     }
 
+    public function test_zero_price_cards_are_visible_but_commerce_is_unavailable(): void
+    {
+        $product = $this->product(ProductType::Simple, 5);
+        $product->update(['price' => 0]);
+
+        $this->get(route('shop.home'))
+            ->assertOk()
+            ->assertSee('Product '.$product->id)
+            ->assertDontSee('data-product-card-cart-form', false)
+            ->assertSee(__('shop.product.unavailable'));
+    }
+
     private function product(ProductType $type, int $stock): Product
     {
         $product = Product::factory()->create([
@@ -61,6 +73,16 @@ class ProductCardActionsTest extends TestCase
             'average_cost' => 10,
             'low_stock_alert' => 1,
         ]);
+
+        if ($type === ProductType::Configurable) {
+            Product::factory()->create([
+                'type' => ProductType::Simple->value,
+                'configurable_id' => $product->id,
+                'status' => true,
+                'is_visible_individually' => false,
+                'price' => 100,
+            ]);
+        }
 
         return $product->fresh(['inventory']);
     }

@@ -123,6 +123,25 @@ class ConfigurableCartTest extends TestCase
         $this->assertDatabaseCount('cart_items', 0);
     }
 
+    public function test_zero_price_variant_cannot_be_added_or_revalidated(): void
+    {
+        $this->actingAs($this->customer(), 'customer');
+        [$parent, $color, $red] = $this->configuredProduct();
+        $variant = $this->variant($parent, [$color->id => $red->id], 5);
+        $variant->update(['price' => 0]);
+
+        $this->add($parent, [$color->id => $red->id], 1)
+            ->assertSessionHasErrors('options');
+
+        $variant->update(['price' => 100]);
+        $this->add($parent, [$color->id => $red->id], 1)->assertRedirect();
+        $item = Cart::query()->firstOrFail()->items()->firstOrFail();
+        $variant->update(['special_price' => 0, 'special_price_from' => now()->subMinute()]);
+
+        $this->patch(route('shop.cart.items.update', $item), ['quantity' => 2])
+            ->assertSessionHasErrors('product_id');
+    }
+
     public function test_cart_renders_parent_name_selected_options_and_variant_commerce_data(): void
     {
         [$parent, $color, $red] = $this->configuredProduct();
