@@ -3,8 +3,8 @@
         <div class="col-lg-4 text-center text-lg-start mb-lg-0">
             <div class="d-inline-flex align-items-center storefront-social-links" style="height: 45px;">
                 @if (filled($topbarFacebookUrl))
-                    <a href="{{ $topbarFacebookUrl }}" class="text-muted me-2" target="_blank"
-                        rel="noopener noreferrer" aria-label="{{ __('shop.topbar.facebook') }}">
+                    <a href="{{ $topbarFacebookUrl }}" class="text-muted me-2" target="_blank" rel="noopener noreferrer"
+                        aria-label="{{ __('shop.topbar.facebook') }}">
                         <i class="bi bi-facebook" aria-hidden="true"></i>
                     </a>
                 @endif
@@ -15,8 +15,8 @@
                     </a>
                 @endif
                 @if (filled($topbarWhatsAppUrl))
-                    <a href="{{ $topbarWhatsAppUrl }}" class="text-muted ms-2" target="_blank"
-                        rel="noopener noreferrer" aria-label="{{ __('shop.topbar.whatsapp') }}">
+                    <a href="{{ $topbarWhatsAppUrl }}" class="text-muted ms-2" target="_blank" rel="noopener noreferrer"
+                        aria-label="{{ __('shop.topbar.whatsapp') }}">
                         <i class="bi bi-whatsapp" aria-hidden="true"></i>
                     </a>
                 @endif
@@ -39,9 +39,8 @@
                 </div>
 
                 <div class="dropdown">
-                    <button class="btn btn-link dropdown-toggle text-muted mx-2 p-0 text-decoration-none"
-                        type="button" data-bs-toggle="dropdown" aria-expanded="false"
-                        aria-label="{{ __('shop.topbar.language') }}">
+                    <button class="btn btn-link dropdown-toggle text-muted mx-2 p-0 text-decoration-none" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ __('shop.topbar.language') }}">
                         <small>{{ strtoupper(app()->getLocale()) }}</small>
                     </button>
                     <div class="dropdown-menu rounded">
@@ -59,8 +58,8 @@
                 </div>
 
                 <div class="dropdown">
-                    <button class="btn btn-link dropdown-toggle text-muted ms-2 p-0 text-decoration-none"
-                        type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                    <button class="btn btn-link dropdown-toggle text-muted ms-2 p-0 text-decoration-none" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false"
                         aria-label="{{ __('shop.topbar.customer_menu') }}">
                         <small>
                             <i class="fa fa-user me-2" aria-hidden="true"></i>
@@ -119,11 +118,11 @@
                 <a href="{{ route('shop.home') }}" class="navbar-brand p-0">
                     @if ($topbarLogoUrl)
                         <img src="{{ $topbarLogoUrl }}"
-                            alt="{{ __('shop.topbar.store_logo', ['store' => $topbarStoreName]) }}"
-                            class="img-fluid" style="max-height: 70px;">
+                            alt="{{ __('shop.topbar.store_logo', ['store' => $topbarStoreName]) }}" class="img-fluid"
+                            style="max-height: 70px;">
                     @else
                         <h1 class="display-5 text-primary m-0">
-                            <i class="fas fa-shopping-bag text-secondary me-2" aria-hidden="true"></i><bdi>{{ $topbarStoreName }}</bdi>
+                            <bdi>{{ $topbarStoreName }}</bdi>
                         </h1>
                     @endif
                 </a>
@@ -136,13 +135,6 @@
                     <input class="form-control border-0 rounded-pill w-100 py-3" type="text"
                         data-bs-target="#dropdownToggle123" placeholder="{{ __('shop.navigation.search_placeholder') }}"
                         aria-label="{{ __('shop.navigation.search_label') }}">
-                    <select class="form-select text-dark border-0 border-start rounded-0 p-3" style="width: 200px;">
-                        <option value="All Category">All Category</option>
-                        <option value="Pest Control-2">Category 1</option>
-                        <option value="Pest Control-3">Category 2</option>
-                        <option value="Pest Control-4">Category 3</option>
-                        <option value="Pest Control-5">Category 4</option>
-                    </select>
                     <button type="button" class="btn btn-primary rounded-pill py-3 px-5" style="border: 0;">
                         <i class="fas fa-search" aria-hidden="true"></i>
                     </button>
