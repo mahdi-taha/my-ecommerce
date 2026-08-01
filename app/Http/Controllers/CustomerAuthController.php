@@ -37,7 +37,7 @@ class CustomerAuthController extends Controller
             $request->hitRateLimiter();
 
             return back()->withErrors([
-                'email' => 'The provided credentials are invalid.',
+                'email' => $request->loginFailureMessage(),
             ])->onlyInput('email');
         }
 

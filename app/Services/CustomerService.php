@@ -96,7 +96,7 @@ class CustomerService
     {
         if ($customer->account_type !== AccountType::Customer) {
             throw ValidationException::withMessages([
-                'customer' => 'The selected user is not a customer.',
+                'customer' => __('shop.account.errors.invalid_customer'),
             ]);
         }
     }
@@ -105,7 +105,7 @@ class CustomerService
     {
         if (! $customer->has_account) {
             throw ValidationException::withMessages([
-                'customer' => 'The customer does not have an enabled account.',
+                'customer' => __('shop.account.errors.account_disabled'),
             ]);
         }
     }

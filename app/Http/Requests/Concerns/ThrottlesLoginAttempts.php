@@ -19,7 +19,7 @@ trait ThrottlesLoginAttempts
         }
 
         throw ValidationException::withMessages([
-            'email' => 'The provided credentials are invalid.',
+            'email' => $this->loginFailureMessage(),
         ]);
     }
 
@@ -39,6 +39,11 @@ trait ThrottlesLoginAttempts
         $identifier = hash('sha256', $email.'|'.($this->ip() ?? ''));
 
         return $this->loginLimiterNamespace().':'.$identifier;
+    }
+
+    public function loginFailureMessage(): string
+    {
+        return 'The provided credentials are invalid.';
     }
 
     abstract protected function loginLimiterNamespace(): string;

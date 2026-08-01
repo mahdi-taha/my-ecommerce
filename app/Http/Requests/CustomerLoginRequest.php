@@ -23,6 +23,11 @@ class CustomerLoginRequest extends FormRequest
         ];
     }
 
+    public function loginFailureMessage(): string
+    {
+        return __('shop.auth.login.invalid_credentials');
+    }
+
     protected function loginLimiterNamespace(): string
     {
         return 'customer-login';

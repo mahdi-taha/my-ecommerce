@@ -1,6 +1,17 @@
 <?php
 
 return [
+    'auth' => [
+        'login' => [
+            'title' => 'تسجيل دخول العميل',
+            'email' => 'البريد الإلكتروني',
+            'password' => 'كلمة المرور',
+            'remember' => 'تذكرني',
+            'submit' => 'تسجيل الدخول',
+            'invalid_credentials' => 'بيانات تسجيل الدخول غير صحيحة.',
+        ],
+    ],
+
     'home' => [
         'title' => 'الرئيسية',
         'products_title' => 'منتجاتنا',
@@ -236,6 +247,10 @@ return [
     ],
 
     'account' => [
+        'errors' => [
+            'invalid_customer' => 'المستخدم المحدد ليس عميلاً.',
+            'account_disabled' => 'لا يملك العميل حساباً مفعلاً.',
+        ],
         'navigation' => [
             'label' => 'التنقل في حساب العميل',
             'profile' => 'الملف الشخصي',
@@ -252,6 +267,14 @@ return [
                 'last_name' => 'اسم العائلة',
                 'phone' => 'الهاتف',
             ],
+        ],
+        'password' => [
+            'back' => 'رجوع',
+            'current_password' => 'كلمة المرور الحالية',
+            'new_password' => 'كلمة المرور الجديدة',
+            'confirm_password' => 'تأكيد كلمة المرور',
+            'update' => 'تحديث كلمة المرور',
+            'updated' => 'تم تحديث كلمة المرور بنجاح.',
         ],
         'addresses' => [
             'title' => 'دفتر العناوين',

@@ -37,6 +37,6 @@ class CustomerAccountController extends Controller
             $request->validated('password')
         );
 
-        return back()->with('success', 'Password updated successfully.');
+        return back()->with('success', __('shop.account.password.updated'));
     }
 }

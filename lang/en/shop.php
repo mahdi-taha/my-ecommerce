@@ -1,6 +1,17 @@
 <?php
 
 return [
+    'auth' => [
+        'login' => [
+            'title' => 'Customer Login',
+            'email' => 'Email',
+            'password' => 'Password',
+            'remember' => 'Remember me',
+            'submit' => 'Login',
+            'invalid_credentials' => 'The provided credentials are invalid.',
+        ],
+    ],
+
     'home' => [
         'title' => 'Home',
         'products_title' => 'Our Products',
@@ -236,6 +247,10 @@ return [
     ],
 
     'account' => [
+        'errors' => [
+            'invalid_customer' => 'The selected user is not a customer.',
+            'account_disabled' => 'The customer does not have an enabled account.',
+        ],
         'navigation' => [
             'label' => 'Customer account navigation',
             'profile' => 'Profile',
@@ -252,6 +267,14 @@ return [
                 'last_name' => 'Last Name',
                 'phone' => 'Phone',
             ],
+        ],
+        'password' => [
+            'back' => 'Back',
+            'current_password' => 'Current Password',
+            'new_password' => 'New Password',
+            'confirm_password' => 'Confirm Password',
+            'update' => 'Update Password',
+            'updated' => 'Password updated successfully.',
         ],
         'addresses' => [
             'title' => 'Address Book',
