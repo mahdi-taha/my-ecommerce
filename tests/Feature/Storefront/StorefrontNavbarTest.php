@@ -30,7 +30,9 @@ class StorefrontNavbarTest extends TestCase
         $second = $this->category('Second Root', position: 2);
         $first = $this->category('First Root', position: 1);
         $child = $this->category('Child', position: 1, parent: $first);
-        $this->category('Grandchild', position: 1, parent: $child);
+        $grandchild = $this->category('Grandchild', position: 1, parent: $child);
+        $this->category('Great Grandchild', position: 1, parent: $grandchild);
+        $this->category('Child', position: 2, parent: $first, slug: 'second-child');
         $this->category('Inactive', position: 0, active: false);
         $this->category('Arabic only', position: 0, locale: 'ar');
 
@@ -41,7 +43,15 @@ class StorefrontNavbarTest extends TestCase
             ->assertSee(__('shop.navigation.shop'))
             ->assertSee(__('shop.navigation.contact'))
             ->assertSee('href="#"', false)
-            ->assertSeeInOrder(['First Root', 'Child', 'Grandchild', 'Second Root'])
+            ->assertSeeInOrder(['First Root', 'Child', 'Grandchild', 'Great Grandchild', 'Second Root'])
+            ->assertSee('data-category-mega-menu', false)
+            ->assertSee('data-category-root', false)
+            ->assertSee('id="category-panel-'.$first->id.'"', false)
+            ->assertSee('row-cols-1 row-cols-lg-2 row-cols-xl-3', false)
+            ->assertSee('data-mobile-category-tree', false)
+            ->assertSee('data-bs-target="#mobile-category-children-'.$first->id.'"', false)
+            ->assertSee('aria-controls="mobile-category-children-'.$first->id.'"', false)
+            ->assertSee('id="category-panel-'.$second->id.'"', false)
             ->assertDontSee('Inactive')
             ->assertDontSee('Arabic only')
             ->assertDontSee('(3)')
@@ -50,6 +60,32 @@ class StorefrontNavbarTest extends TestCase
             ->assertDontSee('contact.html');
 
         $this->assertTrue($second->exists);
+    }
+
+    public function test_category_menu_exposes_accessible_desktop_and_mobile_interaction_hooks(): void
+    {
+        $root = $this->category('Root');
+        $this->category('Leaf', parent: $root);
+
+        $response = $this->get(route('shop.home'));
+
+        $response->assertOk()
+            ->assertSee('id="categoryMegaMenuToggle"', false)
+            ->assertSee('aria-controls="categoryMegaMenu"', false)
+            ->assertSee('data-bs-auto-close="outside"', false)
+            ->assertSee('id="category-root-'.$root->id.'"', false)
+            ->assertSee('aria-controls="category-panel-'.$root->id.'"', false)
+            ->assertSee('aria-expanded="true"', false)
+            ->assertSee('id="mobileCategoriesMenu"', false)
+            ->assertSee('data-bs-toggle="collapse"', false);
+
+        $script = file_get_contents(resource_path('js/shop/category-mega-menu.js'));
+
+        $this->assertIsString($script);
+        $this->assertStringContainsString("root.addEventListener('mouseenter'", $script);
+        $this->assertStringContainsString("root.addEventListener('focus'", $script);
+        $this->assertStringContainsString("event.key !== 'Escape'", $script);
+        $this->assertStringContainsString('toggle?.focus()', $script);
     }
 
     public function test_mobile_customer_navigation_reuses_shared_cart_and_wishlist_counts(): void
@@ -123,7 +159,8 @@ class StorefrontNavbarTest extends TestCase
         int $position = 0,
         ?Category $parent = null,
         bool $active = true,
-        string $locale = 'en'
+        string $locale = 'en',
+        ?string $slug = null
     ): Category {
         $category = Category::factory()->create([
             'parent_id' => $parent?->id,
@@ -134,7 +171,7 @@ class StorefrontNavbarTest extends TestCase
         $category->translations()->create([
             'locale' => $locale,
             'name' => $name,
-            'slug' => str($name)->slug(),
+            'slug' => $slug ?? str($name)->slug(),
         ]);
 
         return $category;
