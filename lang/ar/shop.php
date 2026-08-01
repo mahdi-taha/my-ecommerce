@@ -463,12 +463,15 @@ return [
         'all_categories' => 'جميع الفئات',
         'toggle_navigation' => 'فتح أو إغلاق قائمة التنقل',
         'toggle_categories' => 'فتح أو إغلاق قائمة الفئات',
+        'search_placeholder' => 'ابحث عن منتج',
+        'search_label' => 'البحث عن المنتجات',
         'contact_phone' => '+0123 456 7890',
     ],
 
     'topbar' => [
         'call_us' => 'اتصل بنا:',
         'currency' => 'العملة: :currency',
+        'currency_label' => 'العملة:',
         'language' => 'اللغة',
         'english' => 'الإنجليزية',
         'arabic' => 'العربية',

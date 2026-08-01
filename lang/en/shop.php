@@ -463,12 +463,15 @@ return [
         'all_categories' => 'All Categories',
         'toggle_navigation' => 'Toggle navigation',
         'toggle_categories' => 'Toggle categories',
+        'search_placeholder' => 'Search Looking For?',
+        'search_label' => 'Search products',
         'contact_phone' => '+0123 456 7890',
     ],
 
     'topbar' => [
         'call_us' => 'Call Us:',
         'currency' => 'Currency: :currency',
+        'currency_label' => 'Currency:',
         'language' => 'Language',
         'english' => 'English',
         'arabic' => 'Arabic',

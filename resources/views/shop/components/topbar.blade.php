@@ -1,7 +1,7 @@
-<div class="container-fluid px-5 d-none border-bottom d-lg-block">
+<div class="container-fluid px-5 d-none border-bottom d-lg-block storefront-topbar">
     <div class="row gx-0 align-items-center">
         <div class="col-lg-4 text-center text-lg-start mb-lg-0">
-            <div class="d-inline-flex align-items-center" style="height: 45px;">
+            <div class="d-inline-flex align-items-center storefront-social-links" style="height: 45px;">
                 @if (filled($topbarFacebookUrl))
                     <a href="{{ $topbarFacebookUrl }}" class="text-muted me-2" target="_blank"
                         rel="noopener noreferrer" aria-label="{{ __('shop.topbar.facebook') }}">
@@ -26,8 +26,8 @@
         <div class="col-lg-4 text-center d-flex align-items-center justify-content-center">
             @if (filled($topbarPhone))
                 <small class="text-dark me-1">{{ __('shop.topbar.call_us') }}</small>
-                <a href="tel:{{ preg_replace('/[^0-9+]/', '', $topbarPhone) }}" class="text-muted">
-                    {{ $topbarPhone }}
+                <a href="tel:{{ preg_replace('/[^0-9+]/', '', $topbarPhone) }}" class="text-muted storefront-phone">
+                    <bdi dir="ltr">{{ $topbarPhone }}</bdi>
                 </a>
             @endif
         </div>
@@ -35,7 +35,7 @@
         <div class="col-lg-4 text-center text-lg-end">
             <div class="d-inline-flex align-items-center" style="height: 45px;">
                 <div class="text-muted me-2">
-                    <small>{{ __('shop.topbar.currency', ['currency' => $topbarCurrencyCode]) }}</small>
+                    <small>{{ __('shop.topbar.currency_label') }} <bdi dir="ltr">{{ $topbarCurrencyCode }}</bdi></small>
                 </div>
 
                 <div class="dropdown">
@@ -64,7 +64,7 @@
                         aria-label="{{ __('shop.topbar.customer_menu') }}">
                         <small>
                             <i class="fa fa-user me-2" aria-hidden="true"></i>
-                            {{ $topbarCustomer?->name ?: __('shop.topbar.guest') }}
+                            <bdi>{{ $topbarCustomer?->name ?: __('shop.topbar.guest') }}</bdi>
                         </small>
                     </button>
                     <div class="dropdown-menu dropdown-menu-end rounded">
@@ -112,7 +112,7 @@
     </div>
 </div>
 
-<div class="container-fluid px-5 py-4 d-none d-lg-block">
+<div class="container-fluid px-5 py-4 d-none d-lg-block storefront-header-main">
     <div class="row gx-0 align-items-center text-center">
         <div class="col-md-4 col-lg-3 text-center text-lg-start">
             <div class="d-inline-flex align-items-center">
@@ -123,7 +123,7 @@
                             class="img-fluid" style="max-height: 70px;">
                     @else
                         <h1 class="display-5 text-primary m-0">
-                            <i class="fas fa-shopping-bag text-secondary me-2" aria-hidden="true"></i>{{ $topbarStoreName }}
+                            <i class="fas fa-shopping-bag text-secondary me-2" aria-hidden="true"></i><bdi>{{ $topbarStoreName }}</bdi>
                         </h1>
                     @endif
                 </a>
@@ -134,7 +134,8 @@
             <div class="position-relative ps-4">
                 <div class="d-flex border rounded-pill">
                     <input class="form-control border-0 rounded-pill w-100 py-3" type="text"
-                        data-bs-target="#dropdownToggle123" placeholder="Search Looking For?">
+                        data-bs-target="#dropdownToggle123" placeholder="{{ __('shop.navigation.search_placeholder') }}"
+                        aria-label="{{ __('shop.navigation.search_label') }}">
                     <select class="form-select text-dark border-0 border-start rounded-0 p-3" style="width: 200px;">
                         <option value="All Category">All Category</option>
                         <option value="Pest Control-2">Category 1</option>
@@ -158,7 +159,7 @@
                         <i class="fas fa-heart" aria-hidden="true"></i>
                     </span>
                     @if ($topbarCustomer && ($storefrontWishlistCount ?? 0) > 0)
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger storefront-header-badge">
                             {{ $storefrontWishlistCount }}
                         </span>
                     @endif
@@ -170,7 +171,7 @@
                         <i class="fas fa-shopping-cart" aria-hidden="true"></i>
                     </span>
                     @if (($storefrontCartQuantity ?? 0) > 0)
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger storefront-header-badge">
                             {{ $storefrontCartQuantity }}
                         </span>
                     @endif

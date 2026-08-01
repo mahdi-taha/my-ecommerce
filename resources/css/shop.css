@@ -35,6 +35,53 @@
         background-color: #f5f5f5 !important;
 }
 
+/* Storefront header RTL corrections for the Electro LTR Bootstrap build. */
+[dir="rtl"] .storefront-topbar .dropdown-menu,
+[dir="rtl"] .storefront-navbar .dropdown-menu,
+[dir="rtl"] .storefront-navbar .categories-bars-item {
+    text-align: right;
+}
+
+[dir="rtl"] .storefront-topbar .dropdown-menu-end,
+[dir="rtl"] .storefront-navbar .dropdown-menu-end {
+    right: auto;
+    left: 0;
+}
+
+[dir="rtl"] .storefront-header-badge {
+    right: 100% !important;
+    left: auto !important;
+    transform: translate(50%, -50%) !important;
+}
+
+[dir="rtl"] .storefront-navbar .navbar-nav.ms-auto,
+[dir="rtl"] .storefront-navbar .navbar-toggler.ms-auto {
+    margin-right: auto !important;
+    margin-left: 0 !important;
+}
+
+[dir="rtl"] .storefront-navbar .categories-bars .ps-3 {
+    padding-right: 1rem !important;
+    padding-left: 0 !important;
+}
+
+@media (min-width: 992px) {
+    [dir="rtl"] .storefront-topbar .text-lg-start,
+    [dir="rtl"] .storefront-header-main .text-lg-start {
+        text-align: right !important;
+    }
+
+    [dir="rtl"] .storefront-topbar .text-lg-end,
+    [dir="rtl"] .storefront-header-main .text-lg-end {
+        text-align: left !important;
+    }
+
+    [dir="rtl"] .storefront-navbar .me-lg-2 {
+        margin-right: 0 !important;
+        margin-left: .5rem !important;
+    }
+}
+
     .product-item {
         transition: .3s;
     }

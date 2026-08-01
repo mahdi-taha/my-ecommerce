@@ -1,4 +1,4 @@
-<div class="container-fluid nav-bar p-0">
+<div class="container-fluid nav-bar p-0 storefront-navbar">
     <div class="row gx-0 bg-primary px-5 align-items-center">
         @include('shop.components.category-menu')
 
@@ -7,7 +7,7 @@
                 <a href="{{ route('shop.home') }}" class="navbar-brand d-block d-lg-none">
                     <h1 class="display-5 text-secondary m-0">
                         <i class="fas fa-shopping-bag text-white me-2" aria-hidden="true"></i>
-                        {{ $navbarStoreName }}
+                        <bdi>{{ $navbarStoreName }}</bdi>
                     </h1>
                 </a>
 
@@ -65,7 +65,7 @@
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
                                 aria-expanded="false">
                                 <i class="fa fa-user me-2" aria-hidden="true"></i>
-                                {{ auth('customer')->user()?->name ?: __('shop.topbar.guest') }}
+                                <bdi>{{ auth('customer')->user()?->name ?: __('shop.topbar.guest') }}</bdi>
                             </a>
                             <div class="dropdown-menu dropdown-menu-end rounded">
                                 @auth('customer')
