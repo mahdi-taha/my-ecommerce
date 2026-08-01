@@ -12,7 +12,7 @@
                     <form action="{{ route('shop.cart.clear') }}" method="POST">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
+                        <button type="submit" class="btn btn-danger px-4">
                             {{ __('shop.cart.clear') }}
                         </button>
                     </form>
@@ -93,8 +93,7 @@
                                                         value="{{ (int) $item->quantity }}" min="1"
                                                         max="{{ $line['available_quantity'] }}" step="1"
                                                         class="form-control form-control-sm text-center"
-                                                        style="width: 85px;"
-                                                        aria-label="{{ __('shop.cart.quantity') }}">
+                                                        style="width: 85px;" aria-label="{{ __('shop.cart.quantity') }}">
                                                     <button type="submit" class="btn btn-sm btn-outline-primary">
                                                         {{ __('shop.cart.update') }}
                                                     </button>
@@ -108,9 +107,9 @@
                                                     method="POST">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    <button type="submit" class="btn btn-md rounded-circle border"
                                                         aria-label="{{ __('shop.cart.remove') }}">
-                                                        <i class="bi bi-trash"></i>
+                                                        <i class="fa fa-times text-danger"></i>
                                                     </button>
                                                 </form>
                                             </td>
@@ -121,14 +120,17 @@
                         </div>
                     </div>
                     <div class="card-footer bg-white py-4">
-                        <div class="d-flex justify-content-end align-items-center gap-4">
-                            <span class="h5 mb-0">{{ __('shop.cart.subtotal') }}</span>
-                            <span class="h4 fw-bold text-primary mb-0">
-                                {{ format_store_price($subtotal, $currency_code) }}
-                            </span>
+                        <div class="d-flex justify-content-between gap-4">
+                            <div>
+                                <span class="h5 mb-0">{{ __('shop.cart.subtotal') }}</span>
+                                <span class="h4 fw-bold text-primary mb-0">
+                                    {{ format_store_price($subtotal, $currency_code) }}
+                                </span>
+                            </div>
                             <a class="btn btn-primary text-uppercase" href="{{ route('shop.checkout.show') }}">
                                 {{ __('shop.cart.checkout') }}
                             </a>
+
                         </div>
                     </div>
                 </div>
