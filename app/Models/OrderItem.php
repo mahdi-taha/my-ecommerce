@@ -63,9 +63,15 @@ class OrderItem extends Model
     {
         return [
             'configuration' => 'array',
+            'quantity' => 'decimal:4',
+            'original_unit_price' => 'decimal:4',
+            'unit_price' => 'decimal:4',
             'tax_rate' => 'decimal:4',
             'tax_amount' => 'decimal:4',
+            'row_subtotal' => 'decimal:4',
             'discount_amount' => 'decimal:4',
+            'row_total' => 'decimal:4',
+            'unit_cost' => 'decimal:4',
         ];
     }
 

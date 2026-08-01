@@ -64,6 +64,15 @@ class Order extends Model
     {
         return [
             'requires_payment_before_processing' => 'boolean',
+            'subtotal' => 'decimal:4',
+            'discount_total' => 'decimal:4',
+            'shipping_total' => 'decimal:4',
+            'tax_total' => 'decimal:4',
+            'grand_total' => 'decimal:4',
+            'placed_at' => 'datetime:Y-m-d H:i:s',
+            'paid_at' => 'datetime:Y-m-d H:i:s',
+            'cancelled_at' => 'datetime:Y-m-d H:i:s',
+            'completed_at' => 'datetime:Y-m-d H:i:s',
         ];
     }
 
