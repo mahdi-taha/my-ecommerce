@@ -49,6 +49,18 @@ class SettingSeeder extends Seeder
             );
         }
 
+        foreach ([
+            ['key' => 'store_logo_path', 'type' => 'text'],
+            ['key' => 'facebook_url', 'type' => 'url'],
+            ['key' => 'whatsapp_url', 'type' => 'url'],
+            ['key' => 'instagram_url', 'type' => 'url'],
+        ] as $setting) {
+            Setting::firstOrCreate(
+                ['group' => 'store', 'key' => $setting['key']],
+                ['value' => '', 'type' => $setting['type']]
+            );
+        }
+
         $manualPaymentSettings = [
             ['key' => 'manual_whatsapp_number', 'type' => 'text'],
             ['key' => 'manual_wallet_title', 'type' => 'text'],

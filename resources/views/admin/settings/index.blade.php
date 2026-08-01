@@ -16,7 +16,7 @@
             <div class="body-wrapper-inner">
                 <div class="container-fluid">
 
-                    <form action="{{ route('admin.settings.update') }}" method="POST">
+                    <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -48,6 +48,30 @@
                                             <input type="text" class="form-control" id="store_phone" name="store_phone"
                                                 value="{{ old('store_phone', $settings['store_phone'] ?? '') }}">
                                         </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label" for="store_logo">Store Logo</label>
+                                            <input type="file" class="form-control @error('store_logo') is-invalid @enderror"
+                                                id="store_logo" name="store_logo" accept="image/jpeg,image/png,image/webp">
+                                            @if (filled($settings['store_logo_path'] ?? null))
+                                                <div class="form-text">Current: {{ $settings['store_logo_path'] }}</div>
+                                            @endif
+                                            @error('store_logo')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                        </div>
+
+                                        @foreach ([
+                                            'facebook_url' => 'Facebook URL',
+                                            'whatsapp_url' => 'WhatsApp URL',
+                                            'instagram_url' => 'Instagram URL',
+                                        ] as $field => $label)
+                                            <div class="mb-3">
+                                                <label class="form-label" for="{{ $field }}">{{ $label }}</label>
+                                                <input type="url" class="form-control @error($field) is-invalid @enderror"
+                                                    id="{{ $field }}" name="{{ $field }}"
+                                                    value="{{ old($field, $settings[$field] ?? '') }}">
+                                                @error($field)<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                            </div>
+                                        @endforeach
 
                                         <div>
                                             <label class="form-label" for="store_address">Store Address</label>
