@@ -6,9 +6,10 @@
           <a href="./index.html" class="text-nowrap logo-img">
             {{-- <img src="assets/images/logos/logo.svg" alt="" /> --}}
           </a>
-          <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
+          <button class="close-btn d-xl-none d-block sidebartoggler cursor-pointer border-0 bg-transparent" type="button"
+            id="sidebarCollapse" aria-label="Close navigation" aria-controls="main-wrapper">
             <i class="ti ti-x fs-6"></i>
-          </div>
+          </button>
         </div>
         <!-- Sidebar navigation-->
         <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
@@ -48,7 +49,8 @@
               </a>
             </li>
             <li class="sidebar-item">
-              <a class="sidebar-link justify-content-between has-arrow" href="javascript:void(0)" aria-expanded="false">
+              <button class="sidebar-link justify-content-between has-arrow border-0 w-100" type="button"
+                aria-expanded="false" aria-controls="catalog-navigation">
                 <div class="d-flex align-items-center gap-3">
                   <span class="d-flex">
                     <i class="ti ti-layout-grid"></i>
@@ -56,8 +58,8 @@
                   <span class="hide-menu">Catalog</span>
                 </div>
                 
-              </a>
-              <ul aria-expanded="false" class="collapse first-level">
+              </button>
+              <ul id="catalog-navigation" aria-expanded="false" class="collapse first-level">
                 <li class="sidebar-item">
                   <a class="sidebar-link justify-content-between"
                     href="{{ route('admin.products.index') }}">

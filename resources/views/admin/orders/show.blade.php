@@ -242,11 +242,11 @@
                                 <table class="table align-middle mb-0">
                                     <thead>
                                         <tr>
-                                            <th>SKU</th>
-                                            <th>Product Name</th>
-                                            <th class="text-end">Quantity</th>
-                                            <th class="text-end">Unit Price</th>
-                                            <th class="text-end">Row Total</th>
+                                            <th scope="col">SKU</th>
+                                            <th scope="col">Product Name</th>
+                                            <th scope="col" class="text-end">Quantity</th>
+                                            <th scope="col" class="text-end">Unit Price</th>
+                                            <th scope="col" class="text-end">Row Total</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -301,7 +301,7 @@
                                 <div class="card-body">
                                     <div class="table-responsive">
                                         <table class="table align-middle mb-0">
-                                            <thead><tr><th>Method</th><th>Status</th><th>Amount</th><th>Transaction Reference</th><th>Paid At</th><th>Failed At</th></tr></thead>
+                                            <thead><tr><th scope="col">Method</th><th scope="col">Status</th><th scope="col">Amount</th><th scope="col">Transaction Reference</th><th scope="col">Paid At</th><th scope="col">Failed At</th></tr></thead>
                                             <tbody>
                                                 @forelse ($order->payment?->attempts ?? collect() as $attempt)
                                                     <tr>
@@ -342,7 +342,7 @@
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table class="table align-middle mb-0">
-                                    <thead><tr><th>Date</th><th>Type</th><th>From</th><th>To</th><th>User</th><th>Comment</th></tr></thead>
+                                    <thead><tr><th scope="col">Date</th><th scope="col">Type</th><th scope="col">From</th><th scope="col">To</th><th scope="col">User</th><th scope="col">Comment</th></tr></thead>
                                     <tbody>
                                         @forelse ($order->statusHistory as $history)
                                             <tr>

@@ -32,26 +32,26 @@
                                     <div class="card-body">
 
                                         <div class="mb-3">
-                                            <label class="form-label">Store Name</label>
-                                            <input type="text" class="form-control" name="store_name"
+                                            <label class="form-label" for="store_name">Store Name</label>
+                                            <input type="text" class="form-control" id="store_name" name="store_name"
                                                 value="{{ old('store_name', $settings['store_name'] ?? '') }}">
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label">Store Email</label>
-                                            <input type="email" class="form-control" name="store_email"
+                                            <label class="form-label" for="store_email">Store Email</label>
+                                            <input type="email" class="form-control" id="store_email" name="store_email"
                                                 value="{{ old('store_email', $settings['store_email'] ?? '') }}">
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label">Store Phone</label>
-                                            <input type="text" class="form-control" name="store_phone"
+                                            <label class="form-label" for="store_phone">Store Phone</label>
+                                            <input type="text" class="form-control" id="store_phone" name="store_phone"
                                                 value="{{ old('store_phone', $settings['store_phone'] ?? '') }}">
                                         </div>
 
                                         <div>
-                                            <label class="form-label">Store Address</label>
-                                            <textarea class="form-control" rows="3" name="store_address">{{ old('store_address', $settings['store_address'] ?? '') }}</textarea>
+                                            <label class="form-label" for="store_address">Store Address</label>
+                                            <textarea class="form-control" rows="3" id="store_address" name="store_address">{{ old('store_address', $settings['store_address'] ?? '') }}</textarea>
                                         </div>
 
                                     </div>
@@ -68,16 +68,16 @@
                                     <div class="card-body">
 
                                         <div class="mb-3">
-                                            <label class="form-label">Default Language</label>
-                                            <select class="form-select" name="default_locale">
+                                            <label class="form-label" for="default_locale">Default Language</label>
+                                            <select class="form-select" id="default_locale" name="default_locale">
                                                 <option value="en" @selected(($settings['default_locale'] ?? '') == 'en')>English</option>
                                                 <option value="ar" @selected(($settings['default_locale'] ?? '') == 'ar')>Arabic</option>
                                             </select>
                                         </div>
 
                                         <div>
-                                            <label class="form-label">Timezone</label>
-                                            <input type="text" class="form-control" name="timezone"
+                                            <label class="form-label" for="timezone">Timezone</label>
+                                            <input type="text" class="form-control" id="timezone" name="timezone"
                                                 value="{{ old('timezone', $settings['timezone'] ?? '') }}">
                                         </div>
 
@@ -94,9 +94,9 @@
 
                                     <div class="card-body">
 
-                                        <label class="form-label">Default Currency</label>
+                                            <label class="form-label" for="default_currency">Default Currency</label>
 
-                                        <select class="form-select" name="default_currency">
+                                            <select class="form-select" id="default_currency" name="default_currency">
                                             <option value="USD" @selected(($settings['default_currency'] ?? '') == 'USD')>USD ($)</option>
                                             <option value="LBP" @selected(($settings['default_currency'] ?? '') == 'LBP')>L.L.</option>
                                         </select>
@@ -114,9 +114,9 @@
 
                                     <div class="card-body">
 
-                                        <label class="form-label">Tax Mode</label>
+                                            <label class="form-label" for="tax_mode">Tax Mode</label>
 
-                                        <select class="form-select" name="tax_mode">
+                                            <select class="form-select" id="tax_mode" name="tax_mode">
                                             <option value="b2c" @selected(($settings['tax_mode'] ?? '') == 'b2c')>B2C</option>
                                             <option value="b2b" @selected(($settings['tax_mode'] ?? '') == 'b2b')>B2B</option>
                                         </select>
@@ -246,9 +246,9 @@
                                                 <table class="table table-bordered align-middle mb-0">
                                                     <thead>
                                                         <tr>
-                                                            <th>Event</th>
-                                                            <th>Audience</th>
-                                                            <th>Channels</th>
+                                                            <th scope="col">Event</th>
+                                                            <th scope="col">Audience</th>
+                                                            <th scope="col">Channels</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>

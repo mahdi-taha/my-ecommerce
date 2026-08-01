@@ -106,12 +106,12 @@
                                     <table class="table align-middle mb-0">
                                         <thead>
                                             <tr>
-                                                <th>Order</th>
-                                                <th>Date</th>
-                                                <th>Order Status</th>
-                                                <th>Payment</th>
-                                                <th>Fulfillment</th>
-                                                <th class="text-end">Grand Total</th>
+                                                <th scope="col">Order</th>
+                                                <th scope="col">Date</th>
+                                                <th scope="col">Order Status</th>
+                                                <th scope="col">Payment</th>
+                                                <th scope="col">Fulfillment</th>
+                                                <th scope="col" class="text-end">Grand Total</th>
                                             </tr>
                                         </thead>
                                         <tbody>

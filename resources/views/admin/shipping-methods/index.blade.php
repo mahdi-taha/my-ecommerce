@@ -21,13 +21,13 @@
                                 <table class="table align-middle">
                                     <thead>
                                         <tr>
-                                            <th>Code</th>
-                                            <th>Name</th>
-                                            <th>Type</th>
-                                            <th>Amount</th>
-                                            <th>Sort Order</th>
-                                            <th>Status</th>
-                                            <th class="text-end">Actions</th>
+                                            <th scope="col">Code</th>
+                                            <th scope="col">Name</th>
+                                            <th scope="col">Type</th>
+                                            <th scope="col">Amount</th>
+                                            <th scope="col">Sort Order</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col" class="text-end">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
