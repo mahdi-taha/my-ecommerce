@@ -31,12 +31,20 @@ class NotificationMessageBuilder
 
     public function build(NotificationDispatchDecision $decision, string $locale): ?array
     {
-        $context = $this->context($decision);
+        $context = $this->resolveContext($decision);
 
         if ($context === null) {
             return null;
         }
 
+        return $this->buildFromContext($decision, $context, $locale);
+    }
+
+    public function buildFromContext(
+        NotificationDispatchDecision $decision,
+        array $context,
+        string $locale
+    ): array {
         $key = 'shop.notifications.events.'.$decision->event;
         $replacements = [
             'order_number' => $context['order_number'],
@@ -52,7 +60,7 @@ class NotificationMessageBuilder
         ];
     }
 
-    private function context(NotificationDispatchDecision $decision): ?array
+    public function resolveContext(NotificationDispatchDecision $decision): ?array
     {
         if ($decision->entityType === 'order' && in_array($decision->event, self::ORDER_EVENTS, true)) {
             $order = Order::query()->find($decision->entityId, ['id', 'user_id', 'order_number', 'locale']);

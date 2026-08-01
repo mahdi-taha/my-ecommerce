@@ -36,11 +36,13 @@ class DatabaseNotificationListener
         }
 
         try {
-            $context = $this->messages->build($decision, 'en');
+            $context = $this->messages->resolveContext($decision);
 
             if ($context === null) {
                 return;
             }
+
+            $defaultMessage = $this->messages->buildFromContext($decision, $context, 'en');
 
             $timestamp = now();
             $rows = [];
@@ -54,7 +56,11 @@ class DatabaseNotificationListener
                     ->where('has_account', true)
                     ->where('is_active', true)
                     ->exists()) {
-                    $message = $this->messages->build($decision, $context['customer_locale']) ?? $context;
+                    $message = $this->messages->buildFromContext(
+                        $decision,
+                        $context,
+                        $context['customer_locale']
+                    );
                     $rows[] = $this->row(
                         $decision,
                         NotificationAudienceCode::Customer->value,
@@ -78,7 +84,7 @@ class DatabaseNotificationListener
                         $decision,
                         NotificationAudienceCode::Administrator->value,
                         (int) $adminId,
-                        $context,
+                        $defaultMessage,
                         $timestamp
                     );
                 }
