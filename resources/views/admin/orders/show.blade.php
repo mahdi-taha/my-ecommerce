@@ -306,7 +306,7 @@
                                                 @forelse ($order->payment?->attempts ?? collect() as $attempt)
                                                     <tr>
                                                         <td>{{ $order->payment->method_name }}</td>
-                                                        <td><span class="badge {{ $paymentBadgeClasses[$attempt->status->value] ?? 'bg-secondary' }}">{{ ucwords(str_replace('_', ' ', $attempt->status->value)) }}</span></td>
+                                                        <td><span class="badge {{ $paymentBadgeClasses[$attempt->status->value] ?? 'bg-secondary' }}">{{ __('shop.checkout.status.payment_attempt.'.$attempt->status->value) }}</span></td>
                                                         <td>{{ $attempt->currency_code }} {{ number_format((float) $attempt->amount, 2) }}</td>
                                                         <td>{{ $attempt->transaction_reference ?: '—' }}</td>
                                                         <td>{{ $attempt->status === \App\Enums\PaymentAttemptStatus::Paid ? $attempt->completed_at?->format('Y-m-d H:i') : '—' }}</td>

@@ -37,9 +37,13 @@
                                     <select id="payment-status-filter" class="form-select">
                                         <option value="">All Payment Statuses</option>
                                         <option value="pending">Pending</option>
+                                        <option value="awaiting_verification">Awaiting Verification</option>
                                         <option value="paid">Paid</option>
+                                        <option value="partially_paid">Partially Paid</option>
                                         <option value="failed">Failed</option>
                                         <option value="cancelled">Cancelled</option>
+                                        <option value="refunded">Refunded</option>
+                                        <option value="partially_refunded">Partially Refunded</option>
                                     </select>
                                 </div>
                                 <div class="col-lg-3 col-md-6 mb-2">

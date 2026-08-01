@@ -149,9 +149,13 @@ class CustomerController extends Controller
                     ]),
                     'payment' => $this->statusBadge($order->payment_status, [
                         'pending' => 'bg-warning text-dark',
+                        'awaiting_verification' => 'bg-info text-dark',
                         'paid' => 'bg-success',
+                        'partially_paid' => 'bg-info text-dark',
                         'failed' => 'bg-danger',
                         'cancelled' => 'bg-secondary',
+                        'refunded' => 'bg-dark',
+                        'partially_refunded' => 'bg-dark',
                     ]),
                     'fulfillment' => $this->statusBadge($order->fulfillment_status, [
                         'unfulfilled' => 'bg-secondary',

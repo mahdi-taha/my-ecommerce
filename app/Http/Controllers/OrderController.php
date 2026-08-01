@@ -99,9 +99,13 @@ class OrderController extends Controller
                 ]))
                 ->editColumn('payment_status', fn (Order $order) => $this->statusBadge($order->payment_status, [
                     'pending' => 'bg-warning text-dark',
+                    'awaiting_verification' => 'bg-info text-dark',
                     'paid' => 'bg-success',
+                    'partially_paid' => 'bg-info text-dark',
                     'failed' => 'bg-danger',
                     'cancelled' => 'bg-secondary',
+                    'refunded' => 'bg-dark',
+                    'partially_refunded' => 'bg-dark',
                 ]))
                 ->editColumn('fulfillment_status', fn (Order $order) => $this->statusBadge($order->fulfillment_status, [
                     'unfulfilled' => 'bg-secondary',
