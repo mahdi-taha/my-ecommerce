@@ -4,7 +4,9 @@ namespace Tests\Feature\Notifications;
 
 use App\Models\DatabaseNotification;
 use App\Models\User;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class DatabaseNotificationAccessTest extends TestCase
@@ -63,6 +65,60 @@ class DatabaseNotificationAccessTest extends TestCase
         $this->actingAs($admin, 'admin')
             ->patch(route('admin.notifications.read', $foreign))
             ->assertNotFound();
+    }
+
+    public function test_customer_navigation_counts_owned_unread_customer_notifications_once(): void
+    {
+        $customer = User::factory()->customer()->create();
+        $other = User::factory()->customer()->create();
+
+        $this->notification($customer, 'customer', 'Unread customer notification');
+        $read = $this->notification($customer, 'customer', 'Read customer notification');
+        $read->update(['read_at' => now()]);
+        $this->notification($customer, 'administrator', 'Wrong audience notification');
+        $this->notification($other, 'customer', 'Foreign customer notification');
+
+        $countQueries = 0;
+        DB::listen(function (QueryExecuted $query) use (&$countQueries): void {
+            $sql = strtolower($query->sql);
+
+            if (str_contains($sql, 'database_notifications') && str_contains($sql, 'count(')) {
+                $countQueries++;
+            }
+        });
+
+        $this->actingAs($customer, 'customer');
+        $html = view('customer.account._navigation')->render();
+
+        $this->assertMatchesRegularExpression('/badge[^>]*>\s*1\s*<\/span>/', $html);
+        $this->assertSame(1, $countQueries);
+    }
+
+    public function test_admin_topbar_counts_owned_unread_administrator_notifications_once(): void
+    {
+        $admin = User::factory()->create();
+        $other = User::factory()->create();
+
+        $this->notification($admin, 'administrator', 'Unread administrator notification');
+        $read = $this->notification($admin, 'administrator', 'Read administrator notification');
+        $read->update(['read_at' => now()]);
+        $this->notification($admin, 'customer', 'Wrong audience notification');
+        $this->notification($other, 'administrator', 'Foreign administrator notification');
+
+        $countQueries = 0;
+        DB::listen(function (QueryExecuted $query) use (&$countQueries): void {
+            $sql = strtolower($query->sql);
+
+            if (str_contains($sql, 'database_notifications') && str_contains($sql, 'count(')) {
+                $countQueries++;
+            }
+        });
+
+        $this->actingAs($admin, 'admin');
+        $html = view('components.admin-topbar')->render();
+
+        $this->assertMatchesRegularExpression('/badge[^>]*>\s*1\s*<\/span>/', $html);
+        $this->assertSame(1, $countQueries);
     }
 
     private function notification(User $user, string $audience, string $title): DatabaseNotification
