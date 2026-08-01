@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Services\OrderCancellationRequestService;
 use App\Services\OrderStatusService;
 use App\Services\PaymentStatusService;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use LogicException;
@@ -28,7 +29,6 @@ class OrderController extends Controller
     {
         if ($request->ajax()) {
             $orders = Order::query()
-                ->with(['user:id,name,email'])
                 ->withCount('items')
                 ->latest('placed_at');
 
@@ -49,11 +49,19 @@ class OrderController extends Controller
             }
 
             if ($request->filled('date_from')) {
-                $orders->whereDate('placed_at', '>=', $request->date_from);
+                $orders->where(
+                    'placed_at',
+                    '>=',
+                    $this->orderDateBoundary((string) $request->string('date_from'))
+                );
             }
 
             if ($request->filled('date_to')) {
-                $orders->whereDate('placed_at', '<=', $request->date_to);
+                $orders->where(
+                    'placed_at',
+                    '<',
+                    $this->orderDateBoundary((string) $request->string('date_to'), true)
+                );
             }
 
             return DataTables::eloquent($orders)
@@ -344,5 +352,15 @@ class OrderController extends Controller
         $label = ucwords(str_replace('_', ' ', $status));
 
         return '<span class="badge '.$class.'">'.e($label).'</span>';
+    }
+
+    private function orderDateBoundary(string $date, bool $followingDay = false): CarbonImmutable
+    {
+        $boundary = CarbonImmutable::parse(
+            $date,
+            (string) setting('localization.timezone', config('app.timezone'))
+        )->startOfDay();
+
+        return ($followingDay ? $boundary->addDay() : $boundary)->utc();
     }
 }
