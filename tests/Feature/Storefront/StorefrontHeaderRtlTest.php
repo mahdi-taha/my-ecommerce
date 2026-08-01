@@ -74,9 +74,9 @@ class StorefrontHeaderRtlTest extends TestCase
         $this->assertStringContainsString('[dir="rtl"] .storefront-topbar', $css);
         $this->assertStringContainsString('[dir="rtl"] .storefront-header-badge', $css);
         $this->assertStringContainsString('[dir="rtl"] .storefront-navbar', $css);
-        $this->assertStringContainsString('[dir="rtl"] .storefront-category-menu .storefront-category-mega-menu', $css);
-        $this->assertStringContainsString('[dir="rtl"] .storefront-category-root', $css);
-        $this->assertStringContainsString('padding-inline-start', $css);
+        $this->assertStringContainsString('[dir="rtl"] .storefront-category-menu .storefront-category-panel-menu', $css);
+        $this->assertStringContainsString('[dir="rtl"] .storefront-category-action', $css);
+        $this->assertStringContainsString('[dir="rtl"] .storefront-category-forward-icon', $css);
         $this->assertStringContainsString('border-inline-end', $css);
         $this->assertStringNotContainsString('[dir="ltr"] .storefront-navbar', $css);
     }
