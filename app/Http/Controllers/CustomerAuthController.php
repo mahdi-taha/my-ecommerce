@@ -11,7 +11,9 @@ use App\Services\GuestCartTokenService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
+use Throwable;
 
 class CustomerAuthController extends Controller
 {
@@ -90,10 +92,60 @@ class CustomerAuthController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
+        $destination = $this->logoutDestination($request->input('return_to'));
+
         Auth::guard('customer')->logout();
         $request->session()->regenerate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('customer.login');
+        return redirect()->to($destination);
+    }
+
+    private function logoutDestination(mixed $returnTo): string
+    {
+        if (! is_string($returnTo) || $returnTo === '') {
+            return route('shop.home');
+        }
+
+        $target = parse_url($returnTo);
+        $application = parse_url((string) config('app.url'));
+
+        if ($target === false || $application === false
+            || isset($target['user']) || isset($target['pass'])
+            || strtolower((string) ($target['scheme'] ?? '')) !== strtolower((string) ($application['scheme'] ?? ''))
+            || strtolower((string) ($target['host'] ?? '')) !== strtolower((string) ($application['host'] ?? ''))
+            || $this->urlPort($target) !== $this->urlPort($application)) {
+            return route('shop.home');
+        }
+
+        try {
+            $routeName = Route::getRoutes()
+                ->match(Request::create($returnTo, 'GET'))
+                ->getName();
+        } catch (Throwable) {
+            return route('shop.home');
+        }
+
+        return in_array($routeName, [
+            'shop.home',
+            'shop.products.show',
+            'shop.cart.index',
+        ], true) ? $returnTo : route('shop.home');
+    }
+
+    /**
+     * @param  array<string, mixed>  $parts
+     */
+    private function urlPort(array $parts): ?int
+    {
+        if (isset($parts['port'])) {
+            return (int) $parts['port'];
+        }
+
+        return match (strtolower((string) ($parts['scheme'] ?? ''))) {
+            'http' => 80,
+            'https' => 443,
+            default => null,
+        };
     }
 }

@@ -31,6 +31,7 @@
     </a>
     <form method="POST" action="{{ route('customer.logout') }}">
         @csrf
+        <input type="hidden" name="return_to" value="{{ url()->full() }}">
         <button class="nav-link border-0 bg-transparent text-start w-100" type="submit">
             {{ __('shop.account.profile.logout') }}
         </button>

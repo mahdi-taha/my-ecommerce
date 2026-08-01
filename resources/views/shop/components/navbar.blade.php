@@ -108,6 +108,7 @@
                                     </a>
                                     <form method="POST" action="{{ route('customer.logout') }}">
                                         @csrf
+                                        <input type="hidden" name="return_to" value="{{ url()->full() }}">
                                         <button type="submit" class="dropdown-item">
                                             {{ __('shop.account.profile.logout') }}
                                         </button>
