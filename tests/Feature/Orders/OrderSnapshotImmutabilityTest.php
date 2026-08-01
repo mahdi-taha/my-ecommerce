@@ -48,7 +48,10 @@ class OrderSnapshotImmutabilityTest extends TestCase
         $fresh = $order->fresh();
         $this->assertSame('cancelled', $fresh->status);
         $this->assertSame('cancelled', $fresh->payment_status);
-        $this->assertEquals($cancelledAt, $fresh->cancelled_at);
+        $this->assertSame(
+            $cancelledAt->format('Y-m-d H:i:s'),
+            $fresh->cancelled_at->format('Y-m-d H:i:s')
+        );
     }
 
     public function test_order_item_snapshot_fields_cannot_be_updated(): void

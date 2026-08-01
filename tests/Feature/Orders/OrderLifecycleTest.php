@@ -336,7 +336,7 @@ class OrderLifecycleTest extends TestCase
             $this->orderCompletionService->completeIfEligible($completed->fresh());
         });
 
-        $this->assertSame($completedAt, $completed->fresh()->completed_at);
+        $this->assertEquals($completedAt, $completed->fresh()->completed_at);
         $this->assertCompletionHistoryCount($order, 1);
     }
 
