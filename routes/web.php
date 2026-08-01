@@ -210,6 +210,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 Route::middleware('guest:customer')->group(function () {
+    Route::get('register', [CustomerAuthController::class, 'showRegistration'])
+        ->name('customer.register');
+    Route::post('register', [CustomerAuthController::class, 'register'])
+        ->name('customer.register.store');
     Route::get('login', [CustomerAuthController::class, 'showLogin'])
         ->name('customer.login');
     Route::post('login', [CustomerAuthController::class, 'login'])

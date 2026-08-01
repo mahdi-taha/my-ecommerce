@@ -9,6 +9,7 @@ return [
     'confirmed' => 'تأكيد :attribute غير متطابق.',
     'current_password' => 'كلمة المرور غير صحيحة.',
     'prohibited' => 'حقل :attribute غير مسموح به.',
+    'unique' => 'قيمة :attribute مستخدمة من قبل.',
     'alpha' => 'يجب أن يحتوي :attribute على أحرف فقط.',
     'size' => [
         'string' => 'يجب أن يتكون :attribute من :size أحرف.',

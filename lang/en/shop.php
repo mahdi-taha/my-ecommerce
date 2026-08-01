@@ -10,6 +10,23 @@ return [
             'submit' => 'Login',
             'invalid_credentials' => 'The provided credentials are invalid.',
         ],
+        'register' => [
+            'title' => 'Create Account',
+            'first_name' => 'First Name',
+            'last_name' => 'Last Name',
+            'email' => 'Email',
+            'phone' => 'Phone',
+            'phone_optional' => 'Optional',
+            'password' => 'Password',
+            'password_confirmation' => 'Confirm Password',
+            'submit' => 'Sign Up',
+            'have_account' => 'Already have an account?',
+            'login' => 'Login',
+            'no_account' => 'Do not have an account?',
+            'create_account' => 'Create one',
+            'success' => 'Your account was created successfully.',
+            'rate_limited' => 'Unable to create an account right now. Please try again shortly.',
+        ],
     ],
 
     'home' => [

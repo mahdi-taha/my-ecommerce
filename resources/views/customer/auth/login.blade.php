@@ -31,6 +31,10 @@
                         </div>
                         <button class="btn btn-primary w-100" type="submit">{{ __('shop.auth.login.submit') }}</button>
                     </form>
+                    <p class="text-center mt-3 mb-0">
+                        {{ __('shop.auth.register.no_account') }}
+                        <a href="{{ route('customer.register') }}">{{ __('shop.auth.register.create_account') }}</a>
+                    </p>
                 </div>
             </div>
         </div>

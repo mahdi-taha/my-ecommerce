@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\AccountType;
 use App\Http\Requests\CustomerLoginRequest;
+use App\Http\Requests\CustomerRegistrationRequest;
 use App\Services\CartService;
+use App\Services\CustomerService;
 use App\Services\GuestCartTokenService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,12 +17,40 @@ class CustomerAuthController extends Controller
 {
     public function __construct(
         private CartService $cartService,
-        private GuestCartTokenService $tokenService
+        private GuestCartTokenService $tokenService,
+        private CustomerService $customerService
     ) {}
 
     public function showLogin(): View
     {
         return view('customer.auth.login');
+    }
+
+    public function showRegistration(): View
+    {
+        return view('customer.auth.register');
+    }
+
+    public function register(CustomerRegistrationRequest $request): RedirectResponse
+    {
+        $customer = $this->customerService->register($request->validated());
+        Auth::guard('customer')->login($customer);
+        $request->clearRateLimiter();
+        $request->session()->regenerate();
+        $customer->update(['last_login_at' => now()]);
+        $guestToken = $this->tokenService->fromRequest($request);
+        $warnings = $this->cartService->mergeGuestCart($customer, $guestToken);
+        $response = redirect()
+            ->intended(route('customer.account.edit'))
+            ->with('success', __('shop.auth.register.success'));
+
+        if ($warnings !== []) {
+            $response->with('warning', implode(' ', $warnings));
+        }
+
+        return $guestToken
+            ? $response->withCookie($this->tokenService->forgetCookie())
+            : $response;
     }
 
     public function login(CustomerLoginRequest $request): RedirectResponse

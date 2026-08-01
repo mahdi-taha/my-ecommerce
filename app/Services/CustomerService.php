@@ -9,6 +9,23 @@ use Illuminate\Validation\ValidationException;
 
 class CustomerService
 {
+    public function register(array $data): User
+    {
+        $firstName = trim((string) $data['first_name']);
+        $lastName = trim((string) $data['last_name']);
+
+        return $this->create([
+            'name' => $firstName.' '.$lastName,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'email' => $data['email'],
+            'phone' => $data['phone'] ?? null,
+            'password' => $data['password'],
+            'has_account' => true,
+            'is_active' => true,
+        ]);
+    }
+
     public function create(array $data): User
     {
         return DB::transaction(function () use ($data) {
