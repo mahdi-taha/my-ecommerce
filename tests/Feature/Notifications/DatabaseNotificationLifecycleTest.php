@@ -10,7 +10,9 @@ use App\Models\OrderCancellationRequest;
 use App\Models\OrderPayment;
 use App\Models\User;
 use App\Services\NotificationMessageBuilder;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class DatabaseNotificationLifecycleTest extends TestCase
@@ -67,7 +69,7 @@ class DatabaseNotificationLifecycleTest extends TestCase
         $customer = User::factory()->customer()->create();
         $order = $this->order($customer);
         $builder = $this->mock(NotificationMessageBuilder::class);
-        $builder->shouldReceive('build')->once()->andThrow(new \RuntimeException('delivery unavailable'));
+        $builder->shouldReceive('resolveContext')->once()->andThrow(new \RuntimeException('delivery unavailable'));
 
         NotificationDispatchResolved::dispatch($this->decision('order_placed', 'order', $order->id));
 
@@ -75,15 +77,60 @@ class DatabaseNotificationLifecycleTest extends TestCase
         $this->assertDatabaseCount('database_notifications', 0);
     }
 
-    private function decision(string $event, string $entityType, int $entityId): NotificationDispatchDecision
+    public function test_entity_context_is_resolved_once_and_reused_for_all_recipients_and_locales(): void
     {
+        $customer = User::factory()->customer()->create();
+        User::factory()->count(3)->create();
+        $order = $this->order($customer);
+        $payment = $this->payment($order);
+        $cancellationRequest = $this->cancellationRequest($order, $customer);
+        $queryCounts = [];
+
+        DB::listen(function (QueryExecuted $query) use (&$queryCounts): void {
+            foreach (['orders', 'order_payments', 'order_cancellation_requests'] as $table) {
+                if (preg_match('/from\s+[`"]?'.preg_quote($table, '/').'[`"]?/i', $query->sql) === 1) {
+                    $queryCounts[$table] = ($queryCounts[$table] ?? 0) + 1;
+                }
+            }
+        });
+
+        $cases = [
+            ['order_placed', 'order', $order->id, ['orders' => 1]],
+            ['payment_paid', 'order_payment', $payment->id, ['order_payments' => 1, 'orders' => 1]],
+            [
+                'cancellation_request_submitted',
+                'order_cancellation_request',
+                $cancellationRequest->id,
+                ['order_cancellation_requests' => 1, 'orders' => 1],
+            ],
+        ];
+
+        foreach ($cases as [$event, $entityType, $entityId, $expectedQueries]) {
+            $queryCounts = [];
+
+            NotificationDispatchResolved::dispatch(
+                $this->decision($event, $entityType, $entityId, ['customer', 'administrator'])
+            );
+
+            $this->assertSame($expectedQueries, $queryCounts);
+        }
+    }
+
+    private function decision(
+        string $event,
+        string $entityType,
+        int $entityId,
+        array $audiences = ['customer']
+    ): NotificationDispatchDecision {
         return new NotificationDispatchDecision(
             event: $event,
             entityType: $entityType,
             entityId: $entityId,
-            audiences: ['customer'],
+            audiences: $audiences,
             channels: ['database'],
-            rules: [['audience' => 'customer', 'channel' => 'database']],
+            rules: collect($audiences)
+                ->map(fn (string $audience): array => ['audience' => $audience, 'channel' => 'database'])
+                ->all(),
             enabled: true,
         );
     }
