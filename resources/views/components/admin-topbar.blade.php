@@ -8,12 +8,6 @@
               </a>
             </li>
             <li class="nav-item dropdown">
-              @php
-                $adminNotificationCount = auth('admin')->user()?->databaseNotifications()
-                  ->where('audience_code', \App\Enums\NotificationAudienceCode::Administrator->value)
-                  ->whereNull('read_at')
-                  ->count() ?? 0;
-              @endphp
               <a class="nav-link position-relative" href="{{ route('admin.notifications.index') }}" aria-label="Notifications">
                 <i class="ti ti-bell"></i>
                 @if ($adminNotificationCount > 0)

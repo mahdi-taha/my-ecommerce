@@ -14,12 +14,6 @@
     <a class="nav-link @if (request()->routeIs('shop.account.notifications.*')) active @endif"
         href="{{ route('shop.account.notifications.index') }}">
         {{ __('shop.notifications.title') }}
-        @php
-            $notificationCount = auth('customer')->user()?->databaseNotifications()
-                ->where('audience_code', \App\Enums\NotificationAudienceCode::Customer->value)
-                ->whereNull('read_at')
-                ->count() ?? 0;
-        @endphp
         @if ($notificationCount > 0)
             <span class="badge bg-danger ms-1">{{ $notificationCount }}</span>
         @endif
