@@ -54,6 +54,10 @@ class AccessibilityMarkupTest extends TestCase
         $this->assertStringContainsString('aria-label="Open navigation"', $adminTopbar);
         $this->assertStringContainsString('aria-label="Open administrator account menu"', $adminTopbar);
         $this->assertStringContainsString('aria-label="Close navigation"', $adminSidebar);
+        $this->assertStringContainsString('data-bs-toggle="collapse"', $adminSidebar);
+        $this->assertStringContainsString('data-bs-target="#catalog-navigation"', $adminSidebar);
+        $this->assertStringContainsString('aria-controls="catalog-navigation"', $adminSidebar);
+        $this->assertStringContainsString('id="catalog-navigation"', $adminSidebar);
         $this->assertStringContainsString('for="store_name"', $settings);
         $this->assertStringContainsString('id="store_name"', $settings);
         $this->assertStringContainsString('<th scope="col">', $customerOrders);
