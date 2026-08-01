@@ -63,14 +63,44 @@
                                     </p>
                                 @endif
                                 @php
-                                    $effectiveTaxRate = $isConfigurable ? 0 : $product->effectiveTaxRate($defaultTax);
-                                    $formattedTaxRate = rtrim(rtrim(number_format($effectiveTaxRate, 4, '.', ''), '0'), '.');
+                                    $effectiveTaxRate = $isConfigurable
+                                        ? $configurablePriceRange['common_tax_rate'] ?? null
+                                        : $product->effectiveTaxRate($defaultTax);
+                                    $formattedTaxRate = $effectiveTaxRate === null
+                                        ? ''
+                                        : rtrim(rtrim(number_format($effectiveTaxRate, 4, '.', ''), '0'), '.');
                                 @endphp
                                 <div class="mb-4" data-product-price>
                                     @if ($isConfigurable)
-                                        <span class="text-muted" data-price-placeholder>
-                                            {{ __('shop.product_details.select_options_for_price') }}
-                                        </span>
+                                        @if ($configurablePriceRange)
+                                            <span class="h4 fw-bold text-primary mb-0" data-current-price>
+                                                {{ format_store_price_range(
+                                                    $configurablePriceRange['minimum'],
+                                                    $configurablePriceRange['maximum'],
+                                                    $currencyCode
+                                                ) }}
+                                            </span>
+                                            @if ($configurablePriceRange['show_regular_range'])
+                                                <span class="text-muted text-decoration-line-through ms-2" data-regular-price>
+                                                    {{ format_store_price_range(
+                                                        $configurablePriceRange['regular_minimum'],
+                                                        $configurablePriceRange['regular_maximum'],
+                                                        $currencyCode
+                                                    ) }}
+                                                </span>
+                                            @endif
+                                            @if ($effectiveTaxRate !== null && $effectiveTaxRate > 0)
+                                                <small class="d-block text-muted mt-1" data-tax-label>
+                                                    {{ $taxMode === 'b2c'
+                                                        ? __('shop.product_details.including_tax', ['rate' => $formattedTaxRate])
+                                                        : __('shop.product_details.tax_at_checkout', ['rate' => $formattedTaxRate]) }}
+                                                </small>
+                                            @endif
+                                        @else
+                                            <span class="text-muted" data-price-placeholder>
+                                                {{ __('shop.product.unavailable') }}
+                                            </span>
+                                        @endif
                                     @else
                                         <span class="h4 fw-bold text-primary mb-0" data-current-price>
                                             {{ format_store_price($product->displayPrice($taxMode, $defaultTax), $currencyCode) }}

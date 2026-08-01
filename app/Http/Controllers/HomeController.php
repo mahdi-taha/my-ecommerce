@@ -21,9 +21,14 @@ class HomeController extends Controller
                 'translations' => fn ($query) => $query->where('locale', app()->getLocale()),
                 'images',
                 'inventory',
+                'superAttributes',
                 'variants' => fn ($query) => $query
                     ->active()
-                    ->where('type', ProductType::Simple->value),
+                    ->where('type', ProductType::Simple->value)
+                    ->with([
+                        'attributeValues',
+                        'tax' => fn ($query) => $query->active(),
+                    ]),
                 'tax' => fn ($query) => $query->active(),
                 'categories' => fn ($query) => $query
                     ->where('status', true)

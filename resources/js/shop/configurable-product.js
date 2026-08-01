@@ -7,6 +7,8 @@ export function initializeConfigurableProducts() {
         const quantityButtons = form.querySelectorAll('.quantity button');
         const submit = form.querySelector('button[type="submit"]');
         const priceContainer = document.querySelector('[data-product-price]');
+        const initialPriceNodes = Array.from(priceContainer?.childNodes ?? [])
+            .map((node) => node.cloneNode(true));
         const availability = document.querySelector('[data-product-availability] .badge');
         const availabilityIcon = availability?.querySelector('i');
         const availabilityLabel = availability?.querySelector('[data-availability-label]');
@@ -60,10 +62,7 @@ export function initializeConfigurableProducts() {
             priceContainer.replaceChildren();
 
             if (!variant) {
-                const placeholder = document.createElement('span');
-                placeholder.className = 'text-muted';
-                placeholder.textContent = form.dataset.selectLabel;
-                priceContainer.append(placeholder);
+                priceContainer.append(...initialPriceNodes.map((node) => node.cloneNode(true)));
 
                 return;
             }

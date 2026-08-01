@@ -19,11 +19,22 @@
         && $product->configurable_id === null;
     $isConfigurable = $product->type === \App\Enums\ProductType::Configurable->value
         && $product->configurable_id === null;
+    $eligibleVariants = $isConfigurable
+        ? $product->eligibleStorefrontVariants()
+        : collect();
+    $configurablePriceRange = $isConfigurable
+        ? $product->configurablePriceRange($eligibleVariants, $taxMode, $defaultTax)
+        : null;
+    if ($configurablePriceRange !== null) {
+        $effectiveTaxRate = $configurablePriceRange['common_tax_rate'];
+        $formattedTaxRate = $effectiveTaxRate === null
+            ? ''
+            : rtrim(rtrim(number_format($effectiveTaxRate, 4, '.', ''), '0'), '.');
+    }
     $isInStock = $isStandaloneSimple
         && $product->hasPositiveEffectivePrice()
         && (float) ($product->inventory?->availableQuantity() ?? 0) > 0;
-    $hasPositiveVariant = $isConfigurable
-        && $product->variants->contains(fn ($variant) => $variant->hasPositiveEffectivePrice());
+    $hasPositiveVariant = $eligibleVariants->isNotEmpty();
 @endphp
 
 <div class="col-lg-3 col-md-4 col-sm-6">
@@ -73,16 +84,30 @@
 
             <div class="mb-3">
                 <span class="fw-bold fs-5 text-primary">
-                    {{ format_store_price($displayPrice, $currencyCode) }}
+                    {{ $configurablePriceRange
+                        ? format_store_price_range(
+                            $configurablePriceRange['minimum'],
+                            $configurablePriceRange['maximum'],
+                            $currencyCode
+                        )
+                        : format_store_price($displayPrice, $currencyCode) }}
                 </span>
 
-                @if ($product->hasActiveSpecialPrice())
+                @if ($configurablePriceRange && $configurablePriceRange['show_regular_range'])
+                    <span class="text-muted text-decoration-line-through ms-2">
+                        {{ format_store_price_range(
+                            $configurablePriceRange['regular_minimum'],
+                            $configurablePriceRange['regular_maximum'],
+                            $currencyCode
+                        ) }}
+                    </span>
+                @elseif (! $isConfigurable && $product->hasActiveSpecialPrice())
                     <span class="text-muted text-decoration-line-through ms-2">
                         {{ format_store_price($displayRegularPrice, $currencyCode) }}
                     </span>
                 @endif
 
-                @if ($effectiveTaxRate > 0)
+                @if ($effectiveTaxRate !== null && $effectiveTaxRate > 0)
                     <small class="d-block text-muted mt-1">
                         {{ $taxMode === 'b2c'
                             ? __('shop.product_details.including_tax', ['rate' => $formattedTaxRate])

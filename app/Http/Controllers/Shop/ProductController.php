@@ -146,8 +146,14 @@ class ProductController extends Controller
         $inStock = ! $isConfigurable
             && $hasPositiveEffectivePrice
             && (float) $availableQuantity > 0;
+        $eligibleVariants = $isConfigurable
+            ? $product->eligibleStorefrontVariants()
+            : collect();
+        $configurablePriceRange = $isConfigurable
+            ? $product->configurablePriceRange($eligibleVariants, $taxMode, $defaultTax)
+            : null;
         [$configurableAttributes, $variantPresentation] = $isConfigurable
-            ? $this->configurablePresentation($product, $taxMode, $defaultTax)
+            ? $this->configurablePresentation($product, $eligibleVariants, $taxMode, $defaultTax)
             : [collect(), []];
 
         return view('shop.pages.product-details', compact(
@@ -166,6 +172,7 @@ class ProductController extends Controller
             'isConfigurable',
             'configurableAttributes',
             'variantPresentation',
+            'configurablePriceRange',
             'isWishlisted',
             'hasPositiveEffectivePrice'
         ));
@@ -176,29 +183,10 @@ class ProductController extends Controller
      */
     private function configurablePresentation(
         Product $product,
+        Collection $variants,
         string $taxMode,
         ?Tax $defaultTax
     ): array {
-        $attributeIds = $product->superAttributes
-            ->pluck('attribute_id')
-            ->map(fn ($id) => (int) $id)
-            ->sort()
-            ->values();
-        $variants = $product->variants
-            ->filter(function (Product $variant) use ($attributeIds) {
-                if (! $variant->hasPositiveEffectivePrice()) {
-                    return false;
-                }
-
-                $selectedAttributeIds = $variant->attributeValues
-                    ->whereNotNull('attribute_option_id')
-                    ->pluck('attribute_id')
-                    ->map(fn ($id) => (int) $id)
-                    ->sort()
-                    ->values();
-
-                return $selectedAttributeIds->all() === $attributeIds->all();
-            });
         $usedOptionIds = $variants
             ->flatMap(fn (Product $variant) => $variant->attributeValues
                 ->pluck('attribute_option_id'))

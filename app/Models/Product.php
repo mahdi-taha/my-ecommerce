@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use LogicException;
 
 class Product extends Model
 {
@@ -78,6 +80,100 @@ class Product extends Model
     public function hasPositiveEffectivePrice(): bool
     {
         return (float) $this->effectivePrice() > 0;
+    }
+
+    /**
+     * @return Collection<int, Product>
+     */
+    public function eligibleStorefrontVariants(): Collection
+    {
+        if (! $this->relationLoaded('variants') || ! $this->relationLoaded('superAttributes')) {
+            throw new LogicException('Configurable storefront variants must be eager loaded.');
+        }
+
+        if ($this->type !== ProductType::Configurable->value || $this->configurable_id !== null) {
+            return collect();
+        }
+
+        $requiredAttributeIds = $this->superAttributes
+            ->pluck('attribute_id')
+            ->map(fn ($id) => (int) $id)
+            ->sort()
+            ->values();
+
+        return $this->variants
+            ->filter(function (Product $variant) use ($requiredAttributeIds): bool {
+                if (! $variant->relationLoaded('attributeValues')) {
+                    throw new LogicException('Configurable variant attribute values must be eager loaded.');
+                }
+
+                if (! $variant->status
+                    || $variant->type !== ProductType::Simple->value
+                    || (int) $variant->configurable_id !== (int) $this->getKey()
+                    || ! $variant->hasPositiveEffectivePrice()) {
+                    return false;
+                }
+
+                $selectedAttributeIds = $variant->attributeValues
+                    ->whereNotNull('attribute_option_id')
+                    ->pluck('attribute_id')
+                    ->map(fn ($id) => (int) $id)
+                    ->sort()
+                    ->values();
+
+                return $requiredAttributeIds->isNotEmpty()
+                    && $selectedAttributeIds->count() === $requiredAttributeIds->count()
+                    && $selectedAttributeIds->all() === $requiredAttributeIds->all();
+            })
+            ->values();
+    }
+
+    /**
+     * @param  Collection<int, Product>  $variants
+     * @return array{minimum: float, maximum: float, regular_minimum: float, regular_maximum: float, show_regular_range: bool, common_tax_rate: ?float}|null
+     */
+    public function configurablePriceRange(
+        Collection $variants,
+        string $taxMode,
+        ?Tax $defaultTax = null
+    ): ?array {
+        if ($variants->isEmpty()) {
+            return null;
+        }
+
+        $displayPrices = $variants->map(
+            fn (Product $variant): float => $variant->displayPrice($taxMode, $defaultTax)
+        );
+        $regularPrices = $variants->map(
+            fn (Product $variant): float => $variant->displayRegularPrice($taxMode, $defaultTax)
+        );
+        $minimum = (float) $displayPrices->min();
+        $maximum = (float) $displayPrices->max();
+        $regularMinimum = (float) $regularPrices->min();
+        $regularMaximum = (float) $regularPrices->max();
+        $taxRates = $variants
+            ->map(fn (Product $variant): string => number_format(
+                $variant->effectiveTaxRate($defaultTax),
+                4,
+                '.',
+                ''
+            ))
+            ->unique()
+            ->values();
+
+        return [
+            'minimum' => $minimum,
+            'maximum' => $maximum,
+            'regular_minimum' => $regularMinimum,
+            'regular_maximum' => $regularMaximum,
+            'show_regular_range' => $variants->contains(
+                fn (Product $variant): bool => $variant->hasActiveSpecialPrice()
+            ) && (number_format($minimum, 4, '.', '') !== number_format($regularMinimum, 4, '.', '')
+                || number_format($maximum, 4, '.', '') !== number_format($regularMaximum, 4, '.', '')),
+            'common_tax_rate' => $taxRates->count() === 1
+                ? (float) $taxRates->first()
+                : null,
+        ];
     }
 
     public function displayPrice(string $taxMode, ?Tax $defaultTax = null): float

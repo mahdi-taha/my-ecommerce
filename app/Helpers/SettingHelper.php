@@ -53,3 +53,18 @@ if (! function_exists('format_store_price')) {
         return store_currency_symbol($currencyCode).' '.number_format((float) $amount, 2);
     }
 }
+
+if (! function_exists('format_store_price_range')) {
+    function format_store_price_range(
+        string|int|float $minimum,
+        string|int|float $maximum,
+        ?string $currencyCode = null
+    ): string {
+        if (number_format((float) $minimum, 4, '.', '') === number_format((float) $maximum, 4, '.', '')) {
+            return format_store_price($minimum, $currencyCode);
+        }
+
+        return format_store_price($minimum, $currencyCode)
+            .' – '.format_store_price($maximum, $currencyCode);
+    }
+}
