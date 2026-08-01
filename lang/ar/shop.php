@@ -76,6 +76,7 @@ return [
         'available_quantity' => 'الكمية المتوفرة: :quantity',
         'in_stock' => 'متوفر',
         'out_of_stock' => 'غير متوفر',
+        'unavailable' => 'غير متاح',
     ],
 
     'storefront_actions' => [

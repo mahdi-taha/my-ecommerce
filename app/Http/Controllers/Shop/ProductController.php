@@ -139,10 +139,13 @@ class ProductController extends Controller
         $relatedProducts = $product->relatedProducts;
         $isWishlisted = (bool) ($product->is_wishlisted ?? false);
         $isConfigurable = $product->type === ProductType::Configurable->value;
+        $hasPositiveEffectivePrice = $product->hasPositiveEffectivePrice();
         $availableQuantity = $isConfigurable
             ? '0.0000'
             : ($product->inventory?->availableQuantity() ?? '0.0000');
-        $inStock = ! $isConfigurable && (float) $availableQuantity > 0;
+        $inStock = ! $isConfigurable
+            && $hasPositiveEffectivePrice
+            && (float) $availableQuantity > 0;
         [$configurableAttributes, $variantPresentation] = $isConfigurable
             ? $this->configurablePresentation($product, $taxMode, $defaultTax)
             : [collect(), []];
@@ -163,7 +166,8 @@ class ProductController extends Controller
             'isConfigurable',
             'configurableAttributes',
             'variantPresentation',
-            'isWishlisted'
+            'isWishlisted',
+            'hasPositiveEffectivePrice'
         ));
     }
 
@@ -182,6 +186,10 @@ class ProductController extends Controller
             ->values();
         $variants = $product->variants
             ->filter(function (Product $variant) use ($attributeIds) {
+                if (! $variant->hasPositiveEffectivePrice()) {
+                    return false;
+                }
+
                 $selectedAttributeIds = $variant->attributeValues
                     ->whereNotNull('attribute_option_id')
                     ->pluck('attribute_id')

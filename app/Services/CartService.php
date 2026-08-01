@@ -552,7 +552,7 @@ class CartService
     {
         $product = $this->eligibleSimpleProductQuery($productId)->first();
 
-        if (! $product) {
+        if (! $product || ! $product->hasPositiveEffectivePrice()) {
             throw ValidationException::withMessages([
                 'product_id' => __('shop.cart.validation.ineligible_product'),
             ]);
@@ -563,12 +563,14 @@ class CartService
 
     private function eligibleSimpleProductOrNull(int $productId): ?Product
     {
-        return $this->eligibleSimpleProductQuery($productId)
+        $product = $this->eligibleSimpleProductQuery($productId)
             ->with([
                 'translations' => fn ($query) => $query
                     ->where('locale', app()->getLocale()),
             ])
             ->first();
+
+        return $product?->hasPositiveEffectivePrice() ? $product : null;
     }
 
     private function eligibleCartItemProduct(CartItem $item): Product
@@ -583,7 +585,9 @@ class CartService
             )->first();
 
             if ($variant) {
-                return $variant;
+                if ($variant->hasPositiveEffectivePrice()) {
+                    return $variant;
+                }
             }
         }
 
@@ -603,7 +607,7 @@ class CartService
             ),
         };
 
-        return $query
+        $product = $query
             ->with([
                 'translations' => fn ($query) => $query
                     ->where('locale', app()->getLocale()),
@@ -611,6 +615,8 @@ class CartService
                     ->where('locale', app()->getLocale()),
             ])
             ->first();
+
+        return $product?->hasPositiveEffectivePrice() ? $product : null;
     }
 
     private function eligibleSimpleProductQuery(int $productId): Builder
@@ -727,7 +733,15 @@ class CartService
             ]);
         }
 
-        return $variants->first()->load('inventory');
+        $variant = $variants->first();
+
+        if (! $variant->hasPositiveEffectivePrice()) {
+            throw ValidationException::withMessages([
+                'options' => __('shop.cart.validation.unavailable_configuration'),
+            ]);
+        }
+
+        return $variant->load('inventory');
     }
 
     private function validateAvailableQuantity(Product $product, int $quantity): void

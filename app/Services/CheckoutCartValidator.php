@@ -186,6 +186,14 @@ class CheckoutCartValidator
             )];
         }
 
+        if (! $product->hasPositiveEffectivePrice()) {
+            return [$this->itemError(
+                'product_unavailable',
+                $item,
+                'The Cart Product does not have an available selling price.'
+            )];
+        }
+
         $configurationErrors = match ($item->product_type) {
             CartItemType::Simple => $this->validateSimpleProduct($item, $product),
             CartItemType::Configurable => $this->validateConfigurableProduct($item, $product),

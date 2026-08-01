@@ -102,10 +102,14 @@
                                         <i class="bi {{ $inStock ? 'bi-check-lg' : 'bi-x-lg' }} me-1"></i>
                                         <span data-availability-label>
                                             {{ $isConfigurable
-                                                ? __('shop.product_details.select_options')
+                                                ? ($configurableAttributes->isNotEmpty()
+                                                    ? __('shop.product_details.select_options')
+                                                    : __('shop.product.unavailable'))
                                                 : ($inStock
                                                     ? __('shop.product.available_quantity', ['quantity' => rtrim(rtrim($availableQuantity, '0'), '.')])
-                                                    : __('shop.product.out_of_stock')) }}
+                                                    : ($hasPositiveEffectivePrice
+                                                        ? __('shop.product.out_of_stock')
+                                                        : __('shop.product.unavailable'))) }}
                                         </span>
                                     </span>
                                 </div>
@@ -134,7 +138,9 @@
                                 <form action="{{ route('shop.cart.items.store') }}" method="POST"
                                     @if ($isConfigurable)
                                         data-configurable-product-form
-                                        data-unavailable-label="{{ __('shop.product_details.unavailable_combination') }}"
+                                        data-unavailable-label="{{ $configurableAttributes->isNotEmpty()
+                                            ? __('shop.product_details.unavailable_combination')
+                                            : __('shop.product.unavailable') }}"
                                         data-select-label="{{ __('shop.product_details.select_options') }}"
                                         data-out-of-stock-label="{{ __('shop.product.out_of_stock') }}"
                                     @endif>

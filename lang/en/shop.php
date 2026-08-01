@@ -76,6 +76,7 @@ return [
         'available_quantity' => 'Available quantity: :quantity',
         'in_stock' => 'In Stock',
         'out_of_stock' => 'Out of Stock',
+        'unavailable' => 'Unavailable',
     ],
 
     'storefront_actions' => [

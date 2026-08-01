@@ -20,7 +20,10 @@
     $isConfigurable = $product->type === \App\Enums\ProductType::Configurable->value
         && $product->configurable_id === null;
     $isInStock = $isStandaloneSimple
+        && $product->hasPositiveEffectivePrice()
         && (float) ($product->inventory?->availableQuantity() ?? 0) > 0;
+    $hasPositiveVariant = $isConfigurable
+        && $product->variants->contains(fn ($variant) => $variant->hasPositiveEffectivePrice());
 @endphp
 
 <div class="col-lg-3 col-md-4 col-sm-6">
@@ -132,13 +135,15 @@
                             {{ __('shop.product.add_to_cart') }}
                         </button>
                     </form>
-                @elseif ($isConfigurable && $productUrl !== '#')
+                @elseif ($isConfigurable && $hasPositiveVariant && $productUrl !== '#')
                     <a href="{{ $productUrl }}" class="btn btn-primary flex-grow-1">
                         {{ __('shop.product.choose_options') }}
                     </a>
                 @else
                     <button type="button" class="btn btn-primary flex-grow-1" disabled>
-                        {{ __('shop.product.out_of_stock') }}
+                        {{ $isStandaloneSimple && $product->hasPositiveEffectivePrice()
+                            ? __('shop.product.out_of_stock')
+                            : __('shop.product.unavailable') }}
                     </button>
                 @endif
             </div>

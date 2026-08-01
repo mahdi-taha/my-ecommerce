@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
+use App\Enums\ProductType;
 use App\Models\Product;
 use App\Models\Tax;
 use Illuminate\Contracts\View\View;
@@ -20,6 +21,9 @@ class HomeController extends Controller
                 'translations' => fn ($query) => $query->where('locale', app()->getLocale()),
                 'images',
                 'inventory',
+                'variants' => fn ($query) => $query
+                    ->active()
+                    ->where('type', ProductType::Simple->value),
                 'tax' => fn ($query) => $query->active(),
                 'categories' => fn ($query) => $query
                     ->where('status', true)

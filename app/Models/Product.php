@@ -75,6 +75,11 @@ class Product extends Model
             : $this->price;
     }
 
+    public function hasPositiveEffectivePrice(): bool
+    {
+        return (float) $this->effectivePrice() > 0;
+    }
+
     public function displayPrice(string $taxMode, ?Tax $defaultTax = null): float
     {
         return $this->applyTaxForDisplay($this->effectivePrice(), $taxMode, $defaultTax);
