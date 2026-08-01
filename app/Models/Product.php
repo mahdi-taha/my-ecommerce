@@ -46,14 +46,14 @@ class Product extends Model
         'status' => 'boolean',
     ];
 
-    public function scopeActive(Builder $query): void
+    public function scopeActive(Builder $query): Builder
     {
-        $query->where('status', true);
+        return $query->where('status', true);
     }
 
-    public function scopeVisible(Builder $query): void
+    public function scopeVisible(Builder $query): Builder
     {
-        $query->where('is_visible_individually', true);
+        return $query->where('is_visible_individually', true);
     }
 
     public function hasActiveSpecialPrice(): bool

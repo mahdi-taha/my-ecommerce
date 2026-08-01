@@ -22,9 +22,9 @@ class Tax extends Model
         ];
     }
 
-    public function scopeActive(Builder $query): void
+    public function scopeActive(Builder $query): Builder
     {
-        $query->where('status', true);
+        return $query->where('status', true);
     }
 
     public function products(): HasMany
