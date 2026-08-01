@@ -50,6 +50,7 @@
             </li>
             <li class="sidebar-item">
               <button class="sidebar-link justify-content-between has-arrow border-0 w-100" type="button"
+                data-bs-toggle="collapse" data-bs-target="#catalog-navigation"
                 aria-expanded="false" aria-controls="catalog-navigation">
                 <div class="d-flex align-items-center gap-3">
                   <span class="d-flex">
