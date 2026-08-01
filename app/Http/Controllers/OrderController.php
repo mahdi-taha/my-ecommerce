@@ -119,7 +119,14 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $order->load([
-            'items.children',
+            'items' => fn ($query) => $query->orderBy('id'),
+            'items.options' => fn ($query) => $query
+                ->orderBy('attribute_code')
+                ->orderBy('id'),
+            'items.children' => fn ($query) => $query->orderBy('id'),
+            'items.children.options' => fn ($query) => $query
+                ->orderBy('attribute_code')
+                ->orderBy('id'),
             'billingAddress',
             'shippingAddress',
             'payment' => fn ($query) => $query->with([

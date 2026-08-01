@@ -255,9 +255,13 @@
                                                 <td>{{ $item->sku }}</td>
                                                 <td>
                                                     <strong>{{ $item->name }}</strong>
-                                                    @if ($item->option_summary)
-                                                        <small class="text-muted d-block">{{ $item->option_summary }}</small>
-                                                    @endif
+                                                    @forelse ($item->options as $option)
+                                                        <small class="text-muted d-block">{{ $option->attribute_name }}: {{ $option->option_label }}</small>
+                                                    @empty
+                                                        @if ($item->option_summary)
+                                                            <small class="text-muted d-block">{{ $item->option_summary }}</small>
+                                                        @endif
+                                                    @endforelse
                                                 </td>
                                                 <td class="text-end">{{ rtrim(rtrim(number_format((float) $item->quantity, 4, '.', ''), '0'), '.') }}</td>
                                                 <td class="text-end">{{ $order->currency_code }} {{ number_format((float) $item->unit_price, 2) }}</td>
@@ -268,9 +272,13 @@
                                                     <td class="ps-4">{{ $child->sku }}</td>
                                                     <td class="ps-4">
                                                         <span class="me-1">↳</span>{{ $child->name }}
-                                                        @if ($child->option_summary)
-                                                            <small class="text-muted d-block">{{ $child->option_summary }}</small>
-                                                        @endif
+                                                        @forelse ($child->options as $option)
+                                                            <small class="text-muted d-block">{{ $option->attribute_name }}: {{ $option->option_label }}</small>
+                                                        @empty
+                                                            @if ($child->option_summary)
+                                                                <small class="text-muted d-block">{{ $child->option_summary }}</small>
+                                                            @endif
+                                                        @endforelse
                                                     </td>
                                                     <td class="text-end">{{ rtrim(rtrim(number_format((float) $child->quantity, 4, '.', ''), '0'), '.') }}</td>
                                                     <td class="text-end">{{ $order->currency_code }} {{ number_format((float) $child->unit_price, 2) }}</td>
