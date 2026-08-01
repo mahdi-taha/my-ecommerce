@@ -15,6 +15,12 @@
         ? route('shop.products.show', ['url_key' => $translation->url_key])
         : '#';
     $isWishlisted = (bool) ($product->is_wishlisted ?? false);
+    $isStandaloneSimple = $product->type === \App\Enums\ProductType::Simple->value
+        && $product->configurable_id === null;
+    $isConfigurable = $product->type === \App\Enums\ProductType::Configurable->value
+        && $product->configurable_id === null;
+    $isInStock = $isStandaloneSimple
+        && (float) ($product->inventory?->availableQuantity() ?? 0) > 0;
 @endphp
 
 <div class="col-lg-3 col-md-4 col-sm-6">
@@ -93,14 +99,16 @@
                 @auth('customer')
                     <form method="POST" action="{{ $isWishlisted
                         ? route('shop.wishlist.destroy', $product)
-                        : route('shop.wishlist.store') }}">
+                        : route('shop.wishlist.store') }}" data-product-card-wishlist-form
+                        data-product-id="{{ $product->id }}"
+                        data-add-label="{{ __('shop.wishlist.add') }}"
+                        data-remove-label="{{ __('shop.wishlist.remove') }}">
                         @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
                         @if ($isWishlisted)
                             @method('DELETE')
-                        @else
-                            <input type="hidden" name="product_id" value="{{ $product->id }}">
                         @endif
-                        <button type="submit" class="btn btn-outline-danger"
+                        <button type="submit" class="btn btn-outline-danger" data-product-card-wishlist-button
                             aria-label="{{ $isWishlisted ? __('shop.wishlist.remove') : __('shop.wishlist.add') }}">
                             <i class="bi {{ $isWishlisted ? 'bi-heart-fill' : 'bi-heart' }}"></i>
                         </button>
@@ -112,10 +120,27 @@
                     </a>
                 @endauth
 
-                <button type="button" class="btn btn-primary flex-grow-1">
-                    <i class="bi bi-cart-plus me-2"></i>
-                    {{ __('shop.product.add_to_cart') }}
-                </button>
+                @if ($isInStock)
+                    <form method="POST" action="{{ route('shop.cart.items.store') }}"
+                        class="flex-grow-1" data-product-card-cart-form>
+                        @csrf
+                        <input type="hidden" name="product_type" value="{{ \App\Enums\CartItemType::Simple->value }}">
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="btn btn-primary w-100" data-product-card-cart-button>
+                            <i class="bi bi-cart-plus me-2"></i>
+                            {{ __('shop.product.add_to_cart') }}
+                        </button>
+                    </form>
+                @elseif ($isConfigurable && $productUrl !== '#')
+                    <a href="{{ $productUrl }}" class="btn btn-primary flex-grow-1">
+                        {{ __('shop.product.choose_options') }}
+                    </a>
+                @else
+                    <button type="button" class="btn btn-primary flex-grow-1" disabled>
+                        {{ __('shop.product.out_of_stock') }}
+                    </button>
+                @endif
             </div>
         </div>
     </article>

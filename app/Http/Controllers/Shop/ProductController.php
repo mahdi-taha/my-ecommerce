@@ -104,6 +104,7 @@ class ProductController extends Controller
                     'translations' => fn ($query) => $query
                         ->where('locale', $locale),
                     'images',
+                    'inventory',
                     'tax' => fn ($query) => $query->active(),
                     'categories' => fn ($query) => $query
                         ->where('status', true)

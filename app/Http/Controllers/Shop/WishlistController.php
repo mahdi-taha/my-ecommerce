@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Tax;
 use App\Models\WishlistItem;
 use App\Services\WishlistService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -51,19 +52,37 @@ class WishlistController extends Controller
         ));
     }
 
-    public function store(StoreWishlistItemRequest $request): RedirectResponse
+    public function store(StoreWishlistItemRequest $request): JsonResponse|RedirectResponse
     {
         $this->wishlistService->add(
             $request->user('customer'),
             (int) $request->validated('product_id')
         );
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => __('shop.wishlist.added'),
+                'wishlist_count' => $request->user('customer')->wishlist?->items()->count() ?? 0,
+                'wishlisted' => true,
+            ]);
+        }
+
         return back()->with('success', __('shop.wishlist.added'));
     }
 
-    public function destroy(Request $request, Product $product): RedirectResponse
+    public function destroy(Request $request, Product $product): JsonResponse|RedirectResponse
     {
         $this->wishlistService->remove($request->user('customer'), $product);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => __('shop.wishlist.removed'),
+                'wishlist_count' => $request->user('customer')->wishlist?->items()->count() ?? 0,
+                'wishlisted' => false,
+            ]);
+        }
 
         return back()->with('success', __('shop.wishlist.removed'));
     }

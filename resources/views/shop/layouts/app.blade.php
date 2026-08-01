@@ -50,6 +50,10 @@
 
     @include('shop.components.footer')
 
+    <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"
+        data-storefront-action-status
+        data-request-failed="{{ __('shop.storefront_actions.request_failed') }}"></div>
+
     @if (session('success'))
         <div class="toast-message" data-type="success" data-message="{{ session('success') }}"></div>
     @endif

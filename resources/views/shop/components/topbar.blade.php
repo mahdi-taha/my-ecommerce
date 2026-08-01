@@ -146,27 +146,23 @@
             <div class="d-inline-flex align-items-center">
                 <a href="{{ $topbarCustomer ? route('shop.wishlist.index') : route('customer.login') }}"
                     class="text-muted d-flex align-items-center justify-content-center me-3 position-relative"
+                    data-storefront-wishlist-link
                     aria-label="{{ __('shop.topbar.wishlist') }}">
                     <span class="rounded-circle btn-md-square border">
                         <i class="fas fa-heart" aria-hidden="true"></i>
                     </span>
-                    @if ($topbarCustomer && ($storefrontWishlistCount ?? 0) > 0)
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger storefront-header-badge">
-                            {{ $storefrontWishlistCount }}
-                        </span>
-                    @endif
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger storefront-header-badge {{ ! $topbarCustomer || ($storefrontWishlistCount ?? 0) < 1 ? 'd-none' : '' }}"
+                        >{{ $topbarCustomer ? ($storefrontWishlistCount ?? 0) : 0 }}</span>
                 </a>
                 <a href="{{ route('shop.cart.index') }}"
                     class="text-muted d-flex align-items-center justify-content-center position-relative"
+                    data-storefront-cart-link
                     aria-label="{{ __('shop.topbar.cart') }}">
                     <span class="rounded-circle btn-md-square border">
                         <i class="fas fa-shopping-cart" aria-hidden="true"></i>
                     </span>
-                    @if (($storefrontCartQuantity ?? 0) > 0)
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger storefront-header-badge">
-                            {{ $storefrontCartQuantity }}
-                        </span>
-                    @endif
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger storefront-header-badge {{ ($storefrontCartQuantity ?? 0) < 1 ? 'd-none' : '' }}"
+                        >{{ $storefrontCartQuantity ?? 0 }}</span>
                 </a>
             </div>
         </div>

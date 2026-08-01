@@ -19,6 +19,7 @@ class HomeController extends Controller
             ->with([
                 'translations' => fn ($query) => $query->where('locale', app()->getLocale()),
                 'images',
+                'inventory',
                 'tax' => fn ($query) => $query->active(),
                 'categories' => fn ($query) => $query
                     ->where('status', true)

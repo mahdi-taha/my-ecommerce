@@ -70,11 +70,16 @@ return [
         'sold' => 'تم البيع',
         'featured' => 'مميز',
         'add_to_cart' => 'أضف إلى السلة',
+        'choose_options' => 'اختر الخيارات',
         'wishlist' => 'قائمة الأمنيات',
         'add_to_wishlist' => 'أضف إلى قائمة الأمنيات',
         'available_quantity' => 'الكمية المتوفرة: :quantity',
         'in_stock' => 'متوفر',
         'out_of_stock' => 'غير متوفر',
+    ],
+
+    'storefront_actions' => [
+        'request_failed' => 'تعذر إكمال الطلب. يرجى المحاولة مرة أخرى.',
     ],
 
     'wishlist' => [

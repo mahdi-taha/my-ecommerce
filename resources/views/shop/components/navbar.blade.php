@@ -57,20 +57,26 @@
                         </div>
 
                         <a href="{{ route('shop.cart.index') }}"
-                            class="nav-item nav-link d-flex d-lg-none align-items-center gap-2">
+                            class="nav-item nav-link d-flex d-lg-none align-items-center gap-2"
+                            data-storefront-cart-link>
                             <i class="fas fa-shopping-cart" aria-hidden="true"></i>
                             <span>{{ __('shop.navigation.cart') }}</span>
                             @if (($storefrontCartQuantity ?? 0) > 0)
                                 <span class="badge bg-secondary rounded-pill">{{ $storefrontCartQuantity }}</span>
+                            @else
+                                <span class="badge bg-secondary rounded-pill d-none">0</span>
                             @endif
                         </a>
 
                         <a href="{{ auth('customer')->check() ? route('shop.wishlist.index') : route('customer.login') }}"
-                            class="nav-item nav-link d-flex d-lg-none align-items-center gap-2">
+                            class="nav-item nav-link d-flex d-lg-none align-items-center gap-2"
+                            data-storefront-wishlist-link>
                             <i class="fas fa-heart" aria-hidden="true"></i>
                             <span>{{ __('shop.wishlist.title') }}</span>
                             @if (($storefrontWishlistCount ?? 0) > 0)
                                 <span class="badge bg-secondary rounded-pill">{{ $storefrontWishlistCount }}</span>
+                            @else
+                                <span class="badge bg-secondary rounded-pill d-none">0</span>
                             @endif
                         </a>
 

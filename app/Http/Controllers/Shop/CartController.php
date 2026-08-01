@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\CartService;
 use App\Services\GuestCartTokenService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +30,7 @@ class CartController extends Controller
         ));
     }
 
-    public function store(AddCartItemRequest $request): RedirectResponse
+    public function store(AddCartItemRequest $request): JsonResponse|RedirectResponse
     {
         $customer = $this->customer();
         $guestToken = $this->tokenService->fromRequest($request);
@@ -58,9 +59,15 @@ class CartController extends Controller
             );
         }
 
-        $response = redirect()
-            ->route('shop.cart.index')
-            ->with('success', __('shop.cart.messages.added'));
+        $response = $request->expectsJson()
+            ? response()->json([
+                'success' => true,
+                'message' => __('shop.cart.messages.added'),
+                'cart_count' => $this->cartService->quantity($customer, $guestToken),
+            ])
+            : redirect()
+                ->route('shop.cart.index')
+                ->with('success', __('shop.cart.messages.added'));
 
         return $newGuestToken
             ? $response->withCookie($this->tokenService->cookie(

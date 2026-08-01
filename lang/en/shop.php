@@ -70,11 +70,16 @@ return [
         'sold' => 'Sold',
         'featured' => 'Featured',
         'add_to_cart' => 'Add to Cart',
+        'choose_options' => 'Choose Options',
         'wishlist' => 'Wishlist',
         'add_to_wishlist' => 'Add to wishlist',
         'available_quantity' => 'Available quantity: :quantity',
         'in_stock' => 'In Stock',
         'out_of_stock' => 'Out of Stock',
+    ],
+
+    'storefront_actions' => [
+        'request_failed' => 'The request could not be completed. Please try again.',
     ],
 
     'wishlist' => [

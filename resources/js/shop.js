@@ -2,6 +2,7 @@ import './app.js';
 import { initializeConfigurableProducts } from './shop/configurable-product.js';
 import { initializeCheckoutSummary } from './shop/checkout-summary.js';
 import { initializeCategoryMegaMenu } from './shop/category-mega-menu.js';
+import { initializeProductCardActions } from './shop/product-card-actions.js';
 
 async function initializeStorefront() {
     if (typeof window.jQuery !== 'function') {
@@ -9,6 +10,7 @@ async function initializeStorefront() {
     }
 
     initializeCategoryMegaMenu();
+    initializeProductCardActions();
 
     // const wowModule = await import('../../public/shop/lib/wow/wow.min.js');
     // const WOW = wowModule.default?.default ?? wowModule.default ?? window.WOW;
