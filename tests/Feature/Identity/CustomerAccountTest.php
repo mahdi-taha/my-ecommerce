@@ -74,6 +74,10 @@ class CustomerAccountTest extends TestCase
     public function test_manual_customer_cannot_access_customer_account(): void
     {
         $manual = User::factory()->manualCustomer()->create();
-        $this->actingAs($manual, 'customer')->get(route('customer.account.edit'))->assertForbidden();
+        $this->actingAs($manual, 'customer')
+            ->get(route('customer.account.edit'))
+            ->assertRedirect(route('customer.login'))
+            ->assertSessionHas('error', __('shop.auth.account_inactive'));
+        $this->assertGuest('customer');
     }
 }

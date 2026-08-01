@@ -24,7 +24,11 @@ class CustomerOrderHistoryTest extends TestCase
         $this->get(route('shop.account.orders.show', $order))->assertRedirect(route('customer.login'));
 
         $admin = User::factory()->create(['account_type' => AccountType::Admin]);
-        $this->actingAs($admin, 'customer')->get(route('shop.account.orders.index'))->assertForbidden();
+        $this->actingAs($admin, 'customer')
+            ->get(route('shop.account.orders.index'))
+            ->assertRedirect(route('customer.login'))
+            ->assertSessionHas('error', __('shop.auth.account_inactive'));
+        $this->assertGuest('customer');
     }
 
     public function test_customer_list_contains_only_owned_orders_and_excludes_guest_orders(): void

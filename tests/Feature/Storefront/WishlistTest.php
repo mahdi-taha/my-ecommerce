@@ -124,7 +124,9 @@ class WishlistTest extends TestCase
 
         $this->actingAs($admin, 'customer')
             ->post(route('shop.wishlist.store'), ['product_id' => $this->product()->id])
-            ->assertForbidden();
+            ->assertRedirect(route('customer.login'))
+            ->assertSessionHas('error', __('shop.auth.account_inactive'));
+        $this->assertGuest('customer');
     }
 
     public function test_wishlist_page_uses_live_localized_pricing_and_newest_first_order(): void
