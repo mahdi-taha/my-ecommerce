@@ -218,7 +218,7 @@
                                                 {{ $isWishlisted ? __('shop.wishlist.remove') : __('shop.wishlist.add') }}
                                             </button>
                                         @else
-                                            <a href="{{ route('customer.login') }}"
+                                            <a href="{{ route('customer.login', ['return_to' => url()->full()]) }}"
                                                 class="btn btn-primary border border-secondary rounded-pill px-4 py-2 mb-4 text-primary">
                                                 <i class="bi bi-heart me-2"></i>
                                                 {{ __('shop.wishlist.add') }}

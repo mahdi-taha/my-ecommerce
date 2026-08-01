@@ -114,7 +114,7 @@
                         </button>
                     </form>
                 @else
-                    <a href="{{ route('customer.login') }}" class="btn btn-outline-danger"
+                    <a href="{{ route('customer.login', ['return_to' => url()->full()]) }}" class="btn btn-outline-danger"
                         aria-label="{{ __('shop.wishlist.add') }}">
                         <i class="bi bi-heart"></i>
                     </a>

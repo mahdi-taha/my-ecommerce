@@ -98,10 +98,10 @@
                                 </button>
                             </form>
                         @else
-                            <a href="{{ route('customer.login') }}" class="dropdown-item">
+                            <a href="{{ route('customer.login', ['return_to' => url()->full()]) }}" class="dropdown-item">
                                 {{ __('shop.auth.login.submit') }}
                             </a>
-                            <a href="{{ route('customer.register') }}" class="dropdown-item">
+                            <a href="{{ route('customer.register', ['return_to' => url()->full()]) }}" class="dropdown-item">
                                 {{ __('shop.auth.register.title') }}
                             </a>
                         @endif
@@ -145,7 +145,9 @@
 
         <div class="col-md-4 col-lg-3 text-center text-lg-end">
             <div class="d-inline-flex align-items-center">
-                <a href="{{ $topbarCustomer ? route('shop.wishlist.index') : route('customer.login') }}"
+                <a href="{{ $topbarCustomer
+                    ? route('shop.wishlist.index')
+                    : route('customer.login', ['return_to' => url()->full()]) }}"
                     class="text-muted d-flex align-items-center justify-content-center me-3 position-relative"
                     data-storefront-wishlist-link
                     aria-label="{{ __('shop.topbar.wishlist') }}">

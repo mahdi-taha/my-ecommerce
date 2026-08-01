@@ -23,13 +23,17 @@ class CustomerAuthController extends Controller
         private CustomerService $customerService
     ) {}
 
-    public function showLogin(): View
+    public function showLogin(Request $request): View
     {
+        $this->rememberCustomerReturnTo($request);
+
         return view('customer.auth.login');
     }
 
-    public function showRegistration(): View
+    public function showRegistration(Request $request): View
     {
+        $this->rememberCustomerReturnTo($request);
+
         return view('customer.auth.register');
     }
 
@@ -42,8 +46,7 @@ class CustomerAuthController extends Controller
         $customer->update(['last_login_at' => now()]);
         $guestToken = $this->tokenService->fromRequest($request);
         $warnings = $this->cartService->mergeGuestCart($customer, $guestToken);
-        $response = redirect()
-            ->intended(route('customer.account.edit'))
+        $response = $this->authenticationRedirect($request)
             ->with('success', __('shop.auth.register.success'));
 
         if ($warnings !== []) {
@@ -79,7 +82,7 @@ class CustomerAuthController extends Controller
         $customer->update(['last_login_at' => now()]);
         $guestToken = $this->tokenService->fromRequest($request);
         $warnings = $this->cartService->mergeGuestCart($customer, $guestToken);
-        $response = redirect()->intended(route('customer.account.edit'));
+        $response = $this->authenticationRedirect($request);
 
         if ($warnings !== []) {
             $response->with('warning', implode(' ', $warnings));
@@ -92,7 +95,8 @@ class CustomerAuthController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
-        $destination = $this->logoutDestination($request->input('return_to'));
+        $destination = $this->storefrontDestination($request->input('return_to'))
+            ?? route('shop.home');
 
         Auth::guard('customer')->logout();
         $request->session()->regenerate();
@@ -101,10 +105,34 @@ class CustomerAuthController extends Controller
         return redirect()->to($destination);
     }
 
-    private function logoutDestination(mixed $returnTo): string
+    private function rememberCustomerReturnTo(Request $request): void
+    {
+        $destination = $this->storefrontDestination($request->query('return_to'));
+
+        if ($destination !== null) {
+            $request->session()->put('customer_return_to', $destination);
+        }
+    }
+
+    private function authenticationRedirect(Request $request): RedirectResponse
+    {
+        $destination = $this->storefrontDestination(
+            $request->session()->pull('customer_return_to')
+        );
+
+        if ($destination !== null) {
+            $request->session()->forget('url.intended');
+
+            return redirect()->to($destination);
+        }
+
+        return redirect()->intended(route('customer.account.edit'));
+    }
+
+    private function storefrontDestination(mixed $returnTo): ?string
     {
         if (! is_string($returnTo) || $returnTo === '') {
-            return route('shop.home');
+            return null;
         }
 
         $target = parse_url($returnTo);
@@ -115,7 +143,7 @@ class CustomerAuthController extends Controller
             || strtolower((string) ($target['scheme'] ?? '')) !== strtolower((string) ($application['scheme'] ?? ''))
             || strtolower((string) ($target['host'] ?? '')) !== strtolower((string) ($application['host'] ?? ''))
             || $this->urlPort($target) !== $this->urlPort($application)) {
-            return route('shop.home');
+            return null;
         }
 
         try {
@@ -123,14 +151,14 @@ class CustomerAuthController extends Controller
                 ->match(Request::create($returnTo, 'GET'))
                 ->getName();
         } catch (Throwable) {
-            return route('shop.home');
+            return null;
         }
 
         return in_array($routeName, [
             'shop.home',
             'shop.products.show',
             'shop.cart.index',
-        ], true) ? $returnTo : route('shop.home');
+        ], true) ? $returnTo : null;
     }
 
     /**

@@ -68,7 +68,9 @@
                             @endif
                         </a>
 
-                        <a href="{{ auth('customer')->check() ? route('shop.wishlist.index') : route('customer.login') }}"
+                        <a href="{{ auth('customer')->check()
+                            ? route('shop.wishlist.index')
+                            : route('customer.login', ['return_to' => url()->full()]) }}"
                             class="nav-item nav-link d-flex d-lg-none align-items-center gap-2"
                             data-storefront-wishlist-link>
                             <i class="fas fa-heart" aria-hidden="true"></i>
@@ -114,10 +116,10 @@
                                         </button>
                                     </form>
                                 @else
-                                    <a href="{{ route('customer.login') }}" class="dropdown-item">
+                                    <a href="{{ route('customer.login', ['return_to' => url()->full()]) }}" class="dropdown-item">
                                         {{ __('shop.auth.login.submit') }}
                                     </a>
-                                    <a href="{{ route('customer.register') }}" class="dropdown-item">
+                                    <a href="{{ route('customer.register', ['return_to' => url()->full()]) }}" class="dropdown-item">
                                         {{ __('shop.auth.register.title') }}
                                     </a>
                                 @endauth
