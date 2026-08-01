@@ -4,6 +4,7 @@ namespace Tests\Feature\Storefront;
 
 use App\Enums\CartItemType;
 use App\Enums\ProductType;
+use App\Models\Attribute;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\User;
@@ -61,6 +62,27 @@ class ZeroPriceCommerceProtectionTest extends TestCase
         $this->assertContains(__('shop.cart.warnings.removed_unavailable'), $warnings);
         $this->assertModelMissing($guestCart);
         $this->assertDatabaseMissing('cart_items', ['product_id' => $product->id]);
+    }
+
+    public function test_zero_price_variant_is_excluded_from_storefront_range_candidates(): void
+    {
+        $parent = Product::factory()->create(['type' => ProductType::Configurable->value]);
+        $attribute = Attribute::factory()->create(['type' => 'select', 'is_configurable' => true]);
+        $option = $attribute->options()->create(['code' => 'only', 'sort_order' => 1]);
+        $parent->superAttributes()->create(['attribute_id' => $attribute->id]);
+        $variant = Product::factory()->create([
+            'type' => ProductType::Simple->value,
+            'configurable_id' => $parent->id,
+            'status' => true,
+            'price' => 0,
+        ]);
+        $variant->attributeValues()->create([
+            'attribute_id' => $attribute->id,
+            'attribute_option_id' => $option->id,
+        ]);
+        $parent->load(['superAttributes', 'variants.attributeValues']);
+
+        $this->assertTrue($parent->eligibleStorefrontVariants()->isEmpty());
     }
 
     private function product(): Product

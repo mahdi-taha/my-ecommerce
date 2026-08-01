@@ -22,7 +22,7 @@ class ConfigurableProductDetailsTest extends TestCase
 
         $this->get(route('shop.products.show', 'configurable-shirt'))
             ->assertOk()
-            ->assertSee('Select options to view price')
+            ->assertSee('$ 100.00')
             ->assertSee('Color')
             ->assertSee('Red')
             ->assertSee('Blue')

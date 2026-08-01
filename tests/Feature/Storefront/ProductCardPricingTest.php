@@ -70,6 +70,12 @@ class ProductCardPricingTest extends TestCase
         }
     }
 
+    public function test_store_price_range_formatter_collapses_equal_values(): void
+    {
+        $this->assertSame('$ 10.00', format_store_price_range(10, 10, 'USD'));
+        $this->assertSame('$ 10.00 – $ 15.00', format_store_price_range(10, 15, 'USD'));
+    }
+
     private function renderCard(Product $product, string $taxMode, ?Tax $defaultTax): string
     {
         return Blade::render(

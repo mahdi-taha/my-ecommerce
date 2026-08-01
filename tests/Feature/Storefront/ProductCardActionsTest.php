@@ -3,6 +3,7 @@
 namespace Tests\Feature\Storefront;
 
 use App\Enums\ProductType;
+use App\Models\Attribute;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -75,12 +76,25 @@ class ProductCardActionsTest extends TestCase
         ]);
 
         if ($type === ProductType::Configurable) {
-            Product::factory()->create([
+            $attribute = Attribute::factory()->create([
+                'type' => 'select',
+                'is_configurable' => true,
+                'is_active' => true,
+            ]);
+            $option = $attribute->options()->create(['code' => 'default', 'sort_order' => 1]);
+            $product->superAttributes()->create([
+                'attribute_id' => $attribute->id,
+            ])->options()->sync([$option->id]);
+            $variant = Product::factory()->create([
                 'type' => ProductType::Simple->value,
                 'configurable_id' => $product->id,
                 'status' => true,
                 'is_visible_individually' => false,
                 'price' => 100,
+            ]);
+            $variant->attributeValues()->create([
+                'attribute_id' => $attribute->id,
+                'attribute_option_id' => $option->id,
             ]);
         }
 
