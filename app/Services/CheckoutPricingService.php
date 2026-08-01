@@ -40,12 +40,12 @@ class CheckoutPricingService
             $quantity = (float) $validatedItem->cartItem->quantity;
             $unitPrice = (float) $product->effectivePrice();
             $displayUnitPrice = $product->displayPrice($taxMode, $defaultTax);
-            $rowSubtotal = $unitPrice * $quantity;
+            $rowSubtotal = (float) $this->decimal($unitPrice * $quantity);
             $discountAmount = (float) ($allocation['allocations'][$validatedItem->cartItem->getKey()] ?? 0);
-            $discountedSubtotal = max(0, $rowSubtotal - $discountAmount);
+            $discountedSubtotal = (float) $this->decimal(max(0, $rowSubtotal - $discountAmount));
             $taxRate = $product->effectiveTaxRate($defaultTax);
-            $taxAmount = $discountedSubtotal * $taxRate / 100;
-            $rowTotal = $discountedSubtotal + $taxAmount;
+            $taxAmount = (float) $this->decimal($discountedSubtotal * $taxRate / 100);
+            $rowTotal = (float) $this->decimal($discountedSubtotal + $taxAmount);
             $effectiveTax = $product->use_default_tax ? $defaultTax : $product->tax;
 
             $subtotal += $rowSubtotal;
