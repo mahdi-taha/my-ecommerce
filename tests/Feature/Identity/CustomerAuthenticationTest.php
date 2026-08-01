@@ -39,7 +39,7 @@ class CustomerAuthenticationTest extends TestCase
             $this->post(route('customer.login.store'), [
                 'email' => $account->email,
                 'password' => 'password123',
-            ])->assertSessionHasErrors(['email' => 'The provided credentials are invalid.']);
+            ])->assertSessionHasErrors(['email' => __('shop.auth.login.invalid_credentials')]);
             $this->assertGuest('customer');
         }
     }
@@ -67,7 +67,7 @@ class CustomerAuthenticationTest extends TestCase
                 'email' => $email,
                 'password' => 'wrong-password',
             ])->assertSessionHasErrors([
-                'email' => 'The provided credentials are invalid.',
+                'email' => __('shop.auth.login.invalid_credentials'),
             ]);
         }
 
@@ -75,7 +75,7 @@ class CustomerAuthenticationTest extends TestCase
             'email' => $customer->email,
             'password' => 'password123',
         ])->assertSessionHasErrors([
-            'email' => 'The provided credentials are invalid.',
+            'email' => __('shop.auth.login.invalid_credentials'),
         ]);
 
         $this->assertGuest('customer');
@@ -128,7 +128,7 @@ class CustomerAuthenticationTest extends TestCase
         foreach (range(1, $attempts) as $attempt) {
             $this->post(route('customer.login.store'), compact('email', 'password'))
                 ->assertSessionHasErrors([
-                    'email' => 'The provided credentials are invalid.',
+                    'email' => __('shop.auth.login.invalid_credentials'),
                 ]);
         }
     }
