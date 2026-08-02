@@ -87,8 +87,10 @@ class ProductListingTest extends TestCase
         $grandchildProduct->categories()->attach($grandchild);
         $inactiveProduct->categories()->attach($inactive);
 
-        $products = $this->get(route('shop.products.index', ['category' => $root->id]))
-            ->assertOk()->viewData('products');
+        $destination = route('shop.categories.show', $root->translations->first()->slug);
+        $this->get(route('shop.products.index', ['category' => $root->id]))
+            ->assertRedirect($destination);
+        $products = $this->get($destination)->assertOk()->viewData('products');
 
         $this->assertEqualsCanonicalizing(
             [$rootProduct->id, $childProduct->id, $grandchildProduct->id],
@@ -160,14 +162,19 @@ class ProductListingTest extends TestCase
             ->assertSee('<link rel="canonical" href="'.route('shop.products.index').'">', false);
     }
 
-    public function test_shop_numeric_category_filter_remains_available(): void
+    public function test_shop_numeric_category_filter_redirects_to_localized_category_without_rendering_a_selector(): void
     {
         $category = $this->category('Shop Filter');
 
-        $this->get(route('shop.products.index', ['category' => $category->id]))
-            ->assertOk()
-            ->assertSee('name="category"', false)
-            ->assertSee('value="'.$category->id.'"', false);
+        $this->get(route('shop.products.index', [
+            'category' => $category->id,
+            'sort' => 'price_asc',
+        ]))->assertRedirect(route('shop.categories.show', [
+            'slug' => $category->translations->first()->slug,
+            'sort' => 'price_asc',
+        ]));
+        $this->get(route('shop.products.index'))->assertOk()
+            ->assertDontSee('name="category"', false);
     }
 
     private function simple(

@@ -32,7 +32,8 @@ class CategoryListingQueryTest extends TestCase
         }
         $catalogQueries = 0;
         $hierarchyRootQueries = 0;
-        DB::listen(function (QueryExecuted $query) use (&$catalogQueries, &$hierarchyRootQueries): void {
+        $facetConfigurationQueries = 0;
+        DB::listen(function (QueryExecuted $query) use (&$catalogQueries, &$hierarchyRootQueries, &$facetConfigurationQueries): void {
             $sql = strtolower($query->sql);
             if (str_contains($sql, 'categories') || str_contains($sql, 'products')) {
                 $catalogQueries++;
@@ -40,11 +41,15 @@ class CategoryListingQueryTest extends TestCase
             if (str_starts_with($sql, 'select * from "categories" where "status"')) {
                 $hierarchyRootQueries++;
             }
+            if (str_contains($sql, 'category_filterable_attributes')) {
+                $facetConfigurationQueries++;
+            }
         });
 
         $this->get(route('shop.categories.show', 'root'))->assertOk();
 
         $this->assertSame(1, $hierarchyRootQueries);
+        $this->assertSame(1, $facetConfigurationQueries);
         $this->assertLessThanOrEqual(20, $catalogQueries);
     }
 

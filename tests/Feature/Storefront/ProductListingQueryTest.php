@@ -64,7 +64,8 @@ class ProductListingQueryTest extends TestCase
             ]);
         }
         $categoryQueries = 0;
-        DB::listen(function (QueryExecuted $query) use (&$categoryQueries): void {
+        $facetQueries = 0;
+        DB::listen(function (QueryExecuted $query) use (&$categoryQueries, &$facetQueries): void {
             $sql = strtolower($query->sql);
             if (str_contains($sql, 'from "categories"')
                 || str_contains($sql, 'from "category_translations"')
@@ -72,11 +73,15 @@ class ProductListingQueryTest extends TestCase
                 || str_contains($sql, 'from `category_translations`')) {
                 $categoryQueries++;
             }
+            if (str_contains($sql, 'category_filterable_attributes')) {
+                $facetQueries++;
+            }
         });
 
         $this->get(route('shop.products.index'))->assertOk();
 
         $this->assertSame(2, $categoryQueries);
+        $this->assertSame(0, $facetQueries);
     }
 
     private function configurable(string $name, int $variantCount): void

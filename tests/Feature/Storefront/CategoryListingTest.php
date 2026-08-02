@@ -37,6 +37,8 @@ class CategoryListingTest extends TestCase
             ->assertSeeInOrder(['Electronics', 'Phones', 'Smartphones'])
             ->assertSee('aria-current="page"', false)
             ->assertSee('action="'.route('shop.categories.show', 'electronics').'"', false)
+            ->assertSee('name="q"', false)
+            ->assertDontSee('name="category"', false)
             ->assertDontSee('Inactive Product')
             ->assertDontSee('Outside Product');
 
