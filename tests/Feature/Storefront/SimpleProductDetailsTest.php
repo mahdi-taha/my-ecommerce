@@ -29,11 +29,26 @@ class SimpleProductDetailsTest extends TestCase
             ->assertOk()
             ->assertSee('Localized Camera')
             ->assertSee('A localized short description.')
+            ->assertSee(__('shop.product_details.description'))
             ->assertSee('A localized long description.')
             ->assertSee('Available quantity: 5')
             ->assertSee('min="1"', false)
             ->assertSee('max="5.0000"', false)
             ->assertDontSee('Out of Stock');
+    }
+
+    public function test_description_section_is_hidden_when_localized_description_is_empty(): void
+    {
+        $product = $this->product();
+        $translation = $product->translations()->where('locale', 'en')->firstOrFail();
+
+        foreach ([null, '', '   '] as $description) {
+            $translation->update(['description' => $description]);
+
+            $this->get(route('shop.products.show', 'camera-en'))
+                ->assertOk()
+                ->assertDontSeeText(__('shop.product_details.description'));
+        }
     }
 
     public function test_out_of_stock_product_disables_quantity_controls_and_add_to_cart(): void

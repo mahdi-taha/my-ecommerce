@@ -19,6 +19,10 @@ class ProductCardActionsTest extends TestCase
         $this->get(route('shop.home'))
             ->assertOk()
             ->assertSee('data-product-card-cart-form', false)
+            ->assertSee('data-storefront-cart-form', false)
+            ->assertSee('data-cart-url="'.route('shop.cart.index').'"', false)
+            ->assertSee('data-view-cart-label="'.__('shop.cart.view_cart').'"', false)
+            ->assertSee('data-continue-shopping-label="'.__('shop.cart.continue_shopping').'"', false)
             ->assertSee('name="quantity" value="1"', false)
             ->assertSee('data-storefront-cart-link', false)
             ->assertSee('data-storefront-action-status', false);
@@ -54,6 +58,31 @@ class ProductCardActionsTest extends TestCase
             ->assertSee('Product '.$product->id)
             ->assertDontSee('data-product-card-cart-form', false)
             ->assertSee(__('shop.product.unavailable'));
+    }
+
+    public function test_product_details_cart_form_uses_the_shared_ajax_contract(): void
+    {
+        $product = $this->product(ProductType::Simple, 3);
+
+        $this->get(route('shop.products.show', 'product-'.$product->id))
+            ->assertOk()
+            ->assertSee('action="'.route('shop.cart.items.store').'"', false)
+            ->assertSee('data-storefront-cart-form', false)
+            ->assertSee('data-cart-url="'.route('shop.cart.index').'"', false)
+            ->assertSee('data-view-cart-label="'.__('shop.cart.view_cart').'"', false)
+            ->assertSee('data-continue-shopping-label="'.__('shop.cart.continue_shopping').'"', false);
+    }
+
+    public function test_cart_success_uses_confirmation_and_wishlist_success_remains_a_toast(): void
+    {
+        $script = file_get_contents(resource_path('js/shop/product-card-actions.js'));
+
+        $this->assertStringContainsString('await confirmCartAddition(form, payload.message);', $script);
+        $this->assertStringContainsString('confirmButtonText: form.dataset.viewCartLabel', $script);
+        $this->assertStringContainsString('cancelButtonText: form.dataset.continueShoppingLabel', $script);
+        $this->assertStringContainsString('window.location.assign(form.dataset.cartUrl);', $script);
+        $this->assertStringContainsString("document.querySelector('[data-storefront-action-status]')", $script);
+        $this->assertStringContainsString('announce(payload.message);', $script);
     }
 
     private function product(ProductType $type, int $stock): Product
