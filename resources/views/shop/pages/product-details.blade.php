@@ -286,17 +286,16 @@
                             </div>
                         </div>
 
-                        <div class="col-12 mt-5">
-                            <section class="border-top pt-5">
-                                <h2 class="h4 fw-bold mb-4">{{ __('shop.product_details.description') }}</h2>
-                                @if ($translation->description)
+                        @if (trim((string) $translation->description) !== '')
+                            <div class="col-12 mt-5">
+                                <section class="border-top pt-5">
+                                    <h2 class="h4 fw-bold mb-4">{{ __('shop.product_details.description') }}</h2>
                                     <div class="text-muted lh-lg">
                                         {!! nl2br(e($translation->description)) !!}
                                     </div>
-                                @endif
-
-                            </section>
-                        </div>
+                                </section>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
