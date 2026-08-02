@@ -174,7 +174,7 @@ class StorefrontNavbarTest extends TestCase
             }
         });
 
-        $this->get(route('shop.home'))->assertOk();
+        $this->view('shop.components.navbar')->assertSee('data-category-navigation-data', false);
 
         $this->assertSame(2, $categoryQueries);
     }
