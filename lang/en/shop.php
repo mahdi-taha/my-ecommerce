@@ -141,6 +141,7 @@ return [
     'cart' => [
         'title' => 'Shopping Cart',
         'empty' => 'Your cart is empty.',
+        'view_cart' => 'View Cart',
         'continue_shopping' => 'Continue Shopping',
         'product' => 'Product',
         'sku' => 'SKU',

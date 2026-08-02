@@ -13,12 +13,16 @@ const updateCount = (selector, count) => {
     });
 };
 
-const announce = (message, type = 'success') => {
+const announceToLiveRegion = (message) => {
     const region = document.querySelector('[data-storefront-action-status]');
     if (region) {
         region.textContent = '';
         window.requestAnimationFrame(() => { region.textContent = message; });
     }
+};
+
+const announce = (message, type = 'success') => {
+    announceToLiveRegion(message);
 
     if (window.Swal) {
         window.Swal.fire({
@@ -32,6 +36,27 @@ const announce = (message, type = 'success') => {
     }
 };
 
+const confirmCartAddition = async (form, message) => {
+    announceToLiveRegion(message);
+
+    if (!window.Swal) return;
+
+    const result = await window.Swal.fire({
+        icon: 'success',
+        title: message,
+        showCancelButton: true,
+        confirmButtonText: form.dataset.viewCartLabel,
+        cancelButtonText: form.dataset.continueShoppingLabel,
+        focusCancel: true,
+        allowEscapeKey: true,
+        returnFocus: true,
+    });
+
+    if (result.isConfirmed && isLocalUrl(form.dataset.cartUrl)) {
+        window.location.assign(form.dataset.cartUrl);
+    }
+};
+
 const responseMessage = (payload, fallback) => payload?.message
     ?? Object.values(payload?.errors ?? {}).flat()[0]
     ?? fallback;
@@ -42,10 +67,10 @@ export function initializeProductCardActions() {
     const active = { cart: false, wishlist: false };
 
     document.addEventListener('submit', async (event) => {
-        const form = event.target.closest('[data-product-card-cart-form], [data-product-card-wishlist-form]');
+        const form = event.target.closest('[data-storefront-cart-form], [data-product-card-wishlist-form]');
         if (!form) return;
 
-        const domain = form.matches('[data-product-card-cart-form]') ? 'cart' : 'wishlist';
+        const domain = form.matches('[data-storefront-cart-form]') ? 'cart' : 'wishlist';
         if (active[domain]) {
             event.preventDefault();
             return;
@@ -83,6 +108,7 @@ export function initializeProductCardActions() {
 
             if (domain === 'cart') {
                 updateCount('[data-storefront-cart-link] .badge', payload.cart_count);
+                await confirmCartAddition(form, payload.message);
             } else {
                 updateCount('[data-storefront-wishlist-link] .badge', payload.wishlist_count);
                 document.querySelectorAll(`[data-product-card-wishlist-form][data-product-id="${form.dataset.productId}"]`)
@@ -109,8 +135,8 @@ export function initializeProductCardActions() {
                         icon?.classList.toggle('bi-heart-fill', payload.wishlisted);
                         icon?.classList.toggle('bi-heart', !payload.wishlisted);
                     });
+                announce(payload.message);
             }
-            announce(payload.message);
         } catch {
             announce(fallback, 'error');
         } finally {

@@ -150,7 +150,10 @@
 
                 @if ($isInStock)
                     <form method="POST" action="{{ route('shop.cart.items.store') }}"
-                        class="flex-grow-1" data-product-card-cart-form>
+                        class="flex-grow-1" data-product-card-cart-form data-storefront-cart-form
+                        data-cart-url="{{ route('shop.cart.index') }}"
+                        data-view-cart-label="{{ __('shop.cart.view_cart') }}"
+                        data-continue-shopping-label="{{ __('shop.cart.continue_shopping') }}">
                         @csrf
                         <input type="hidden" name="product_type" value="{{ \App\Enums\CartItemType::Simple->value }}">
                         <input type="hidden" name="product_id" value="{{ $product->id }}">

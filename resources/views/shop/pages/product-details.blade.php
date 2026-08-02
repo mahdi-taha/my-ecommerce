@@ -166,6 +166,10 @@
                                 @endif
 
                                 <form action="{{ route('shop.cart.items.store') }}" method="POST"
+                                    data-storefront-cart-form
+                                    data-cart-url="{{ route('shop.cart.index') }}"
+                                    data-view-cart-label="{{ __('shop.cart.view_cart') }}"
+                                    data-continue-shopping-label="{{ __('shop.cart.continue_shopping') }}"
                                     @if ($isConfigurable)
                                         data-configurable-product-form
                                         data-unavailable-label="{{ $configurableAttributes->isNotEmpty()
