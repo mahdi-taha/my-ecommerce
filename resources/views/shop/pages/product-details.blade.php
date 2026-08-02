@@ -8,6 +8,9 @@
 @if (($galleryImages->firstWhere('is_placeholder', false)['url'] ?? null) !== null)
     @section('open_graph_image', $galleryImages->firstWhere('is_placeholder', false)['url'])
 @endif
+@section('meta')
+    <script type="application/ld+json">{!! \Illuminate\Support\Js::encode($productStructuredData) !!}</script>
+@endsection
 
 @section('content')
     <!-- Single Products Start -->

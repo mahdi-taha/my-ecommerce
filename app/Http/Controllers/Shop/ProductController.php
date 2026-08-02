@@ -191,6 +191,22 @@ class ProductController extends Controller
         [$configurableAttributes, $variantPresentation] = $isConfigurable
             ? $this->configurablePresentation($product, $eligibleVariants, $taxMode, $defaultTax)
             : [collect(), []];
+        $productStructuredData = $this->structuredData(
+            $product,
+            $translation->name,
+            $productMetaDescription,
+            $productCanonicalUrl,
+            $galleryImages,
+            $currencyCode,
+            $taxMode,
+            $defaultTax,
+            $isConfigurable,
+            $inStock,
+            $eligibleVariants,
+            $variantPresentation,
+            $configurablePriceRange,
+        );
+
         return view('shop.pages.product-details', compact(
             'product',
             'translation',
@@ -215,8 +231,89 @@ class ProductController extends Controller
             'customerReview',
             'canReview',
             'productCanonicalUrl',
-            'productMetaDescription'
+            'productMetaDescription',
+            'productStructuredData'
         ));
+    }
+
+    /**
+     * @param  Collection<int, array{url: ?string, is_base: bool, is_placeholder: bool}>  $galleryImages
+     * @param  Collection<int, Product>  $eligibleVariants
+     * @param  array<string, array<string, mixed>>  $variantPresentation
+     * @param  array{minimum: float, maximum: float, regular_minimum: float, regular_maximum: float, show_regular_range: bool, common_tax_rate: ?float}|null  $configurablePriceRange
+     * @return array<string, mixed>
+     */
+    private function structuredData(
+        Product $product,
+        string $name,
+        string $description,
+        string $canonicalUrl,
+        Collection $galleryImages,
+        string $currencyCode,
+        string $taxMode,
+        ?Tax $defaultTax,
+        bool $isConfigurable,
+        bool $inStock,
+        Collection $eligibleVariants,
+        array $variantPresentation,
+        ?array $configurablePriceRange,
+    ): array {
+        $data = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Product',
+            'name' => $name,
+            'sku' => $product->sku,
+            'url' => $canonicalUrl,
+        ];
+
+        if ($description !== '') {
+            $data['description'] = $description;
+        }
+
+        $images = $galleryImages
+            ->reject(fn (array $image): bool => $image['is_placeholder'])
+            ->pluck('url')
+            ->filter()
+            ->values();
+        if ($images->isNotEmpty()) {
+            $data['image'] = $images->all();
+        }
+
+        if ($isConfigurable && $configurablePriceRange !== null) {
+            $data['offers'] = [
+                '@type' => 'AggregateOffer',
+                'url' => $canonicalUrl,
+                'priceCurrency' => $currencyCode,
+                'lowPrice' => number_format($configurablePriceRange['minimum'], 4, '.', ''),
+                'highPrice' => number_format($configurablePriceRange['maximum'], 4, '.', ''),
+                'offerCount' => $eligibleVariants->count(),
+                'availability' => collect($variantPresentation)->contains(
+                    fn (array $variant): bool => $variant['in_stock'] === true
+                )
+                    ? 'https://schema.org/InStock'
+                    : 'https://schema.org/OutOfStock',
+            ];
+        } elseif (! $isConfigurable) {
+            $data['offers'] = [
+                '@type' => 'Offer',
+                'url' => $canonicalUrl,
+                'priceCurrency' => $currencyCode,
+                'price' => number_format($product->displayPrice($taxMode, $defaultTax), 4, '.', ''),
+                'availability' => $inStock
+                    ? 'https://schema.org/InStock'
+                    : 'https://schema.org/OutOfStock',
+            ];
+        }
+
+        if (($product->approved_reviews_count ?? 0) > 0) {
+            $data['aggregateRating'] = [
+                '@type' => 'AggregateRating',
+                'ratingValue' => number_format((float) $product->approved_reviews_avg_rating, 1, '.', ''),
+                'reviewCount' => (int) $product->approved_reviews_count,
+            ];
+        }
+
+        return $data;
     }
 
     /**
