@@ -30,6 +30,7 @@ use App\Http\Controllers\Shop\CartController as ShopCartController;
 use App\Http\Controllers\Shop\CheckoutController as ShopCheckoutController;
 use App\Http\Controllers\Shop\CheckoutCouponController as ShopCheckoutCouponController;
 use App\Http\Controllers\Shop\CmsPageController as ShopCmsPageController;
+use App\Http\Controllers\Shop\LegacyStorefrontRedirectController;
 use App\Http\Controllers\Shop\LocaleController as ShopLocaleController;
 use App\Http\Controllers\Shop\ProductController as ShopProductController;
 use App\Http\Controllers\Shop\ProductListingController as ShopProductListingController;
@@ -86,6 +87,22 @@ Route::prefix('{locale}')->whereIn('locale', ['en', 'ar'])->group(function () {
             ->name('shop.wishlist.destroy');
     });
 });
+
+Route::get('/', [LegacyStorefrontRedirectController::class, 'home']);
+Route::get('/shop', fn (LegacyStorefrontRedirectController $controller) => $controller->named('shop.products.index'));
+Route::get('/cart', fn (LegacyStorefrontRedirectController $controller) => $controller->named('shop.cart.index'));
+Route::get('/checkout', fn (LegacyStorefrontRedirectController $controller) => $controller->named('shop.checkout.show'));
+Route::get('/login', fn (LegacyStorefrontRedirectController $controller) => $controller->named('customer.login'));
+Route::get('/register', fn (LegacyStorefrontRedirectController $controller) => $controller->named('customer.register'));
+Route::get('/forgot-password', fn (LegacyStorefrontRedirectController $controller) => $controller->named('customer.password.request'));
+Route::get('/reset-password/{token}', fn (LegacyStorefrontRedirectController $controller, string $token) => $controller->named(
+    'customer.password.reset',
+    ['token' => $token],
+    request()->query()
+));
+Route::get('/products/{key}', fn (LegacyStorefrontRedirectController $controller, string $key) => $controller->entity('product', $key));
+Route::get('/categories/{key}', fn (LegacyStorefrontRedirectController $controller, string $key) => $controller->entity('category', $key));
+Route::get('/pages/{key}', fn (LegacyStorefrontRedirectController $controller, string $key) => $controller->entity('page', $key));
 
 // Route::get('/', function () {
 //     return view('admin/start');
