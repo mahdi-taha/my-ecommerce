@@ -134,7 +134,7 @@
             <div class="d-flex gap-2 mt-auto">
                 @auth('customer')
                     <form method="POST" action="{{ $isWishlisted
-                        ? route('shop.wishlist.destroy', $product)
+                        ? route('shop.wishlist.destroy', ['product' => $product])
                         : route('shop.wishlist.store') }}" data-product-card-wishlist-form
                         data-product-id="{{ $product->id }}"
                         data-add-label="{{ __('shop.wishlist.add') }}"

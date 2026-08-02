@@ -25,7 +25,7 @@
                             $isStorefrontEligible = $product->isWishlistEligible() && $translation?->url_key;
                             $isAvailable = $product->isWishlistAvailable();
                             $productUrl = $isStorefrontEligible
-                                ? route('shop.products.show', $translation->url_key)
+                                ? route('shop.products.show', ['url_key' => $translation->url_key])
                                 : null;
                         @endphp
                         <div class="col-12">
@@ -66,7 +66,7 @@
                                                         {{ __('shop.wishlist.view_product') }}
                                                     </a>
                                                 @endif
-                                                <form method="POST" action="{{ route('shop.wishlist.destroy', $product) }}">
+                                                <form method="POST" action="{{ route('shop.wishlist.destroy', ['product' => $product]) }}">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button class="btn btn-outline-danger" type="submit">

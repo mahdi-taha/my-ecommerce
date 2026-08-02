@@ -15,7 +15,7 @@
                     @foreach ($categoryBreadcrumbs as $breadcrumbCategory)
                         @php($breadcrumbTranslation = $breadcrumbCategory->translations->first())
                         <li class="mb-1">
-                            <a href="{{ route('shop.categories.show', $breadcrumbTranslation->slug) }}"
+                            <a href="{{ route('shop.categories.show', ['slug' => $breadcrumbTranslation->slug]) }}"
                                 class="{{ $breadcrumbCategory->is($category) ? 'fw-semibold' : '' }}"
                                 @if ($breadcrumbCategory->is($category)) aria-current="page" @endif>
                                 {{ $breadcrumbTranslation->name }}
@@ -25,7 +25,7 @@
                     @foreach ($category->children as $childCategory)
                         @php($childTranslation = $childCategory->translations->first())
                         <li class="ms-3 mb-1">
-                            <a href="{{ route('shop.categories.show', $childTranslation->slug) }}">{{ $childTranslation->name }}</a>
+                            <a href="{{ route('shop.categories.show', ['slug' => $childTranslation->slug]) }}">{{ $childTranslation->name }}</a>
                         </li>
                     @endforeach
                 </ul>

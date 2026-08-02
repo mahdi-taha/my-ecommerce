@@ -23,7 +23,7 @@
                     </li>
                     @foreach ($breadcrumbCategories as $breadcrumbCategory)
                         <li class="breadcrumb-item">
-                            <a href="{{ route('shop.categories.show', $breadcrumbCategory->translations->first()->slug) }}">{{ $breadcrumbCategory->translations->first()->name }}</a>
+                            <a href="{{ route('shop.categories.show', ['slug' => $breadcrumbCategory->translations->first()->slug]) }}">{{ $breadcrumbCategory->translations->first()->name }}</a>
                         </li>
                     @endforeach
                     <li class="breadcrumb-item active" aria-current="page">
@@ -67,7 +67,7 @@
                                 @if ($category?->translations->first())
                                     <p class="text-muted mb-3">
                                         {{ __('shop.product_details.category_label') }}
-                                        <a href="{{ route('shop.categories.show', $category->translations->first()->slug) }}" class="text-decoration-none">
+                                        <a href="{{ route('shop.categories.show', ['slug' => $category->translations->first()->slug]) }}" class="text-decoration-none">
                                             {{ $category->translations->first()->name }}
                                         </a>
                                     </p>
@@ -287,7 +287,7 @@
                                 @auth('customer')
                                     <form id="product-wishlist-form" method="POST"
                                         action="{{ $isWishlisted
-                                            ? route('shop.wishlist.destroy', $product)
+                                            ? route('shop.wishlist.destroy', ['product' => $product])
                                             : route('shop.wishlist.store') }}">
                                         @csrf
                                         @if ($isWishlisted)

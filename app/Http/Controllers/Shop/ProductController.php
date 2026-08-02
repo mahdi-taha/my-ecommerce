@@ -131,7 +131,7 @@ class ProductController extends Controller
         ]);
 
         $translation = $product->translations->firstOrFail();
-        $productCanonicalUrl = route('shop.products.show', $translation->url_key);
+        $productCanonicalUrl = route('shop.products.show', ['url_key' => $translation->url_key]);
         $productMetaDescription = filled($translation->meta_description)
             ? trim($translation->meta_description)
             : trim((string) $translation->short_description);

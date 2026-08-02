@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Services\StorefrontContentService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\View as IlluminateView;
@@ -18,7 +19,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->scoped('storefront.category_hierarchy', function (): array {
+        $this->app->bind('storefront.category_hierarchy', function (): array {
+            $attribute = 'storefront.category_hierarchy.'.app()->getLocale();
+            if (request()->attributes->has($attribute)) {
+                return request()->attributes->get($attribute);
+            }
+
             $categories = Category::query()
                 ->where('status', true)
                 ->with(['translations' => fn ($query) => $query
@@ -54,17 +60,20 @@ class AppServiceProvider extends ServiceProvider
                 return $nodes->map(fn (Category $category): array => [
                     'id' => $category->id,
                     'name' => $category->translations->first()->name,
-                    'url' => route('shop.categories.show', $category->translations->first()->slug),
+                    'url' => route('shop.categories.show', ['slug' => $category->translations->first()->slug]),
                     'children' => $toNavigationArray($category->children),
                 ])->values()->all();
             };
 
-            return [
+            $hierarchy = [
                 'categories' => $categories->values(),
                 'reachable_categories' => $reachableCategories,
                 'tree' => $tree,
                 'navigation' => $toNavigationArray($tree),
             ];
+            request()->attributes->set($attribute, $hierarchy);
+
+            return $hierarchy;
         });
     }
 
@@ -73,6 +82,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $defaultLocale = in_array(config('app.locale'), ['en', 'ar'], true) ? config('app.locale') : 'en';
+        URL::defaults(['locale' => $defaultLocale]);
         $customerNotificationCount = function (): int {
             $request = request();
             $attribute = 'storefront.customer_notification_count';

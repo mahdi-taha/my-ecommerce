@@ -80,7 +80,7 @@ class ProductListingController extends Controller
                 ? Storage::disk('public')->url($categoryBannerPath)
                 : null;
         $listingAction = $category
-            ? route('shop.categories.show', $categoryTranslation->slug)
+            ? route('shop.categories.show', ['slug' => $categoryTranslation->slug])
             : route('shop.products.index');
         $canonicalUrl = $listingAction;
         $publicFilters = Arr::except($filters, '_attribute_filters');

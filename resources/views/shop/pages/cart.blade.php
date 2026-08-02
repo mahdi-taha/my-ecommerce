@@ -85,7 +85,7 @@
                                             <td>{{ $product->sku }}</td>
                                             <td>{{ format_store_price($line['unit_price'], $currency_code) }}</td>
                                             <td>
-                                                <form action="{{ route('shop.cart.items.update', $item->getKey()) }}"
+                                                <form action="{{ route('shop.cart.items.update', ['cartItem' => $item->getKey()]) }}"
                                                     method="POST" class="d-flex align-items-center gap-2">
                                                     @csrf
                                                     @method('PATCH')
@@ -103,7 +103,7 @@
                                                 {{ format_store_price($line['line_total'], $currency_code) }}
                                             </td>
                                             <td class="text-end">
-                                                <form action="{{ route('shop.cart.items.destroy', $item->getKey()) }}"
+                                                <form action="{{ route('shop.cart.items.destroy', ['cartItem' => $item->getKey()]) }}"
                                                     method="POST">
                                                     @csrf
                                                     @method('DELETE')

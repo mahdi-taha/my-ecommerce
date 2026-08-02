@@ -40,49 +40,53 @@ use App\Http\Middleware\ShareStorefrontWishlist;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/locale/{locale}', ShopLocaleController::class)
-    ->name('shop.locale.update');
+Route::prefix('{locale}')->whereIn('locale', ['en', 'ar'])->group(function () {
+    Route::post('/locale/{targetLocale}', ShopLocaleController::class)
+        ->whereIn('targetLocale', ['en', 'ar'])
+        ->name('shop.locale.update');
 
-Route::middleware(['storefront.cart', ShareStorefrontWishlist::class])->group(function () {
-    Route::get('/', [HomeController::class, 'index'])->name('shop.home');
-    Route::get('/shop', [ShopProductListingController::class, 'index'])->name('shop.products.index');
-    Route::get('/categories/{slug}', [ShopProductListingController::class, 'category'])
-        ->name('shop.categories.show');
-    Route::get('/pages/{slug}', [ShopCmsPageController::class, 'show'])->name('shop.pages.show');
-    Route::get('/products/{url_key}', [ShopProductController::class, 'show'])
-        ->name('shop.products.show');
-    Route::post('/products/{product}/reviews', [ShopProductReviewController::class, 'store'])
-        ->middleware(['auth:customer', 'customer'])->name('shop.products.reviews.store');
-    Route::get('/cart', [ShopCartController::class, 'index'])->name('shop.cart.index');
-    Route::post('/cart/items', [ShopCartController::class, 'store'])->name('shop.cart.items.store');
-    Route::patch('/cart/items/{cartItem}', [ShopCartController::class, 'update'])->name('shop.cart.items.update');
-    Route::delete('/cart/items/{cartItem}', [ShopCartController::class, 'destroy'])->name('shop.cart.items.destroy');
-    Route::delete('/cart', [ShopCartController::class, 'clear'])->name('shop.cart.clear');
-    Route::get('/checkout', [ShopCheckoutController::class, 'show'])->name('shop.checkout.show');
-    Route::post('/checkout', [ShopCheckoutController::class, 'store'])->name('shop.checkout.store');
-    Route::post('/checkout/summary', [ShopCheckoutController::class, 'summary'])
-        ->name('shop.checkout.summary');
-    Route::post('/checkout/coupon', [ShopCheckoutCouponController::class, 'store'])
-        ->name('shop.checkout.coupon.store');
-    Route::delete('/checkout/coupon', [ShopCheckoutCouponController::class, 'destroy'])
-        ->name('shop.checkout.coupon.destroy');
-    Route::get('/checkout/success/{order}', [ShopCheckoutController::class, 'success'])
-        ->name('shop.checkout.success');
+    Route::middleware(['storefront.cart', ShareStorefrontWishlist::class])->group(function () {
+        Route::get('/', [HomeController::class, 'index'])->name('shop.home');
+        Route::get('/shop', [ShopProductListingController::class, 'index'])->name('shop.products.index');
+        Route::get('/categories/{slug}', [ShopProductListingController::class, 'category'])
+            ->name('shop.categories.show');
+        Route::get('/pages/{slug}', [ShopCmsPageController::class, 'show'])->name('shop.pages.show');
+        Route::get('/products/{url_key}', [ShopProductController::class, 'show'])
+            ->name('shop.products.show');
+        Route::post('/products/{product}/reviews', [ShopProductReviewController::class, 'store'])
+            ->middleware(['auth:customer', 'customer'])->name('shop.products.reviews.store');
+        Route::get('/cart', [ShopCartController::class, 'index'])->name('shop.cart.index');
+        Route::post('/cart/items', [ShopCartController::class, 'store'])->name('shop.cart.items.store');
+        Route::patch('/cart/items/{cartItem}', [ShopCartController::class, 'update'])->name('shop.cart.items.update');
+        Route::delete('/cart/items/{cartItem}', [ShopCartController::class, 'destroy'])->name('shop.cart.items.destroy');
+        Route::delete('/cart', [ShopCartController::class, 'clear'])->name('shop.cart.clear');
+        Route::get('/checkout', [ShopCheckoutController::class, 'show'])->name('shop.checkout.show');
+        Route::post('/checkout', [ShopCheckoutController::class, 'store'])->name('shop.checkout.store');
+        Route::post('/checkout/summary', [ShopCheckoutController::class, 'summary'])
+            ->name('shop.checkout.summary');
+        Route::post('/checkout/coupon', [ShopCheckoutCouponController::class, 'store'])
+            ->name('shop.checkout.coupon.store');
+        Route::delete('/checkout/coupon', [ShopCheckoutCouponController::class, 'destroy'])
+            ->name('shop.checkout.coupon.destroy');
+        Route::get('/checkout/success/{order}', [ShopCheckoutController::class, 'success'])
+            ->name('shop.checkout.success');
+    });
+
+    Route::middleware([
+        'storefront.cart',
+        ShareStorefrontWishlist::class,
+        'auth:customer',
+        'customer',
+    ])->group(function () {
+        Route::get('/wishlist', [ShopWishlistController::class, 'index'])
+            ->name('shop.wishlist.index');
+        Route::post('/wishlist', [ShopWishlistController::class, 'store'])
+            ->name('shop.wishlist.store');
+        Route::delete('/wishlist/{product}', [ShopWishlistController::class, 'destroy'])
+            ->name('shop.wishlist.destroy');
+    });
 });
 
-Route::middleware([
-    'storefront.cart',
-    ShareStorefrontWishlist::class,
-    'auth:customer',
-    'customer',
-])->group(function () {
-    Route::get('/wishlist', [ShopWishlistController::class, 'index'])
-        ->name('shop.wishlist.index');
-    Route::post('/wishlist', [ShopWishlistController::class, 'store'])
-        ->name('shop.wishlist.store');
-    Route::delete('/wishlist/{product}', [ShopWishlistController::class, 'destroy'])
-        ->name('shop.wishlist.destroy');
-});
 // Route::get('/', function () {
 //     return view('admin/start');
 // })->middleware(['auth:admin', 'admin']);
@@ -245,66 +249,68 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 });
 
-Route::middleware('guest:customer')->group(function () {
-    Route::get('forgot-password', [CustomerPasswordResetController::class, 'create'])
-        ->name('customer.password.request');
-    Route::post('forgot-password', [CustomerPasswordResetController::class, 'store'])
-        ->name('customer.password.email');
-    Route::get('reset-password/{token}', [CustomerPasswordResetController::class, 'edit'])
-        ->name('customer.password.reset');
-    Route::post('reset-password', [CustomerPasswordResetController::class, 'update'])
-        ->name('customer.password.store');
-    Route::get('register', [CustomerAuthController::class, 'showRegistration'])
-        ->name('customer.register');
-    Route::post('register', [CustomerAuthController::class, 'register'])
-        ->name('customer.register.store');
-    Route::get('login', [CustomerAuthController::class, 'showLogin'])
-        ->name('customer.login');
-    Route::post('login', [CustomerAuthController::class, 'login'])
-        ->name('customer.login.store');
-});
-
-Route::middleware(['auth:customer', 'customer'])
-    ->prefix('account')
-    ->name('shop.account.')
-    ->group(function () {
-        Route::get('notifications', [ShopAccountNotificationController::class, 'index'])
-            ->name('notifications.index');
-        Route::patch('notifications/{databaseNotification}/read', [ShopAccountNotificationController::class, 'markAsRead'])
-            ->name('notifications.read');
-        Route::get('orders', [ShopAccountOrderController::class, 'index'])
-            ->name('orders.index');
-        Route::get('orders/{order}', [ShopAccountOrderController::class, 'show'])
-            ->name('orders.show');
-        Route::get('reviews', [ShopAccountReviewController::class, 'index'])->name('reviews.index');
-        Route::get('reviews/{review}/edit', [ShopAccountReviewController::class, 'edit'])->name('reviews.edit');
-        Route::put('reviews/{review}', [ShopAccountReviewController::class, 'update'])->name('reviews.update');
-        Route::post('orders/{order}/cancellation-requests', [ShopOrderCancellationRequestController::class, 'store'])
-            ->name('orders.cancellation-requests.store');
+Route::prefix('{locale}')->whereIn('locale', ['en', 'ar'])->group(function () {
+    Route::middleware('guest:customer')->group(function () {
+        Route::get('forgot-password', [CustomerPasswordResetController::class, 'create'])
+            ->name('customer.password.request');
+        Route::post('forgot-password', [CustomerPasswordResetController::class, 'store'])
+            ->name('customer.password.email');
+        Route::get('reset-password/{token}', [CustomerPasswordResetController::class, 'edit'])
+            ->name('customer.password.reset');
+        Route::post('reset-password', [CustomerPasswordResetController::class, 'update'])
+            ->name('customer.password.store');
+        Route::get('register', [CustomerAuthController::class, 'showRegistration'])
+            ->name('customer.register');
+        Route::post('register', [CustomerAuthController::class, 'register'])
+            ->name('customer.register.store');
+        Route::get('login', [CustomerAuthController::class, 'showLogin'])
+            ->name('customer.login');
+        Route::post('login', [CustomerAuthController::class, 'login'])
+            ->name('customer.login.store');
     });
 
-Route::middleware(['auth:customer', 'customer'])->name('customer.')->group(function () {
-    Route::post('logout', [CustomerAuthController::class, 'logout'])->name('logout');
-    Route::get('account/profile', [CustomerAccountController::class, 'edit'])->name('account.edit');
-    Route::put('account/profile', [CustomerAccountController::class, 'update'])->name('account.update');
-    Route::get('account/addresses', [CustomerAddressController::class, 'index'])
-        ->name('addresses.index');
-    Route::get('account/addresses/create', [CustomerAddressController::class, 'create'])
-        ->name('addresses.create');
-    Route::post('account/addresses', [CustomerAddressController::class, 'store'])
-        ->name('addresses.store');
-    Route::get('account/addresses/{customerAddress}/edit', [CustomerAddressController::class, 'edit'])
-        ->name('addresses.edit');
-    Route::put('account/addresses/{customerAddress}', [CustomerAddressController::class, 'update'])
-        ->name('addresses.update');
-    Route::delete('account/addresses/{customerAddress}', [CustomerAddressController::class, 'destroy'])
-        ->name('addresses.destroy');
-    Route::patch('account/addresses/{customerAddress}/default-shipping', [CustomerAddressController::class, 'setDefaultShipping'])
-        ->name('addresses.default-shipping');
-    Route::patch('account/addresses/{customerAddress}/default-billing', [CustomerAddressController::class, 'setDefaultBilling'])
-        ->name('addresses.default-billing');
-    Route::get('account/password', [CustomerAccountController::class, 'editPassword'])
-        ->name('account.password.edit');
-    Route::put('account/password', [CustomerAccountController::class, 'updatePassword'])
-        ->name('account.password.update');
+    Route::middleware(['auth:customer', 'customer'])
+        ->prefix('account')
+        ->name('shop.account.')
+        ->group(function () {
+            Route::get('notifications', [ShopAccountNotificationController::class, 'index'])
+                ->name('notifications.index');
+            Route::patch('notifications/{databaseNotification}/read', [ShopAccountNotificationController::class, 'markAsRead'])
+                ->name('notifications.read');
+            Route::get('orders', [ShopAccountOrderController::class, 'index'])
+                ->name('orders.index');
+            Route::get('orders/{order}', [ShopAccountOrderController::class, 'show'])
+                ->name('orders.show');
+            Route::get('reviews', [ShopAccountReviewController::class, 'index'])->name('reviews.index');
+            Route::get('reviews/{review}/edit', [ShopAccountReviewController::class, 'edit'])->name('reviews.edit');
+            Route::put('reviews/{review}', [ShopAccountReviewController::class, 'update'])->name('reviews.update');
+            Route::post('orders/{order}/cancellation-requests', [ShopOrderCancellationRequestController::class, 'store'])
+                ->name('orders.cancellation-requests.store');
+        });
+
+    Route::middleware(['auth:customer', 'customer'])->name('customer.')->group(function () {
+        Route::post('logout', [CustomerAuthController::class, 'logout'])->name('logout');
+        Route::get('account/profile', [CustomerAccountController::class, 'edit'])->name('account.edit');
+        Route::put('account/profile', [CustomerAccountController::class, 'update'])->name('account.update');
+        Route::get('account/addresses', [CustomerAddressController::class, 'index'])
+            ->name('addresses.index');
+        Route::get('account/addresses/create', [CustomerAddressController::class, 'create'])
+            ->name('addresses.create');
+        Route::post('account/addresses', [CustomerAddressController::class, 'store'])
+            ->name('addresses.store');
+        Route::get('account/addresses/{customerAddress}/edit', [CustomerAddressController::class, 'edit'])
+            ->name('addresses.edit');
+        Route::put('account/addresses/{customerAddress}', [CustomerAddressController::class, 'update'])
+            ->name('addresses.update');
+        Route::delete('account/addresses/{customerAddress}', [CustomerAddressController::class, 'destroy'])
+            ->name('addresses.destroy');
+        Route::patch('account/addresses/{customerAddress}/default-shipping', [CustomerAddressController::class, 'setDefaultShipping'])
+            ->name('addresses.default-shipping');
+        Route::patch('account/addresses/{customerAddress}/default-billing', [CustomerAddressController::class, 'setDefaultBilling'])
+            ->name('addresses.default-billing');
+        Route::get('account/password', [CustomerAccountController::class, 'editPassword'])
+            ->name('account.password.edit');
+        Route::put('account/password', [CustomerAccountController::class, 'updatePassword'])
+            ->name('account.password.update');
+    });
 });

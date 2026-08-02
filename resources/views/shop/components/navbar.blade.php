@@ -32,7 +32,7 @@
                         </a>
 
                         @if($storefrontContactPage)
-                            <a href="{{ route('shop.pages.show',$storefrontContactPage->translations->first()->slug) }}" class="nav-item nav-link me-lg-2 {{ request()->routeIs('shop.pages.show') && request()->route('slug') === $storefrontContactPage->translations->first()->slug ? 'active' : '' }}">{{ __('shop.navigation.contact') }}</a>
+                            <a href="{{ route('shop.pages.show',['slug' => $storefrontContactPage->translations->first()->slug]) }}" class="nav-item nav-link me-lg-2 {{ request()->routeIs('shop.pages.show') && request()->route('slug') === $storefrontContactPage->translations->first()->slug ? 'active' : '' }}">{{ __('shop.navigation.contact') }}</a>
                         @endif
 
                         <div class="nav-item d-block d-lg-none" data-category-navigation-mobile>

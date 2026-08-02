@@ -11,7 +11,7 @@
             @foreach ($homepageCategories as $category)
                 @php($translation = $category->translations->first())
                 <div class="col-6 col-md-4 col-lg-2">
-                    <a href="{{ route('shop.categories.show', $translation->slug) }}" class="category-card text-center d-block">
+                    <a href="{{ route('shop.categories.show', ['slug' => $translation->slug]) }}" class="category-card text-center d-block">
                         <div class="category-icon">
                             @if ($category->homepage_logo_url)
                                 <img src="{{ $category->homepage_logo_url }}" alt="{{ $translation->name }}">

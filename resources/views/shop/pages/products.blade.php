@@ -23,7 +23,7 @@
                                 @if ($breadcrumbCategory->is($category))
                                     {{ $breadcrumbTranslation->name }}
                                 @else
-                                    <a href="{{ route('shop.categories.show', $breadcrumbTranslation->slug) }}">{{ $breadcrumbTranslation->name }}</a>
+                                    <a href="{{ route('shop.categories.show', ['slug' => $breadcrumbTranslation->slug]) }}">{{ $breadcrumbTranslation->name }}</a>
                                 @endif
                             </li>
                         @endforeach

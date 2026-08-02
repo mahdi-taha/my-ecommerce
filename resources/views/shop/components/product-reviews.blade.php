@@ -13,7 +13,7 @@
         @if ($customerReview)
             <div class="alert alert-info">{{ __('shop.reviews.existing_status', ['status' => __('shop.reviews.status.'.$customerReview->status->value)]) }}</div>
         @elseif ($canReview)
-            <form method="POST" action="{{ route('shop.products.reviews.store', $product) }}" class="mb-4">
+            <form method="POST" action="{{ route('shop.products.reviews.store', ['product' => $product]) }}" class="mb-4">
                 @csrf
                 <div class="mb-3"><label for="review-rating" class="form-label">{{ __('shop.reviews.rating') }}</label><select id="review-rating" name="rating" class="form-select" required>@foreach (range(5, 1) as $rating)<option value="{{ $rating }}">{{ $rating }}</option>@endforeach</select></div>
                 <div class="mb-3"><label for="review-title" class="form-label">{{ __('shop.reviews.review_title') }}</label><input id="review-title" name="title" class="form-control" maxlength="150" value="{{ old('title') }}"></div>
