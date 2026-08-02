@@ -41,6 +41,14 @@ class AppServiceProvider extends ServiceProvider
                 });
             };
             $tree = $buildTree($categoriesByParent->get(0, collect()));
+            $reachableCategories = collect();
+            $collectReachable = function (Collection $nodes) use (&$collectReachable, $reachableCategories): void {
+                foreach ($nodes as $category) {
+                    $reachableCategories->push($category);
+                    $collectReachable($category->children);
+                }
+            };
+            $collectReachable($tree);
             $toNavigationArray = function (Collection $nodes) use (&$toNavigationArray): array {
                 return $nodes->map(fn (Category $category): array => [
                     'id' => $category->id,
@@ -51,6 +59,7 @@ class AppServiceProvider extends ServiceProvider
 
             return [
                 'categories' => $categories->values(),
+                'reachable_categories' => $reachableCategories,
                 'tree' => $tree,
                 'navigation' => $toNavigationArray($tree),
             ];

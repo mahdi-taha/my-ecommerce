@@ -17,7 +17,7 @@ class StorefrontProductListingService
 {
     private const PAGE_SIZE = 12;
 
-    public function paginate(array $filters, string $locale): LengthAwarePaginator
+    public function paginate(array $filters, string $locale, ?Category $category = null): LengthAwarePaginator
     {
         $at = now();
         $query = Product::query()
@@ -32,7 +32,7 @@ class StorefrontProductListingService
 
         $this->applyRootEligibility($query, $at);
         $query->withStorefrontCardData($locale, Auth::guard('customer')->id());
-        $this->applyFilters($query, $filters, $at);
+        $this->applyFilters($query, $filters, $at, $category);
         $this->applyPriceProjection($query, $at);
         $this->applySorting($query, $filters['sort'] ?? 'newest');
 
@@ -43,6 +43,33 @@ class StorefrontProductListingService
     public function categoryTree(): Collection
     {
         return app('storefront.category_hierarchy')['tree'];
+    }
+
+    public function categoryBySlug(string $slug): ?Category
+    {
+        return app('storefront.category_hierarchy')['reachable_categories']
+            ->first(fn (Category $category): bool => $category->translations->first()->slug === $slug);
+    }
+
+    /** @return Collection<int, Category> */
+    public function categoryBreadcrumbs(Category $category): Collection
+    {
+        $categories = app('storefront.category_hierarchy')['reachable_categories']->keyBy('id');
+        $breadcrumbs = collect([$category]);
+        $parentId = $category->parent_id;
+
+        while ($parentId !== null) {
+            $parent = $categories->get($parentId);
+
+            if (! $parent) {
+                return collect();
+            }
+
+            $breadcrumbs->prepend($parent);
+            $parentId = $parent->parent_id;
+        }
+
+        return $breadcrumbs->values();
     }
 
     private function applyRootEligibility(Builder $query, CarbonInterface $at): void
@@ -58,7 +85,7 @@ class StorefrontProductListingService
         });
     }
 
-    private function applyFilters(Builder $query, array $filters, CarbonInterface $at): void
+    private function applyFilters(Builder $query, array $filters, CarbonInterface $at, ?Category $category): void
     {
         if (filled($filters['q'] ?? null)) {
             $term = '%'.$filters['q'].'%';
@@ -68,8 +95,9 @@ class StorefrontProductListingService
             });
         }
 
-        if (isset($filters['category'])) {
-            $categoryIds = $this->activeCategoryBranchIds((int) $filters['category']);
+        $categoryId = $category?->getKey() ?? ($filters['category'] ?? null);
+        if ($categoryId !== null) {
+            $categoryIds = $this->activeCategoryBranchIds((int) $categoryId);
             $query->whereHas('categories', fn (Builder $query) => $query->whereKey($categoryIds));
         }
 
