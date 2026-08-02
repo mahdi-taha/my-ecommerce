@@ -3,6 +3,7 @@
 namespace Tests\Feature\Storefront;
 
 use App\Enums\NotificationAudienceCode;
+use App\Models\Category;
 use App\Models\DatabaseNotification;
 use App\Models\Setting;
 use App\Models\User;
@@ -119,6 +120,19 @@ class StorefrontTopbarTest extends TestCase
         $this->get(route('customer.login'))
             ->assertOk()
             ->assertSee('<html lang="en" dir="ltr">', false);
+    }
+
+    public function test_locale_switch_translates_reachable_category_slug_and_preserves_query(): void
+    {
+        $category = Category::factory()->create();
+        $category->translations()->createMany([
+            ['locale' => 'en', 'name' => 'Phones', 'slug' => 'phones'],
+            ['locale' => 'ar', 'name' => 'الهواتف', 'slug' => 'الهواتف'],
+        ]);
+
+        $this->post(route('shop.locale.update', 'ar'), [
+            'return_to' => route('shop.categories.show', 'phones', absolute: false).'?sort=price_asc',
+        ])->assertRedirect(route('shop.categories.show', 'الهواتف', absolute: false).'?sort=price_asc');
     }
 
     private function setSetting(string $group, string $key, ?string $value): void

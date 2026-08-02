@@ -34,6 +34,7 @@ class HomepageCategorySectionTest extends TestCase
         $section = $this->categorySection($response->getContent());
 
         $this->assertStringContainsString('First Root', $section);
+        $this->assertStringContainsString(route('shop.categories.show', 'first-root'), $section);
         $this->assertStringContainsString('Later Root', $section);
         $this->assertLessThan(
             strpos($section, 'Later Root'),
@@ -62,7 +63,7 @@ class HomepageCategorySectionTest extends TestCase
             ->assertSee('alt="With Logo"', false)
             ->assertSeeInOrder(['Missing Logo', 'Without Logo'])
             ->assertSee('fas fa-th-large fa-3x text-muted', false)
-            ->assertSee('href="#"', false)
+            ->assertSee('href="'.route('shop.categories.show', 'with-logo').'"', false)
             ->assertDontSee('categories/logos/missing.png', false);
     }
 

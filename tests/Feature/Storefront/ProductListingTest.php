@@ -160,6 +160,16 @@ class ProductListingTest extends TestCase
             ->assertSee('<link rel="canonical" href="'.route('shop.products.index').'">', false);
     }
 
+    public function test_shop_numeric_category_filter_remains_available(): void
+    {
+        $category = $this->category('Shop Filter');
+
+        $this->get(route('shop.products.index', ['category' => $category->id]))
+            ->assertOk()
+            ->assertSee('name="category"', false)
+            ->assertSee('value="'.$category->id.'"', false);
+    }
+
     private function simple(
         string $name,
         float $price,

@@ -41,6 +41,7 @@ class StorefrontNavbarTest extends TestCase
         $response->assertOk()
             ->assertSee('href="'.route('shop.home').'"', false)
             ->assertSee('href="'.route('shop.products.index').'"', false)
+            ->assertSee('href="'.route('shop.categories.show', 'first-root').'"', false)
             ->assertSee(__('shop.navigation.shop'))
             ->assertSee(__('shop.navigation.contact'))
             ->assertSee('href="#"', false)
@@ -71,6 +72,7 @@ class StorefrontNavbarTest extends TestCase
         );
         $navigation = json_decode($matches[1], true, flags: JSON_THROW_ON_ERROR);
         $this->assertSame($first->id, $navigation[0]['id']);
+        $this->assertSame(route('shop.categories.show', 'first-root'), $navigation[0]['url']);
         $this->assertSame('Great Grandchild', $navigation[0]['children'][0]['children'][0]['children'][0]['name']);
         $this->assertSame($second->id, $navigation[1]['id']);
         $this->assertSame([], $navigation[1]['children']);

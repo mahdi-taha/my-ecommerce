@@ -17,6 +17,7 @@ class CustomerLogoutRedirectTest extends TestCase
         $destinations = [
             route('shop.home'),
             route('shop.products.show', ['url_key' => 'example-product']),
+            route('shop.categories.show', ['slug' => 'electronics']),
             route('shop.cart.index').'?source=header',
         ];
 

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Identity;
 
 use App\Models\Cart;
+use App\Models\Category;
 use App\Models\User;
 use App\Services\GuestCartTokenService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -101,6 +102,20 @@ class CustomerAuthenticationReturnTest extends TestCase
             ->assertRedirect(route('shop.home'))
             ->assertSessionMissing('customer_return_to')
             ->assertSessionMissing('url.intended');
+    }
+
+    public function test_login_accepts_a_localized_category_as_a_public_return_destination(): void
+    {
+        $customer = $this->customer();
+        $category = Category::factory()->create();
+        $category->translations()->create(['locale' => 'en', 'name' => 'Audio', 'slug' => 'audio']);
+        $destination = route('shop.categories.show', 'audio');
+
+        $this->get(route('customer.login', ['return_to' => $destination]))
+            ->assertSessionHas('customer_return_to', $destination);
+        $this->post(route('customer.login.store'), $this->credentials($customer))
+            ->assertRedirect($destination)
+            ->assertSessionMissing('customer_return_to');
     }
 
     public function test_protected_route_intended_redirect_is_preserved_without_public_destination(): void
