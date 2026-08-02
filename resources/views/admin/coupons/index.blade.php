@@ -32,6 +32,7 @@
                                     </thead>
                                     <tbody>
                                         @forelse ($coupons as $coupon)
+                                            @php($presentationStatus = $coupon->presentationStatus((int) $coupon->effective_usage_count))
                                             <tr>
                                                 <td><code>{{ $coupon->code }}</code></td>
                                                 <td>{{ $coupon->name }}</td>
@@ -39,8 +40,8 @@
                                                 <td>{{ $coupon->value }}{{ $coupon->type === \App\Enums\CouponType::Percentage ? '%' : '' }}</td>
                                                 <td>{{ $coupon->effective_usage_count }}</td>
                                                 <td>
-                                                    <span class="badge {{ $coupon->is_active ? 'bg-success' : 'bg-secondary' }}">
-                                                        {{ $coupon->is_active ? 'Active' : 'Inactive' }}
+                                                    <span class="badge {{ $presentationStatus->badgeClass() }}">
+                                                        {{ $presentationStatus->label() }}
                                                     </span>
                                                 </td>
                                                 <td class="text-end">
