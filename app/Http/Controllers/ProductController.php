@@ -24,6 +24,7 @@ class ProductController extends Controller
     public function index(Request $request): JsonResponse|View
     {
         if ($request->ajax()) {
+            $timestamp = now();
             $data = Product::query()
                 ->with([
                     'translations' => function ($query) {
@@ -62,6 +63,17 @@ class ProductController extends Controller
 
             if ($request->filled('status')) {
                 $data->where('status', $request->status);
+            }
+
+            if ($request->filled('filter')) {
+                match ((string) $request->string('filter')) {
+                    'featured' => $data->where('is_featured', true),
+                    'new' => $data->where('is_new', true),
+                    'on_sale' => $data->onSale($timestamp),
+                    'zero_price' => $data->zeroEffectivePrice($timestamp),
+                    'out_of_stock' => $data->outOfStock(),
+                    default => null,
+                };
             }
 
             return DataTables::eloquent($data)

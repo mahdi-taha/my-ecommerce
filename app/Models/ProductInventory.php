@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -28,5 +29,23 @@ class ProductInventory extends Model
     public function availableQuantity(): string
     {
         return $this->quantity;
+    }
+
+    public function scopeInStock(Builder $query): Builder
+    {
+        return $query->where('quantity', '>', 0);
+    }
+
+    public function scopeOutOfStock(Builder $query): Builder
+    {
+        return $query->where('quantity', '<=', 0);
+    }
+
+    public function scopeLowStock(Builder $query): Builder
+    {
+        return $query
+            ->where('quantity', '>', 0)
+            ->whereNotNull('low_stock_alert')
+            ->whereColumn('quantity', '<=', 'low_stock_alert');
     }
 }

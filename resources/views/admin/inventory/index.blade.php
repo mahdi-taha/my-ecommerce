@@ -24,6 +24,18 @@
                     @if (session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
 
                     <div class="card shadow">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <select id="inventory-stock-filter" class="form-select">
+                                        <option value="">All Stock</option>
+                                        <option value="in_stock">In Stock</option>
+                                        <option value="out_of_stock">Out of Stock</option>
+                                        <option value="low_stock">Low Stock</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table id="inventoryTable" class="display table data-table w-100">

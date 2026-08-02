@@ -28,6 +28,18 @@ class InventoryController extends Controller
         if ($request->ajax()) {
             $products = $this->inventoryProductsQuery();
 
+            if ($request->filled('stock')) {
+                match ((string) $request->string('stock')) {
+                    'in_stock' => $products->whereHas('inventory', fn (Builder $query) => $query->inStock()),
+                    'out_of_stock' => $products->where(function (Builder $query) {
+                        $query->whereDoesntHave('inventory')
+                            ->orWhereHas('inventory', fn (Builder $query) => $query->outOfStock());
+                    }),
+                    'low_stock' => $products->whereHas('inventory', fn (Builder $query) => $query->lowStock()),
+                    default => null,
+                };
+            }
+
             return DataTables::eloquent($products)
                 ->addColumn('name', fn (Product $product) => $this->productName($product))
                 ->filterColumn('name', function ($query, $keyword) {

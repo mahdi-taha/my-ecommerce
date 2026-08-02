@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ProductType;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -56,6 +57,41 @@ class Product extends Model
     public function scopeVisible(Builder $query): Builder
     {
         return $query->where('is_visible_individually', true);
+    }
+
+    public function scopeOnSale(Builder $query, CarbonInterface $at): Builder
+    {
+        return $query
+            ->whereNotNull('special_price')
+            ->whereColumn('special_price', '<', 'price')
+            ->where(function (Builder $query) use ($at) {
+                $query->whereNull('special_price_from')
+                    ->orWhere('special_price_from', '<=', $at);
+            })
+            ->where(function (Builder $query) use ($at) {
+                $query->whereNull('special_price_to')
+                    ->orWhere('special_price_to', '>=', $at);
+            });
+    }
+
+    public function scopeZeroEffectivePrice(Builder $query, CarbonInterface $at): Builder
+    {
+        return $query->where(function (Builder $query) use ($at) {
+            $query->where('price', '<=', 0)
+                ->orWhere(function (Builder $query) use ($at) {
+                    $query->onSale($at)->where('special_price', '<=', 0);
+                });
+        });
+    }
+
+    public function scopeOutOfStock(Builder $query): Builder
+    {
+        return $query
+            ->where('type', ProductType::Simple->value)
+            ->where(function (Builder $query) {
+                $query->whereDoesntHave('inventory')
+                    ->orWhereHas('inventory', fn (Builder $query) => $query->outOfStock());
+            });
     }
 
     public function hasActiveSpecialPrice(): bool

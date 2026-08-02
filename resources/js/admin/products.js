@@ -84,6 +84,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 data: function (data) {
                     data.type = document.getElementById('product-type-filter').value;
                     data.status = document.getElementById('product-status-filter').value;
+                    data.filter = document.getElementById('product-filter').value;
                 },
                 error: function (xhr) {
                     console.error('DataTable AJAX error:', xhr.responseText);
@@ -139,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ]
         });
 
-        $('#product-type-filter, #product-status-filter').on('change', function () {
+        $('#product-type-filter, #product-status-filter, #product-filter').on('change', function () {
             table.ajax.reload();
         });
 

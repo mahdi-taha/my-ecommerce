@@ -12,11 +12,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (document.querySelector('body[data-page="Inventory"]')) {
-        $('#inventoryTable').DataTable({
+        const table = $('#inventoryTable').DataTable({
             processing: true,
             serverSide: true,
             responsive: true,
-            ajax: window.inventoryDataTableRoute,
+            ajax: {
+                url: window.inventoryDataTableRoute,
+                data: function (data) {
+                    data.stock = document.getElementById('inventory-stock-filter').value;
+                }
+            },
             order: [[1, 'asc']],
             columns: [
                 { data: 'name', name: 'name', orderable: false },
@@ -41,6 +46,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 { data: 'low_stock_alert', name: 'low_stock_alert', searchable: false, orderable: false, render: (data) => formatInventoryNumber(data, '-') },
                 { data: 'action', name: 'action', searchable: false, orderable: false }
             ]
+        });
+
+        $('#inventory-stock-filter').on('change', function () {
+            table.ajax.reload();
         });
     }
 

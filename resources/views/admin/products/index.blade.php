@@ -41,6 +41,16 @@
                                         <option value="0">Inactive</option>
                                     </select>
                                 </div>
+                                <div class="col-md-3 mb-2">
+                                    <select id="product-filter" class="form-select">
+                                        <option value="">All Products</option>
+                                        <option value="featured">Featured</option>
+                                        <option value="new">New</option>
+                                        <option value="on_sale">On Sale</option>
+                                        <option value="zero_price">Zero Price</option>
+                                        <option value="out_of_stock">Out of Stock</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
