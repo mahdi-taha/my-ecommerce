@@ -1,6 +1,9 @@
 @extends('shop.layouts.app')
 
 @section('title', __('shop.home.title'))
+@section('meta_description', __('shop.home.meta_description'))
+@section('canonical', route('shop.home'))
+@section('open_graph', 'enabled')
 
 @section('content')
 

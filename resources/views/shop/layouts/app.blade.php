@@ -5,7 +5,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>@yield('title', config('app.name'))</title>
+    @php
+        $pageTitle = trim($__env->yieldContent('title', config('app.name')));
+        $pageDescription = trim($__env->yieldContent('meta_description'));
+        $pageCanonical = trim($__env->yieldContent('canonical'));
+        $openGraphType = trim($__env->yieldContent('open_graph_type', 'website'));
+        $openGraphImage = trim($__env->yieldContent('open_graph_image'));
+    @endphp
+
+    <title>{{ $pageTitle }}</title>
+    @if ($pageDescription !== '')
+        <meta name="description" content="{{ $pageDescription }}">
+    @endif
+    @if ($pageCanonical !== '')
+        <link rel="canonical" href="{{ $pageCanonical }}">
+    @endif
+    @hasSection('open_graph')
+        <meta property="og:type" content="{{ $openGraphType }}">
+        <meta property="og:title" content="{{ $pageTitle }}">
+        @if ($pageDescription !== '')
+            <meta property="og:description" content="{{ $pageDescription }}">
+        @endif
+        @if ($pageCanonical !== '')
+            <meta property="og:url" content="{{ $pageCanonical }}">
+        @endif
+        @if ($openGraphImage !== '')
+            <meta property="og:image" content="{{ $openGraphImage }}">
+        @endif
+    @endif
 
     @yield('meta')
 

@@ -1,6 +1,13 @@
 @extends('shop.layouts.app')
 
-@section('title', $translation->name)
+@section('title', filled($translation->meta_title) ? $translation->meta_title : $translation->name)
+@section('meta_description', $productMetaDescription)
+@section('canonical', $productCanonicalUrl)
+@section('open_graph', 'enabled')
+@section('open_graph_type', 'product')
+@if (($galleryImages->firstWhere('is_placeholder', false)['url'] ?? null) !== null)
+    @section('open_graph_image', $galleryImages->firstWhere('is_placeholder', false)['url'])
+@endif
 
 @section('content')
     <!-- Single Products Start -->
@@ -13,7 +20,7 @@
                     </li>
                     @foreach ($breadcrumbCategories as $breadcrumbCategory)
                         <li class="breadcrumb-item">
-                            <a href="#">{{ $breadcrumbCategory->translations->first()->name }}</a>
+                            <a href="{{ route('shop.categories.show', $breadcrumbCategory->translations->first()->slug) }}">{{ $breadcrumbCategory->translations->first()->name }}</a>
                         </li>
                     @endforeach
                     <li class="breadcrumb-item active" aria-current="page">
@@ -57,7 +64,7 @@
                                 @if ($category?->translations->first())
                                     <p class="text-muted mb-3">
                                         {{ __('shop.product_details.category_label') }}
-                                        <a href="#" class="text-decoration-none">
+                                        <a href="{{ route('shop.categories.show', $category->translations->first()->slug) }}" class="text-decoration-none">
                                             {{ $category->translations->first()->name }}
                                         </a>
                                     </p>

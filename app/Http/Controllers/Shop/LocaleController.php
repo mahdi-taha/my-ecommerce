@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Shop;
 use App\Http\Controllers\Controller;
 use App\Models\CategoryTranslation;
 use App\Models\CmsPageTranslation;
+use App\Models\ProductTranslation;
 use App\Services\StorefrontContentService;
 use App\Services\StorefrontProductListingService;
 use Illuminate\Http\RedirectResponse;
@@ -27,14 +28,48 @@ class LocaleController extends Controller
             $returnTo = '/';
         }
 
-        $returnTo = $this->localizedCategoryDestination(
-            $returnTo,
-            $locale,
-            $listingService
-        ) ?? $this->localizedCmsDestination($returnTo, $locale, $contentService) ?? $returnTo;
+        $returnTo = $this->localizedProductDestination($returnTo, $locale)
+            ?? $this->localizedCategoryDestination(
+                $returnTo,
+                $locale,
+                $listingService
+            ) ?? $this->localizedCmsDestination($returnTo, $locale, $contentService) ?? $returnTo;
         $request->session()->put('storefront_locale', $locale);
 
         return redirect()->to($returnTo);
+    }
+
+    private function localizedProductDestination(string $returnTo, string $targetLocale): ?string
+    {
+        try {
+            $matched = Route::getRoutes()->match(Request::create($returnTo, 'GET'));
+        } catch (Throwable) {
+            return null;
+        }
+
+        if ($matched->getName() !== 'shop.products.show') {
+            return null;
+        }
+
+        $translation = ProductTranslation::query()
+            ->where('locale', app()->getLocale())
+            ->where('url_key', (string) $matched->parameter('url_key'))
+            ->first();
+        $targetUrlKey = $translation === null
+            ? null
+            : ProductTranslation::query()
+                ->where('product_id', $translation->product_id)
+                ->where('locale', $targetLocale)
+                ->value('url_key');
+
+        if (! filled($targetUrlKey)) {
+            return '/';
+        }
+
+        $query = parse_url($returnTo, PHP_URL_QUERY);
+
+        return route('shop.products.show', $targetUrlKey, absolute: false)
+            .(filled($query) ? '?'.$query : '');
     }
 
     private function localizedCmsDestination(string $returnTo, string $targetLocale, StorefrontContentService $content): ?string

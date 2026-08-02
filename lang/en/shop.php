@@ -53,6 +53,7 @@ return [
     ],
 
     'home' => [
+        'meta_description' => 'Discover products, offers, and categories from our online store.',
         'title' => 'Home',
         'products_title' => 'Our Products',
         'products_subtitle' => 'Explore the latest products available in our store.',

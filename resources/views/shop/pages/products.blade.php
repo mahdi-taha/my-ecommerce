@@ -2,10 +2,12 @@
 
 @section('title', $categoryTranslation?->meta_title ?: ($categoryTranslation?->name ?? __('shop.listing.title')))
 
-@section('meta')
-    <meta name="description" content="{{ $categoryTranslation?->meta_description ?: ($categoryTranslation ? __('shop.listing.category_meta_description', ['category' => $categoryTranslation->name]) : __('shop.listing.meta_description')) }}">
-    <link rel="canonical" href="{{ $canonicalUrl }}">
-@endsection
+@section('meta_description', $categoryTranslation?->meta_description ?: ($categoryTranslation ? __('shop.listing.category_meta_description', ['category' => $categoryTranslation->name]) : __('shop.listing.meta_description')))
+@section('canonical', $canonicalUrl)
+@section('open_graph', 'enabled')
+@if ($categoryBannerUrl)
+    @section('open_graph_image', $categoryBannerUrl)
+@endif
 
 @section('content')
     <section class="container-fluid py-5 bg-light">

@@ -84,7 +84,7 @@ class ProductListingController extends Controller
             : route('shop.products.index');
         $canonicalUrl = $listingAction;
         $publicFilters = Arr::except($filters, '_attribute_filters');
-        if ($category && empty(array_diff_key($publicFilters, array_flip(['page']))) && ($filters['page'] ?? 1) > 1) {
+        if (empty(array_diff_key($publicFilters, array_flip(['page']))) && ($filters['page'] ?? 1) > 1) {
             $canonicalUrl = $listingAction.'?'.http_build_query(['page' => $filters['page']]);
         }
 

@@ -131,6 +131,10 @@ class ProductController extends Controller
         ]);
 
         $translation = $product->translations->firstOrFail();
+        $productCanonicalUrl = route('shop.products.show', $translation->url_key);
+        $productMetaDescription = filled($translation->meta_description)
+            ? trim($translation->meta_description)
+            : trim((string) $translation->short_description);
         $category = $product->categories->first();
         $breadcrumbCategories = $this->breadcrumbCategories($category);
         $specifications = $this->specifications($product);
@@ -187,7 +191,6 @@ class ProductController extends Controller
         [$configurableAttributes, $variantPresentation] = $isConfigurable
             ? $this->configurablePresentation($product, $eligibleVariants, $taxMode, $defaultTax)
             : [collect(), []];
-
         return view('shop.pages.product-details', compact(
             'product',
             'translation',
@@ -210,7 +213,9 @@ class ProductController extends Controller
             'approvedReviews',
             'ratingBreakdown',
             'customerReview',
-            'canReview'
+            'canReview',
+            'productCanonicalUrl',
+            'productMetaDescription'
         ));
     }
 
