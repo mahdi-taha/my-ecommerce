@@ -112,6 +112,16 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
+    public function productReviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    public function moderatedProductReviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class, 'reviewed_by');
+    }
+
     public function cart(): HasOne
     {
         return $this->hasOne(Cart::class);

@@ -114,7 +114,7 @@ class Product extends Model
         string $locale,
         ?int $customerId = null
     ): Builder {
-        $query->with([
+        $query->withCount('approvedReviews')->withAvg('approvedReviews', 'rating')->with([
             'translations' => fn ($query) => $query->where('locale', $locale),
             'images',
             'inventory',
@@ -410,6 +410,16 @@ class Product extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    public function approvedReviews(): HasMany
+    {
+        return $this->reviews()->approved();
     }
 
     public function cartItems(): HasMany

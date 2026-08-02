@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use LogicException;
 
 class OrderItem extends Model
@@ -98,5 +99,10 @@ class OrderItem extends Model
     public function options(): HasMany
     {
         return $this->hasMany(OrderItemOption::class);
+    }
+
+    public function review(): HasOne
+    {
+        return $this->hasOne(ProductReview::class);
     }
 }
