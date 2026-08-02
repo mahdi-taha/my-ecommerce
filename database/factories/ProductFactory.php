@@ -13,7 +13,7 @@ class ProductFactory extends Factory
     {
         return ['configurable_id' => null, 'type' => ProductType::Simple->value, 'product_number' => null,
             'sku' => fake()->unique()->bothify('SKU-#####'), 'price' => 10, 'special_price' => null,
-            'special_price_from' => null, 'special_price_to' => null, 'business_mode' => null,
+            'special_price_from' => null, 'special_price_to' => null,
             'is_new' => false, 'is_featured' => false, 'is_visible_individually' => true, 'status' => true];
     }
 }

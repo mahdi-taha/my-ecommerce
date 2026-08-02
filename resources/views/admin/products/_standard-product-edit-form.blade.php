@@ -56,16 +56,7 @@
     <section id="settings" class="inputs-container shadow mb-4 pb-3 px-3 rounded" style="border: 1px solid #d4d9e4;">
         <h5 class="mb-4 mt-3">Settings</h5>
         <div class="row">
-            <div class="col-lg-5 mb-3">
-                <label for="business_mode" class="form-label">Business Mode</label>
-                <select id="business_mode" name="business_mode" class="form-select @error('business_mode') border-danger @enderror">
-                    <option value="" @selected(old('business_mode', $product->business_mode) === null)>Use Global Tax Mode</option>
-                    <option value="b2b" @selected(old('business_mode', $product->business_mode) === 'b2b')>B2B</option>
-                    <option value="b2c" @selected(old('business_mode', $product->business_mode) === 'b2c')>B2C</option>
-                </select>
-                @error('business_mode')<p class="text-danger">{{ $message }}</p>@enderror
-            </div>
-            <div class="col-lg-7 mb-3">
+            <div class="col-12 mb-3">
                 <label class="form-label d-block">Product Flags</label>
                 @foreach (['is_new' => 'New Product', 'is_featured' => 'Featured', 'is_visible_individually' => 'Visible Individually', 'status' => 'Active'] as $field => $label)
                     <input type="hidden" name="{{ $field }}" value="0">

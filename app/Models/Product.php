@@ -28,7 +28,6 @@ class Product extends Model
         'special_price',
         'special_price_from',
         'special_price_to',
-        'business_mode',
         'use_default_tax',
         'tax_id',
         'is_new',

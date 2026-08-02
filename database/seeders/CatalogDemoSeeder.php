@@ -40,7 +40,6 @@ class CatalogDemoSeeder extends Seeder
                 'special_price' => null,
                 'special_price_from' => null,
                 'special_price_to' => null,
-                'business_mode' => null,
                 'is_new' => true,
                 'is_featured' => true,
                 'is_visible_individually' => true,

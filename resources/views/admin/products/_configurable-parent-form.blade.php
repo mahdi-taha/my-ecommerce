@@ -37,15 +37,6 @@
                 @error('product_number')<p class="text-danger">{{ $message }}</p>@enderror
             </div>
             <div class="col-lg-6 mb-3">
-                <label for="business_mode" class="form-label">Business Mode</label>
-                <select id="business_mode" name="business_mode" class="form-select @error('business_mode') border-danger @enderror">
-                    <option value="" @selected(old('business_mode', $product->business_mode) === null)>Use Global Tax Mode</option>
-                    <option value="b2b" @selected(old('business_mode', $product->business_mode) === 'b2b')>B2B</option>
-                    <option value="b2c" @selected(old('business_mode', $product->business_mode) === 'b2c')>B2C</option>
-                </select>
-                @error('business_mode')<p class="text-danger">{{ $message }}</p>@enderror
-            </div>
-            <div class="col-lg-6 mb-3">
                 <label for="price" class="form-label">Base Price *</label>
                 <input type="number" step="0.0001" min="0" id="price" name="price"
                     class="form-control @error('price') border-danger @enderror"

@@ -30,7 +30,6 @@ class ProductService
                 'special_price' => null,
                 'special_price_from' => null,
                 'special_price_to' => null,
-                'business_mode' => null,
                 'use_default_tax' => true,
                 'tax_id' => null,
                 'is_new' => false,
@@ -198,7 +197,6 @@ class ProductService
                     'special_price' => null,
                     'special_price_from' => null,
                     'special_price_to' => null,
-                    'business_mode' => $lockedProduct->business_mode,
                     'is_new' => false,
                     'is_featured' => false,
                     'is_visible_individually' => false,
@@ -459,7 +457,6 @@ class ProductService
             'special_price' => $validated['special_price'] ?? null,
             'special_price_from' => $validated['special_price_from'] ?? null,
             'special_price_to' => $validated['special_price_to'] ?? null,
-            'business_mode' => $validated['business_mode'] ?? null,
             'use_default_tax' => $useDefaultTax,
             'tax_id' => $useDefaultTax
                 ? null
@@ -535,7 +532,6 @@ class ProductService
     ): void {
         $product->update([
             'price' => $validated['price'],
-            'business_mode' => $validated['business_mode'] ?? null,
             'is_new' => $validated['is_new'],
             'is_featured' => $validated['is_featured'],
             'is_visible_individually' => $validated['is_visible_individually'],
@@ -629,7 +625,6 @@ class ProductService
             'special_price' => null,
             'special_price_from' => null,
             'special_price_to' => null,
-            'business_mode' => $parent->business_mode,
             'is_new' => false,
             'is_featured' => false,
             'is_visible_individually' => false,

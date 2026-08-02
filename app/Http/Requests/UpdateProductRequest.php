@@ -113,7 +113,6 @@ class UpdateProductRequest extends FormRequest
             'is_featured' => ['required', 'boolean'],
             'is_visible_individually' => ['required', 'boolean'],
             'status' => ['required', 'boolean'],
-            'business_mode' => ['nullable', Rule::in(['b2b', 'b2c'])],
             'attributes' => ['nullable', 'array'],
         ]);
 
