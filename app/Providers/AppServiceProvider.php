@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Enums\NotificationAudienceCode;
 use App\Models\Category;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -16,7 +17,44 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->scoped('storefront.category_hierarchy', function (): array {
+            $categories = Category::query()
+                ->where('status', true)
+                ->with(['translations' => fn ($query) => $query
+                    ->where('locale', app()->getLocale())])
+                ->orderBy('position')
+                ->orderBy('id')
+                ->get();
+
+            $localizedCategories = $categories
+                ->filter(fn (Category $category): bool => $category->translations->isNotEmpty());
+
+            $categoriesByParent = $localizedCategories->groupBy(
+                fn (Category $category): int => (int) ($category->parent_id ?? 0)
+            );
+            $buildTree = function (Collection $nodes) use (&$buildTree, $categoriesByParent): Collection {
+                return $nodes->each(function (Category $category) use (&$buildTree, $categoriesByParent): void {
+                    $category->setRelation(
+                        'children',
+                        $buildTree($categoriesByParent->get($category->id, collect()))
+                    );
+                });
+            };
+            $tree = $buildTree($categoriesByParent->get(0, collect()));
+            $toNavigationArray = function (Collection $nodes) use (&$toNavigationArray): array {
+                return $nodes->map(fn (Category $category): array => [
+                    'id' => $category->id,
+                    'name' => $category->translations->first()->name,
+                    'children' => $toNavigationArray($category->children),
+                ])->values()->all();
+            };
+
+            return [
+                'categories' => $categories->values(),
+                'tree' => $tree,
+                'navigation' => $toNavigationArray($tree),
+            ];
+        });
     }
 
     /**
@@ -43,40 +81,12 @@ class AppServiceProvider extends ServiceProvider
         };
 
         View::composer('shop.components.navbar', function (IlluminateView $view): void {
-            $categories = Category::query()
-                ->where('status', true)
-                ->with(['translations' => fn ($query) => $query
-                    ->where('locale', app()->getLocale())])
-                ->orderBy('position')
-                ->orderBy('id')
-                ->get()
-                ->filter(fn (Category $category): bool => $category->translations->isNotEmpty());
-
-            $categoriesByParent = $categories->groupBy(
-                fn (Category $category): int => (int) ($category->parent_id ?? 0)
-            );
-            $buildTree = function ($nodes) use (&$buildTree, $categoriesByParent) {
-                return $nodes->each(function (Category $category) use (&$buildTree, $categoriesByParent): void {
-                    $category->setRelation(
-                        'children',
-                        $buildTree($categoriesByParent->get($category->id, collect()))
-                    );
-                });
-            };
-
-            $categoryTree = $buildTree($categoriesByParent->get(0, collect()));
-            $toNavigationArray = function ($nodes) use (&$toNavigationArray): array {
-                return $nodes->map(fn (Category $category): array => [
-                    'id' => $category->id,
-                    'name' => $category->translations->first()->name,
-                    'children' => $toNavigationArray($category->children),
-                ])->values()->all();
-            };
+            $hierarchy = app('storefront.category_hierarchy');
 
             $view->with([
                 'navbarStoreName' => setting('store.store_name', config('app.name')),
-                'storefrontCategoryTree' => $categoryTree,
-                'storefrontCategoryNavigation' => $toNavigationArray($categoryTree),
+                'storefrontCategoryTree' => $hierarchy['tree'],
+                'storefrontCategoryNavigation' => $hierarchy['navigation'],
             ]);
         });
 

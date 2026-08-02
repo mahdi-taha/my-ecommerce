@@ -93,6 +93,59 @@ class Product extends Model
             });
     }
 
+    public function scopePositiveEffectivePrice(
+        Builder $query,
+        CarbonInterface $at,
+        string $table = 'products'
+    ): Builder {
+        return $query
+            ->where("{$table}.price", '>', 0)
+            ->where(function (Builder $query) use ($at, $table): void {
+                $query->whereNull("{$table}.special_price")
+                    ->orWhereColumn("{$table}.special_price", '>=', "{$table}.price")
+                    ->orWhere("{$table}.special_price", '>', 0)
+                    ->orWhere("{$table}.special_price_from", '>', $at)
+                    ->orWhere("{$table}.special_price_to", '<', $at);
+            });
+    }
+
+    public function scopeWithStorefrontCardData(
+        Builder $query,
+        string $locale,
+        ?int $customerId = null
+    ): Builder {
+        $query->with([
+            'translations' => fn ($query) => $query->where('locale', $locale),
+            'images',
+            'inventory',
+            'superAttributes',
+            'variants' => fn ($query) => $query
+                ->active()
+                ->where('type', ProductType::Simple->value)
+                ->with([
+                    'attributeValues',
+                    'inventory',
+                    'tax' => fn ($query) => $query->active(),
+                ]),
+            'tax' => fn ($query) => $query->active(),
+            'categories' => fn ($query) => $query
+                ->where('status', true)
+                ->with([
+                    'translations' => fn ($query) => $query->where('locale', $locale),
+                ]),
+        ]);
+
+        if ($customerId !== null) {
+            $query->withExists([
+                'wishlistItems as is_wishlisted' => fn (Builder $query) => $query
+                    ->whereHas('wishlist', fn (Builder $query) => $query
+                        ->where('user_id', $customerId)),
+            ]);
+        }
+
+        return $query;
+    }
+
     public function hasActiveSpecialPrice(): bool
     {
         if ($this->special_price === null || (float) $this->special_price >= (float) $this->price) {

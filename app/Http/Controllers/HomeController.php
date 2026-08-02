@@ -38,34 +38,11 @@ class HomeController extends Controller
 
         $baseQuery = Product::query()
             ->active()
-            ->visible()
-            ->with([
-                'translations' => fn ($query) => $query->where('locale', app()->getLocale()),
-                'images',
-                'inventory',
-                'superAttributes',
-                'variants' => fn ($query) => $query
-                    ->active()
-                    ->where('type', ProductType::Simple->value)
-                    ->with([
-                        'attributeValues',
-                        'tax' => fn ($query) => $query->active(),
-                    ]),
-                'tax' => fn ($query) => $query->active(),
-                'categories' => fn ($query) => $query
-                    ->where('status', true)
-                    ->with([
-                        'translations' => fn ($query) => $query->where('locale', app()->getLocale()),
-                    ]),
-            ]);
-
-        if ($customerId = Auth::guard('customer')->id()) {
-            $baseQuery->withExists([
-                'wishlistItems as is_wishlisted' => fn (Builder $query) => $query
-                    ->whereHas('wishlist', fn (Builder $query) => $query
-                        ->where('user_id', $customerId)),
-            ]);
-        }
+            ->visible();
+        $baseQuery->withStorefrontCardData(
+            app()->getLocale(),
+            Auth::guard('customer')->id(),
+        );
 
         $allProducts = (clone $baseQuery)
             ->latest()
