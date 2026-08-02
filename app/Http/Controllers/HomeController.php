@@ -4,16 +4,37 @@ namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
 use App\Enums\ProductType;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\Tax;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class HomeController extends Controller
 {
     public function index(): View
     {
+        $homepageCategories = Category::query()
+            ->whereNull('parent_id')
+            ->where('status', true)
+            ->whereHas('translations', fn (Builder $query) => $query
+                ->where('locale', app()->getLocale()))
+            ->with(['translations' => fn ($query) => $query
+                ->where('locale', app()->getLocale())])
+            ->orderBy('position')
+            ->orderBy('id')
+            ->get()
+            ->each(function (Category $category): void {
+                $category->setAttribute(
+                    'homepage_logo_url',
+                    filled($category->logo_path) && Storage::disk('public')->exists($category->logo_path)
+                        ? Storage::disk('public')->url($category->logo_path)
+                        : null
+                );
+            });
+
         $baseQuery = Product::query()
             ->active()
             ->visible()
@@ -88,6 +109,7 @@ class HomeController extends Controller
             'currencyCode',
             'taxMode',
             'defaultTax',
+            'homepageCategories',
         ));
     }
 }
