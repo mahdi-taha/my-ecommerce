@@ -23,4 +23,48 @@ class HomepageContentStorefrontTest extends TestCase
         Cache::flush();
         $this->get(route('shop.home'))->assertOk()->assertSee('Managed Hero')->assertSee('noopener noreferrer', false)->assertDontSee('Missing Offer');
     }
+
+    public function test_managed_homepage_images_use_bounded_media_hooks_and_preserve_alt_text(): void
+    {
+        Storage::fake('public');
+
+        foreach (['hero', 'hero_side', 'offer'] as $placement) {
+            $path = "homepage/{$placement}.jpg";
+            Storage::disk('public')->put($path, 'image');
+            $banner = HomepageBanner::create([
+                'placement' => $placement,
+                'image_path' => $path,
+                'is_active' => true,
+            ]);
+            $banner->translations()->create([
+                'locale' => 'en',
+                'title' => str($placement)->replace('_', ' ')->title(),
+                'image_alt' => "{$placement} accessible image",
+            ]);
+        }
+
+        Cache::flush();
+        $response = $this->get(route('shop.home'));
+
+        $response->assertOk()
+            ->assertSee('storefront-hero-carousel', false)
+            ->assertSee('storefront-hero-slide', false)
+            ->assertSee('storefront-hero-media', false)
+            ->assertSee('storefront-hero-side--paired', false)
+            ->assertSee('storefront-offer-card', false)
+            ->assertSee('storefront-offer-media', false)
+            ->assertSee('alt="hero accessible image"', false)
+            ->assertSee('alt="hero_side accessible image"', false)
+            ->assertSee('alt="offer accessible image"', false)
+            ->assertDontSee('style="object-fit', false);
+
+        $css = file_get_contents(resource_path('css/shop.css'));
+        $this->assertStringContainsString('.storefront-hero-carousel', $css);
+        $this->assertStringContainsString('min-height: 1px', $css);
+        $this->assertStringContainsString('aspect-ratio: 16 / 7', $css);
+        $this->assertStringContainsString('aspect-ratio: 16 / 9', $css);
+        $this->assertStringContainsString('aspect-ratio: 4 / 3', $css);
+        $this->assertStringContainsString('object-fit: cover', $css);
+        $this->assertStringContainsString('object-position: center', $css);
+    }
 }
