@@ -23,10 +23,10 @@ class CheckoutPricingService
             ? $this->allocationService->allocate(
                 $coupon,
                 collect($validation->items)->map(fn ($validatedItem) => [
-                    'cart_item_id' => (int) $validatedItem->cartItem->getKey(),
+                    'cart_item_id' => $validatedItem->lineId,
                     'subtotal' => $this->decimal(
                         (float) $validatedItem->product->effectivePrice()
-                        * (float) $validatedItem->cartItem->quantity
+                        * (float) $validatedItem->quantity
                     ),
                 ])->all()
             )
@@ -37,11 +37,11 @@ class CheckoutPricingService
 
         foreach ($validation->items as $validatedItem) {
             $product = $validatedItem->product;
-            $quantity = (float) $validatedItem->cartItem->quantity;
+            $quantity = (float) $validatedItem->quantity;
             $unitPrice = (float) $product->effectivePrice();
             $displayUnitPrice = $product->displayPrice($taxMode, $defaultTax);
             $rowSubtotal = (float) $this->decimal($unitPrice * $quantity);
-            $discountAmount = (float) ($allocation['allocations'][$validatedItem->cartItem->getKey()] ?? 0);
+            $discountAmount = (float) ($allocation['allocations'][$validatedItem->lineId] ?? 0);
             $discountedSubtotal = (float) $this->decimal(max(0, $rowSubtotal - $discountAmount));
             $taxRate = $product->effectiveTaxRate($defaultTax);
             $taxAmount = (float) $this->decimal($discountedSubtotal * $taxRate / 100);
@@ -51,7 +51,7 @@ class CheckoutPricingService
             $subtotal += $rowSubtotal;
             $taxTotal += $taxAmount;
             $items[] = [
-                'cart_item_id' => $validatedItem->cartItem->getKey(),
+                'cart_item_id' => $validatedItem->lineId,
                 'product_id' => $product->getKey(),
                 'display_product_id' => $validatedItem->displayProduct->getKey(),
                 'sku' => $product->sku,
@@ -106,7 +106,7 @@ class CheckoutPricingService
     {
         return $this->decimal(collect($validation->items)->sum(
             fn ($item): float => (float) $item->product->effectivePrice()
-                * (float) $item->cartItem->quantity
+                * (float) $item->quantity
         ));
     }
 

@@ -23,6 +23,7 @@ use App\Services\CouponEligibilityService;
 use App\Services\CouponUsageService;
 use App\Services\GuestCartTokenService;
 use App\Services\OrderService;
+use App\Services\OrderSnapshotFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
@@ -290,6 +291,7 @@ class CheckoutCouponIntegrationTest extends TestCase
             app(CheckoutAddressResolver::class),
             app(CouponCartService::class),
             app(CouponUsageService::class),
+            app(OrderSnapshotFactory::class),
         );
 
         try {

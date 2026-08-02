@@ -2,13 +2,15 @@
 
 namespace App\DTOs\Checkout;
 
-use App\Models\CartItem;
+use App\Enums\CartItemType;
 use App\Models\Product;
 
 final readonly class ValidatedCheckoutItem
 {
     public function __construct(
-        public CartItem $cartItem,
+        public int $lineId,
+        public string $quantity,
+        public CartItemType $selectionType,
         public Product $product,
         public Product $displayProduct,
         public array $optionSnapshots,

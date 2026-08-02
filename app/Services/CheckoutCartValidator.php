@@ -107,7 +107,9 @@ class CheckoutCartValidator
                 : [];
 
             $validatedItems[] = new ValidatedCheckoutItem(
-                cartItem: $item,
+                lineId: (int) $item->getKey(),
+                quantity: (string) $item->quantity,
+                selectionType: $item->product_type,
                 product: $product,
                 displayProduct: $displayProduct,
                 optionSnapshots: $optionSnapshots,

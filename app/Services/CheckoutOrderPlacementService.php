@@ -29,6 +29,7 @@ class CheckoutOrderPlacementService
         private CheckoutAddressResolver $addressResolver,
         private CouponCartService $couponCartService,
         private CouponUsageService $couponUsageService,
+        private OrderSnapshotFactory $orderSnapshotFactory,
     ) {}
 
     public function place(
@@ -154,14 +155,21 @@ class CheckoutOrderPlacementService
                     $timestamp
                 ) {
                     $order = $this->orderService->createWithinTransaction(
-                        $this->orderData(
-                            $checkoutData,
-                            $customer,
-                            $validation->items,
-                            $summary,
-                            $shippingMethod,
-                            $resolvedAddress,
-                            $timestamp
+                        $this->orderSnapshotFactory->make(
+                            customerSnapshot: [
+                                'user_id' => $customer?->getKey(),
+                                'email' => $checkoutData['customer']['email'] ?? $customer?->email,
+                                'first_name' => $checkoutData['customer']['first_name'],
+                                'last_name' => $checkoutData['customer']['last_name'],
+                                'phone' => $checkoutData['customer']['phone'] ?? null,
+                            ],
+                            validatedItems: $validation->items,
+                            summary: $summary,
+                            shippingMethod: $shippingMethod,
+                            resolvedAddress: $resolvedAddress,
+                            paymentMethodCode: $checkoutData['payment_method'],
+                            locale: app()->getLocale(),
+                            timestamp: $timestamp,
                         )
                     );
 
@@ -282,75 +290,6 @@ class CheckoutOrderPlacementService
                 ->lockForUpdate()
                 ->first()
             : null;
-    }
-
-    private function orderData(
-        array $checkoutData,
-        ?User $customer,
-        array $validatedItems,
-        object $summary,
-        ShippingMethod $shippingMethod,
-        array $resolvedAddress,
-        mixed $timestamp
-    ): array {
-        $summaryItems = collect($summary->items)->keyBy('cart_item_id');
-
-        return [
-            'user_id' => $customer?->getKey(),
-            'customer_email' => $checkoutData['customer']['email'] ?? $customer?->email,
-            'customer_first_name' => $checkoutData['customer']['first_name'],
-            'customer_last_name' => $checkoutData['customer']['last_name'],
-            'customer_phone' => $checkoutData['customer']['phone'] ?? null,
-            'locale' => app()->getLocale(),
-            'currency_code' => $summary->currencyCode,
-            'payment_method' => $checkoutData['payment_method'],
-            'subtotal' => $summary->subtotal,
-            'discount_total' => $summary->discountTotal,
-            'shipping_total' => $summary->shippingAmount,
-            'tax_total' => $summary->taxTotal,
-            'grand_total' => $summary->grandTotal,
-            'customer_notes' => null,
-            'placed_at' => $timestamp,
-            'billing_address' => $this->checkoutService->prepareAddressSnapshot(
-                $resolvedAddress,
-                'billing'
-            ),
-            'shipping_address' => $this->checkoutService->prepareAddressSnapshot(
-                $resolvedAddress,
-                'shipping'
-            ),
-            'shipping' => $this->checkoutService->prepareShippingSnapshot($shippingMethod),
-            'items' => collect($validatedItems)->map(function ($validatedItem) use ($summaryItems): array {
-                $item = $summaryItems->get($validatedItem->cartItem->getKey());
-                $product = $validatedItem->product;
-
-                return [
-                    'product_id' => $product->getKey(),
-                    'product_type' => $validatedItem->cartItem->product_type === CartItemType::Configurable
-                        ? 'variant'
-                        : 'simple',
-                    'sku' => $product->sku,
-                    'product_number' => $product->product_number,
-                    'name' => $item['name'],
-                    'option_summary' => collect($item['options'])
-                        ->map(fn (array $option) => "{$option['attribute_name']}: {$option['option_label']}")
-                        ->implode(', ') ?: null,
-                    'image_path' => null,
-                    'configuration' => null,
-                    'quantity' => $item['quantity'],
-                    'original_unit_price' => $product->price,
-                    'unit_price' => $item['unit_price'],
-                    'tax_name' => $item['tax_name'],
-                    'tax_rate' => $item['tax_rate'],
-                    'tax_amount' => $item['tax_amount'],
-                    'row_subtotal' => $item['subtotal'],
-                    'discount_amount' => $item['discount_amount'],
-                    'row_total' => $item['row_total'],
-                    'is_inventory_item' => true,
-                    'options' => $item['options'],
-                ];
-            })->all(),
-        ];
     }
 
     private function failure(string $code, string $field, string $message): CheckoutOrderPlacementResult
