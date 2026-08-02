@@ -41,6 +41,12 @@
                     @foreach (request()->except(['sort', 'page']) as $name => $value)
                         @if (is_scalar($value))
                             <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+                        @elseif ($name === 'attributes' && is_array($value))
+                            @foreach ($value as $attributeCode => $optionCodes)
+                                @foreach ((array) $optionCodes as $optionCode)
+                                    <input type="hidden" name="attributes[{{ $attributeCode }}][]" value="{{ $optionCode }}">
+                                @endforeach
+                            @endforeach
                         @endif
                     @endforeach
                     <label for="shop-sort" class="form-label mb-0 text-nowrap">{{ __('shop.listing.sort_by') }}</label>

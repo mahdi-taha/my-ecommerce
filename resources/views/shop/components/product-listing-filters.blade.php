@@ -1,21 +1,12 @@
-@php
-    $categoryOptions = collect();
-    $flattenCategories = function ($categories, int $depth = 0) use (&$flattenCategories, $categoryOptions): void {
-        foreach ($categories as $category) {
-            $categoryOptions->push([
-                'id' => $category->id,
-                'name' => $category->translations->first()->name,
-                'depth' => $depth,
-            ]);
-            $flattenCategories($category->children, $depth + 1);
-        }
-    };
-    $flattenCategories($categoryTree);
-@endphp
-
 <aside class="border rounded bg-white p-4" aria-label="{{ __('shop.listing.filters') }}">
     <form method="GET" action="{{ $listingAction }}">
         <h2 class="h5 mb-4">{{ __('shop.listing.filters') }}</h2>
+
+        <div class="mb-3">
+            <label for="shop-filter-search" class="form-label">{{ __('shop.listing.search') }}</label>
+            <input id="shop-filter-search" type="search" name="q" class="form-control"
+                value="{{ $filters['q'] ?? '' }}">
+        </div>
 
         @if ($category)
             <nav class="mb-3" aria-label="{{ __('shop.listing.category_navigation') }}">
@@ -39,25 +30,7 @@
                     @endforeach
                 </ul>
             </nav>
-        @else
-        <div class="mb-3">
-            <label for="shop-filter-search" class="form-label">{{ __('shop.listing.search') }}</label>
-            <input id="shop-filter-search" type="search" name="q" class="form-control"
-                value="{{ $filters['q'] ?? '' }}">
-        </div>
         @endif
-
-        <div class="mb-3">
-            <label for="shop-filter-category" class="form-label">{{ __('shop.listing.category') }}</label>
-            <select id="shop-filter-category" name="category" class="form-select">
-                <option value="">{{ __('shop.listing.all_categories') }}</option>
-                @foreach ($categoryOptions as $category)
-                    <option value="{{ $category['id'] }}" @selected((int) ($filters['category'] ?? 0) === $category['id'])>
-                        {{ str_repeat('— ', $category['depth']) }}{{ $category['name'] }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
 
         <fieldset class="mb-3">
             <legend class="form-label fs-6">{{ __('shop.listing.price') }}</legend>
@@ -89,6 +62,24 @@
                     @checked(($filters[$name] ?? null) == $option['value'])>
                 <label class="form-check-label" for="shop-filter-{{ $name }}">{{ $option['label'] }}</label>
             </div>
+        @endforeach
+
+        @if ($attributeFacets !== [])
+            <h3 class="h6 mt-3">{{ __('shop.listing.attribute_filters') }}</h3>
+        @endif
+        @foreach ($attributeFacets as $facet)
+            <fieldset class="mt-3" data-category-attribute="{{ $facet['code'] }}">
+                <legend class="form-label fs-6">{{ $facet['label'] }}</legend>
+                @foreach ($facet['options'] as $option)
+                    @php($inputId = 'shop-filter-attribute-'.$facet['code'].'-'.$option['code'])
+                    <div class="form-check mb-2">
+                        <input id="{{ $inputId }}" class="form-check-input" type="checkbox"
+                            name="attributes[{{ $facet['code'] }}][]" value="{{ $option['code'] }}"
+                            @checked(in_array($option['code'], $filters['attributes'][$facet['code']] ?? [], true))>
+                        <label class="form-check-label" for="{{ $inputId }}">{{ $option['label'] }}</label>
+                    </div>
+                @endforeach
+            </fieldset>
         @endforeach
 
         <input type="hidden" name="sort" value="{{ $filters['sort'] ?? 'newest' }}">

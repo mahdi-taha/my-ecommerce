@@ -559,6 +559,7 @@ return [
         'category_meta_description' => 'Browse products available in :category.',
         'breadcrumbs' => 'Category breadcrumb',
         'category_navigation' => 'Category navigation',
+        'attribute_filters' => 'Product attributes',
         'results' => ':count products found',
         'filters' => 'Product filters',
         'search' => 'Search products',

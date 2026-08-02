@@ -7,18 +7,34 @@ use App\Http\Requests\Shop\ProductListingRequest;
 use App\Models\Category;
 use App\Models\Tax;
 use App\Services\StorefrontProductListingService;
+use Carbon\CarbonInterface;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class ProductListingController extends Controller
 {
     public function index(
         ProductListingRequest $request,
         StorefrontProductListingService $listingService
-    ): View {
-        return $this->render($request->validated(), $listingService);
+    ): View|RedirectResponse {
+        $filters = $request->validated();
+        if (isset($filters['category'])) {
+            $category = $listingService->categoryById((int) $filters['category']);
+            if (! $category) {
+                throw ValidationException::withMessages(['category' => __('validation.exists', ['attribute' => 'category'])]);
+            }
+
+            return redirect()->route('shop.categories.show', [
+                'slug' => $category->translations->first()->slug,
+                ...Arr::except($filters, 'category'),
+            ]);
+        }
+
+        return $this->render($filters, $listingService);
     }
 
     public function category(
@@ -34,17 +50,24 @@ class ProductListingController extends Controller
         $filters = validator($input, $rules)->validate();
         $category = $listingService->categoryBySlug($slug);
         abort_unless($category, 404);
+        $at = now();
+        $facets = $listingService->categoryFacets($category, app()->getLocale(), $at);
+        $filters['_attribute_filters'] = $listingService->validateAttributeFilters(
+            $filters['attributes'] ?? [],
+            $facets
+        );
 
-        return $this->render($filters, $listingService, $category);
+        return $this->render($filters, $listingService, $category, $facets, $at);
     }
 
     private function render(
         array $filters,
         StorefrontProductListingService $listingService,
-        ?Category $category = null
+        ?Category $category = null,
+        array $attributeFacets = [],
+        ?CarbonInterface $at = null
     ): View {
-        $products = $listingService->paginate($filters, app()->getLocale(), $category);
-        $categoryTree = $listingService->categoryTree();
+        $products = $listingService->paginate($filters, app()->getLocale(), $category, $at);
         $currencyCode = setting('currency.default_currency', 'USD');
         $taxMode = setting('tax.tax_mode', 'b2c');
         $defaultTaxId = setting('tax.default_tax_id');
@@ -59,14 +82,14 @@ class ProductListingController extends Controller
             ? route('shop.categories.show', $categoryTranslation->slug)
             : route('shop.products.index');
         $canonicalUrl = $listingAction;
-        if ($category && empty(array_diff_key($filters, array_flip(['page']))) && ($filters['page'] ?? 1) > 1) {
+        $publicFilters = Arr::except($filters, '_attribute_filters');
+        if ($category && empty(array_diff_key($publicFilters, array_flip(['page']))) && ($filters['page'] ?? 1) > 1) {
             $canonicalUrl = $listingAction.'?'.http_build_query(['page' => $filters['page']]);
         }
 
         return view('shop.pages.products', compact(
             'products',
             'filters',
-            'categoryTree',
             'currencyCode',
             'taxMode',
             'defaultTax',
@@ -76,6 +99,7 @@ class ProductListingController extends Controller
             'categoryBannerUrl',
             'listingAction',
             'canonicalUrl',
+            'attributeFacets',
         ));
     }
 }

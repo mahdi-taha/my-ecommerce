@@ -57,12 +57,6 @@ class StorefrontProductListingService
         return $query;
     }
 
-    /** @return Collection<int, Category> */
-    public function categoryTree(): Collection
-    {
-        return app('storefront.category_hierarchy')['tree'];
-    }
-
     public function categoryBySlug(string $slug): ?Category
     {
         return app('storefront.category_hierarchy')['reachable_categories']

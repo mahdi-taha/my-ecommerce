@@ -559,6 +559,7 @@ return [
         'category_meta_description' => 'تصفح المنتجات المتوفرة في :category.',
         'breadcrumbs' => 'مسار الفئة',
         'category_navigation' => 'التنقل بين الفئات',
+        'attribute_filters' => 'خصائص المنتجات',
         'results' => 'تم العثور على :count منتج',
         'filters' => 'تصفية المنتجات',
         'search' => 'البحث عن المنتجات',
