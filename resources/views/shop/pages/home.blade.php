@@ -8,6 +8,26 @@
     @include('shop.components.services')
     @include('shop.components.categories')
 
+    @php
+        $productTabs = [
+            'all-products' => ['label' => __('shop.home.all_products'), 'products' => $allProducts],
+            'new-arrivals' => ['label' => __('shop.home.new_arrivals'), 'products' => $newProducts],
+            'featured-products' => ['label' => __('shop.home.featured'), 'products' => $featuredProducts],
+        ];
+
+        if ($onSaleProducts->isNotEmpty()) {
+            $productTabs['on-sale-products'] = [
+                'label' => __('shop.home.on_sale'),
+                'products' => $onSaleProducts,
+            ];
+        }
+
+        $productTabs['top-selling'] = [
+            'label' => __('shop.home.top_selling'),
+            'products' => $topSellingProducts,
+        ];
+    @endphp
+
     <section class="container-fluid py-5">
         <div class="container">
             <div class="text-center mx-auto mb-4" style="max-width: 600px;">
@@ -16,12 +36,7 @@
             </div>
 
             <ul class="nav nav-pills justify-content-center gap-2 mb-4" id="homeProductTabs" role="tablist">
-                @foreach ([
-                    'all-products' => __('shop.home.all_products'),
-                    'new-arrivals' => __('shop.home.new_arrivals'),
-                    'featured-products' => __('shop.home.featured'),
-                    'top-selling' => __('shop.home.top_selling'),
-                ] as $tabId => $tabLabel)
+                @foreach ($productTabs as $tabId => $tab)
                     <li class="nav-item" role="presentation">
                         <button class="nav-link @if ($loop->first) active @endif"
                             id="{{ $tabId }}-tab"
@@ -31,31 +46,26 @@
                             role="tab"
                             aria-controls="{{ $tabId }}"
                             aria-selected="{{ $loop->first ? 'true' : 'false' }}">
-                            {{ $tabLabel }}
+                            {{ $tab['label'] }}
                         </button>
                     </li>
                 @endforeach
             </ul>
 
             <div class="tab-content" id="homeProductTabsContent">
-                @foreach ([
-                    'all-products' => $allProducts,
-                    'new-arrivals' => $newProducts,
-                    'featured-products' => $featuredProducts,
-                    'top-selling' => $topSellingProducts,
-                ] as $tabId => $products)
+                @foreach ($productTabs as $tabId => $tab)
                     <div class="tab-pane fade @if ($loop->first) show active @endif"
                         id="{{ $tabId }}"
                         role="tabpanel"
                         aria-labelledby="{{ $tabId }}-tab"
                         tabindex="0">
-                        @if ($products->isEmpty())
+                        @if ($tab['products']->isEmpty())
                             <div class="text-center text-muted py-5">
                                 {{ __('shop.home.no_products_found') }}
                             </div>
                         @else
                             <div class="row g-4">
-                                @foreach ($products as $product)
+                                @foreach ($tab['products'] as $product)
                                     <x-shop.product-card
                                         :product="$product"
                                         :currency-code="$currencyCode"

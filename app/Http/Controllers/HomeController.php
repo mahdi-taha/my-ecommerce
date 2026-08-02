@@ -16,6 +16,7 @@ class HomeController extends Controller
 {
     public function index(): View
     {
+        $timestamp = now();
         $homepageCategories = Category::query()
             ->whereNull('parent_id')
             ->where('status', true)
@@ -83,6 +84,39 @@ class HomeController extends Controller
             ->limit(8)
             ->get();
 
+        $onSaleProducts = (clone $baseQuery)
+            ->where(function (Builder $query) use ($timestamp): void {
+                $query->where(function (Builder $query) use ($timestamp): void {
+                    $query->where('type', ProductType::Simple->value)
+                        ->whereNull('configurable_id')
+                        ->onSale($timestamp)
+                        ->where('special_price', '>', 0);
+                })->orWhere(function (Builder $query) use ($timestamp): void {
+                    $query->where('type', ProductType::Configurable->value)
+                        ->whereNull('configurable_id')
+                        ->whereHas('variants', fn (Builder $query) => $query
+                            ->active()
+                            ->where('type', ProductType::Simple->value)
+                            ->onSale($timestamp)
+                            ->where('special_price', '>', 0));
+                });
+            })
+            ->latest()
+            ->orderByDesc('id')
+            ->get()
+            ->filter(function (Product $product): bool {
+                if ($product->type === ProductType::Simple->value) {
+                    return $product->hasPositiveEffectivePrice()
+                        && $product->hasActiveSpecialPrice();
+                }
+
+                return $product->eligibleStorefrontVariants()->contains(
+                    fn (Product $variant): bool => $variant->hasActiveSpecialPrice()
+                );
+            })
+            ->take(8)
+            ->values();
+
         $topSellingProducts = (clone $baseQuery)
             ->withSum([
                 'orderItems as sold_quantity' => fn (Builder $query) => $query
@@ -105,6 +139,7 @@ class HomeController extends Controller
             'allProducts',
             'newProducts',
             'featuredProducts',
+            'onSaleProducts',
             'topSellingProducts',
             'currencyCode',
             'taxMode',

@@ -59,6 +59,7 @@ return [
         'all_products' => 'جميع المنتجات',
         'new_arrivals' => 'وصل حديثًا',
         'featured' => 'مميزة',
+        'on_sale' => 'عروض',
         'top_selling' => 'الأكثر مبيعًا',
         'view_all_products' => 'عرض جميع المنتجات',
         'no_products_found' => 'لا توجد منتجات متوفرة في هذا القسم.',

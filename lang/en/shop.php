@@ -59,6 +59,7 @@ return [
         'all_products' => 'All Products',
         'new_arrivals' => 'New Arrivals',
         'featured' => 'Featured',
+        'on_sale' => 'On Sale',
         'top_selling' => 'Top Selling',
         'view_all_products' => 'View All Products',
         'no_products_found' => 'No products are available in this section.',
