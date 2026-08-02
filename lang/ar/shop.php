@@ -589,6 +589,18 @@ return [
         ],
     ],
 
+    'reviews' => [
+        'title' => 'تقييمات العملاء', 'my_reviews' => 'تقييماتي', 'rating' => 'التقييم',
+        'review_title' => 'عنوان التقييم', 'review' => 'التقييم', 'submit' => 'إرسال التقييم',
+        'edit' => 'تعديل التقييم', 'save' => 'حفظ التقييم', 'empty' => 'لا توجد تقييمات معتمدة بعد.',
+        'empty_customer' => 'لم ترسل أي تقييمات بعد.',
+        'rating_summary' => ':rating من 5 بناءً على :count تقييمات',
+        'existing_status' => 'حالة تقييمك: :status.',
+        'status' => ['pending' => 'قيد المراجعة', 'approved' => 'معتمد', 'rejected' => 'مرفوض'],
+        'messages' => ['submitted' => 'تم إرسال تقييمك للمراجعة.', 'updated' => 'تم تحديث تقييمك وإعادته للمراجعة.'],
+        'errors' => ['duplicate' => 'لقد قيّمت هذا المنتج مسبقاً.', 'not_eligible' => 'يلزم شراء مكتمل لتقييم هذا المنتج.', 'throttled' => 'محاولات تقييم كثيرة. يرجى المحاولة بعد دقيقة.'],
+    ],
+
     'payment_instructions' => [
         'heading' => 'تعليمات الدفع',
         'amount_to_pay' => 'المبلغ المطلوب',

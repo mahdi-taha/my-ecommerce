@@ -6,7 +6,9 @@ use App\Enums\ProductType;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductReview;
 use App\Models\Tax;
+use App\Services\ProductReviewService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -15,6 +17,8 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
+    public function __construct(private ProductReviewService $reviewService) {}
+
     public function show(string $url_key): View
     {
         $locale = app()->getLocale();
@@ -30,7 +34,7 @@ class ProductController extends Controller
             ->whereHas('translations', fn (Builder $query) => $query
                 ->where('locale', $locale)
                 ->where('url_key', $url_key))
-            ->with([
+            ->withCount('approvedReviews')->withAvg('approvedReviews', 'rating')->with([
                 'translations' => fn ($query) => $query
                     ->where('locale', $locale),
                 'images' => fn ($query) => $query
@@ -100,6 +104,8 @@ class ProductController extends Controller
                 ->whereKeyNot($product->getKey())
                 ->whereHas('translations', fn ($query) => $query
                     ->where('locale', $locale))
+                ->withCount('approvedReviews')
+                ->withAvg('approvedReviews', 'rating')
                 ->with([
                     'translations' => fn ($query) => $query
                         ->where('locale', $locale),
@@ -156,6 +162,16 @@ class ProductController extends Controller
         $isWishlisted = (bool) ($product->is_wishlisted ?? false);
         $isConfigurable = $product->type === ProductType::Configurable->value;
         $hasPositiveEffectivePrice = $product->hasPositiveEffectivePrice();
+        $approvedReviews = ProductReview::query()->approved()->where('product_id', $product->id)
+            ->with('customer:id,first_name,last_name')->latest()->paginate(10, ['*'], 'reviews_page');
+        $ratingBreakdown = ProductReview::query()->approved()->where('product_id', $product->id)
+            ->selectRaw('rating, COUNT(*) as aggregate')->groupBy('rating')->pluck('aggregate', 'rating');
+        $customerReview = null;
+        $canReview = false;
+        if ($customer = Auth::guard('customer')->user()) {
+            $customerReview = ProductReview::query()->where('product_id', $product->id)->where('user_id', $customer->id)->first();
+            $canReview = $customerReview !== null || $this->reviewService->newestQualifyingItem($customer, $product) !== null;
+        }
         $availableQuantity = $isConfigurable
             ? '0.0000'
             : ($product->inventory?->availableQuantity() ?? '0.0000');
@@ -190,7 +206,11 @@ class ProductController extends Controller
             'variantPresentation',
             'configurablePriceRange',
             'isWishlisted',
-            'hasPositiveEffectivePrice'
+            'hasPositiveEffectivePrice',
+            'approvedReviews',
+            'ratingBreakdown',
+            'customerReview',
+            'canReview'
         ));
     }
 

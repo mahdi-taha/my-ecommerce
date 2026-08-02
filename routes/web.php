@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\OrderCancellationRequestController as AdminOrderCancellationRequestController;
 use App\Http\Controllers\Admin\OrderCreationController as AdminOrderCreationController;
+use App\Http\Controllers\Admin\ProductReviewController as AdminProductReviewController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\AttributeOptionController;
@@ -22,12 +23,14 @@ use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\Shop\Account\NotificationController as ShopAccountNotificationController;
 use App\Http\Controllers\Shop\Account\OrderCancellationRequestController as ShopOrderCancellationRequestController;
 use App\Http\Controllers\Shop\Account\OrderController as ShopAccountOrderController;
+use App\Http\Controllers\Shop\Account\ReviewController as ShopAccountReviewController;
 use App\Http\Controllers\Shop\CartController as ShopCartController;
 use App\Http\Controllers\Shop\CheckoutController as ShopCheckoutController;
 use App\Http\Controllers\Shop\CheckoutCouponController as ShopCheckoutCouponController;
 use App\Http\Controllers\Shop\LocaleController as ShopLocaleController;
 use App\Http\Controllers\Shop\ProductController as ShopProductController;
 use App\Http\Controllers\Shop\ProductListingController as ShopProductListingController;
+use App\Http\Controllers\Shop\ProductReviewController as ShopProductReviewController;
 use App\Http\Controllers\Shop\WishlistController as ShopWishlistController;
 use App\Http\Controllers\VariantController;
 use App\Http\Middleware\ShareStorefrontWishlist;
@@ -44,6 +47,8 @@ Route::middleware(['storefront.cart', ShareStorefrontWishlist::class])->group(fu
         ->name('shop.categories.show');
     Route::get('/products/{url_key}', [ShopProductController::class, 'show'])
         ->name('shop.products.show');
+    Route::post('/products/{product}/reviews', [ShopProductReviewController::class, 'store'])
+        ->middleware(['auth:customer', 'customer'])->name('shop.products.reviews.store');
     Route::get('/cart', [ShopCartController::class, 'index'])->name('shop.cart.index');
     Route::post('/cart/items', [ShopCartController::class, 'store'])->name('shop.cart.items.store');
     Route::patch('/cart/items/{cartItem}', [ShopCartController::class, 'update'])->name('shop.cart.items.update');
@@ -100,6 +105,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('notifications.index');
         Route::patch('notifications/{databaseNotification}/read', [AdminNotificationController::class, 'markAsRead'])
             ->name('notifications.read');
+        Route::get('reviews', [AdminProductReviewController::class, 'index'])->name('reviews.index');
+        Route::get('reviews/{review}', [AdminProductReviewController::class, 'show'])->name('reviews.show');
+        Route::patch('reviews/{review}', [AdminProductReviewController::class, 'update'])->name('reviews.update');
 
         Route::get('customers', [CustomerController::class, 'index'])
             ->name('customers.index');
@@ -262,6 +270,9 @@ Route::middleware(['auth:customer', 'customer'])
             ->name('orders.index');
         Route::get('orders/{order}', [ShopAccountOrderController::class, 'show'])
             ->name('orders.show');
+        Route::get('reviews', [ShopAccountReviewController::class, 'index'])->name('reviews.index');
+        Route::get('reviews/{review}/edit', [ShopAccountReviewController::class, 'edit'])->name('reviews.edit');
+        Route::put('reviews/{review}', [ShopAccountReviewController::class, 'update'])->name('reviews.update');
         Route::post('orders/{order}/cancellation-requests', [ShopOrderCancellationRequestController::class, 'store'])
             ->name('orders.cancellation-requests.store');
     });

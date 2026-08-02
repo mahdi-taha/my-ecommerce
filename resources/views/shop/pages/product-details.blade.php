@@ -304,7 +304,9 @@
                 </div>
             </div>
 
-            @if ($relatedProducts->isNotEmpty())
+    @include('shop.components.product-reviews')
+
+    @if ($relatedProducts->isNotEmpty())
                 <section class="pt-5 mt-5 border-top">
                     <div class="d-flex align-items-center justify-content-between mb-4">
                         <h2 class="h3 fw-bold mb-0">{{ __('shop.product_details.related_products') }}</h2>

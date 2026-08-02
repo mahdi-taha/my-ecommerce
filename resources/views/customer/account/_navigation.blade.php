@@ -18,6 +18,10 @@
             <span class="badge bg-danger ms-1">{{ $notificationCount }}</span>
         @endif
     </a>
+    <a class="nav-link @if (request()->routeIs('shop.account.reviews.*')) active @endif"
+        href="{{ route('shop.account.reviews.index') }}" @if (request()->routeIs('shop.account.reviews.*')) aria-current="page" @endif>
+        {{ __('shop.reviews.my_reviews') }}
+    </a>
     <a class="nav-link @if (request()->routeIs('shop.wishlist.*')) active @endif"
         href="{{ route('shop.wishlist.index') }}" @if (request()->routeIs('shop.wishlist.*')) aria-current="page" @endif>
         {{ __('shop.wishlist.title') }}

@@ -589,6 +589,18 @@ return [
         ],
     ],
 
+    'reviews' => [
+        'title' => 'Customer Reviews', 'my_reviews' => 'My Reviews', 'rating' => 'Rating',
+        'review_title' => 'Review title', 'review' => 'Review', 'submit' => 'Submit Review',
+        'edit' => 'Edit Review', 'save' => 'Save Review', 'empty' => 'There are no approved reviews yet.',
+        'empty_customer' => 'You have not submitted any reviews.',
+        'rating_summary' => ':rating out of 5 from :count reviews',
+        'existing_status' => 'Your review status is :status.',
+        'status' => ['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected'],
+        'messages' => ['submitted' => 'Your review was submitted for moderation.', 'updated' => 'Your review was updated and returned to moderation.'],
+        'errors' => ['duplicate' => 'You have already reviewed this product.', 'not_eligible' => 'A completed purchase is required to review this product.', 'throttled' => 'Too many review attempts. Please try again in one minute.'],
+    ],
+
     'payment_instructions' => [
         'heading' => 'Payment Instructions',
         'amount_to_pay' => 'Amount to Pay',

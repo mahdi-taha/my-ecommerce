@@ -82,6 +82,14 @@
                 </a>
             </h6>
 
+            @if (($product->approved_reviews_count ?? 0) > 0)
+                <div class="small text-warning mb-2" aria-label="{{ __('shop.reviews.rating_summary', ['rating' => number_format((float) $product->approved_reviews_avg_rating, 1), 'count' => $product->approved_reviews_count]) }}">
+                    <i class="bi bi-star-fill" aria-hidden="true"></i>
+                    {{ number_format((float) $product->approved_reviews_avg_rating, 1) }}
+                    <span class="text-muted">({{ $product->approved_reviews_count }})</span>
+                </div>
+            @endif
+
             <div class="mb-3">
                 <span class="fw-bold fs-5 text-primary">
                     {{ $configurablePriceRange
