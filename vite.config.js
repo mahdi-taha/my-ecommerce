@@ -17,6 +17,7 @@ export default defineConfig({
                 'resources/js/admin/orders.js',
                 'resources/js/admin/order-create.js',
                 'resources/js/admin/customers.js',
+                'resources/js/admin/reviews.js',
             ],
             refresh: true,
         }),
