@@ -42,7 +42,7 @@ class StorefrontHeaderRtlTest extends TestCase
 
         $response = $this->withSession(['storefront_locale' => 'ar'])
             ->actingAs($customer, 'customer')
-            ->get(route('shop.home'));
+            ->get(route('shop.home', ['locale' => 'ar']));
 
         $response->assertOk()
             ->assertSee('<html lang="ar" dir="rtl">', false)

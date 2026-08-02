@@ -93,7 +93,7 @@ class SimpleProductDetailsTest extends TestCase
         $this->get(route('shop.products.show', 'camera-ar'))->assertNotFound();
 
         $this->withSession(['storefront_locale' => 'ar'])
-            ->get(route('shop.products.show', 'camera-ar'))
+            ->get(route('shop.products.show', ['locale' => 'ar', 'url_key' => 'camera-ar']))
             ->assertOk()
             ->assertSee('كاميرا محلية');
     }

@@ -12,7 +12,7 @@ class CustomerLocalizationTest extends TestCase
 
     public function test_customer_login_renders_english_translations(): void
     {
-        $this->get(route('customer.login'))
+        $this->get(route('customer.login', ['locale' => 'en']))
             ->assertOk()
             ->assertSee('<html lang="en" dir="ltr">', false)
             ->assertSee(__('shop.auth.login.title'))
@@ -24,7 +24,7 @@ class CustomerLocalizationTest extends TestCase
         app()->setLocale('ar');
         $customer = User::factory()->customer()->create();
 
-        $this->get(route('customer.login'))
+        $this->get(route('customer.login', ['locale' => 'ar']))
             ->assertOk()
             ->assertSee('<html lang="ar" dir="rtl">', false)
             ->assertSee(__('shop.auth.login.title'))
@@ -32,7 +32,7 @@ class CustomerLocalizationTest extends TestCase
             ->assertSee(__('shop.auth.login.password'));
 
         $this->actingAs($customer, 'customer')
-            ->get(route('customer.account.password.edit'))
+            ->get(route('customer.account.password.edit', ['locale' => 'ar']))
             ->assertOk()
             ->assertSee('<html lang="ar" dir="rtl">', false)
             ->assertSee(__('shop.account.password.current_password'))
@@ -49,7 +49,7 @@ class CustomerLocalizationTest extends TestCase
         ]);
 
         foreach (range(1, 5) as $attempt) {
-            $this->post(route('customer.login.store'), [
+            $this->post(route('customer.login.store', ['locale' => 'ar']), [
                 'email' => $customer->email,
                 'password' => 'wrong-password',
             ])->assertSessionHasErrors([
@@ -57,7 +57,7 @@ class CustomerLocalizationTest extends TestCase
             ]);
         }
 
-        $this->post(route('customer.login.store'), [
+        $this->post(route('customer.login.store', ['locale' => 'ar']), [
             'email' => $customer->email,
             'password' => 'password123',
         ])->assertSessionHasErrors([
@@ -69,7 +69,7 @@ class CustomerLocalizationTest extends TestCase
     {
         app()->setLocale('ar');
 
-        $this->post(route('customer.login.store'), [])
+        $this->post(route('customer.login.store', ['locale' => 'ar']), [])
             ->assertSessionHasErrors([
                 'email' => __('validation.required', [
                     'attribute' => __('validation.attributes.email'),
@@ -86,7 +86,7 @@ class CustomerLocalizationTest extends TestCase
         $customer = User::factory()->customer()->create(['password' => 'original123']);
 
         $this->actingAs($customer, 'customer')
-            ->put(route('customer.account.password.update'), [
+            ->put(route('customer.account.password.update', ['locale' => 'ar']), [
                 'current_password' => 'original123',
                 'password' => 'replacement123',
                 'password_confirmation' => 'replacement123',

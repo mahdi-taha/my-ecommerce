@@ -24,6 +24,30 @@ class HomepageContentStorefrontTest extends TestCase
         $this->get(route('shop.home'))->assertOk()->assertSee('Managed Hero')->assertSee('noopener noreferrer', false)->assertDontSee('Missing Offer');
     }
 
+    public function test_legacy_local_links_are_rendered_with_the_current_locale_prefix(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('homepage/hero.jpg', 'image');
+        $banner = HomepageBanner::create([
+            'placement' => 'hero',
+            'image_path' => 'homepage/hero.jpg',
+            'is_active' => true,
+        ]);
+        $banner->translations()->create([
+            'locale' => 'ar',
+            'title' => 'واجهة',
+            'button_label' => 'تسوق',
+            'link_url' => '/shop?sort=newest',
+            'image_alt' => 'واجهة',
+        ]);
+        Cache::flush();
+
+        $this->get('/ar')
+            ->assertOk()
+            ->assertSee(url('/ar/shop?sort=newest'), false)
+            ->assertDontSee('href="/shop?sort=newest"', false);
+    }
+
     public function test_managed_homepage_images_use_bounded_media_hooks_and_preserve_alt_text(): void
     {
         Storage::fake('public');

@@ -72,14 +72,14 @@ class StorefrontSeoTest extends TestCase
     {
         $this->product('camera', 'Camera', 'Summary', withArabic: true);
 
-        $this->post(route('shop.locale.update', 'ar'), [
-            'return_to' => route('shop.products.show', 'camera-en', absolute: false).'?source=product',
-        ])->assertRedirect(route('shop.products.show', 'camera-ar', absolute: false).'?source=product');
+        $this->get(route('shop.products.show', ['locale' => 'en', 'url_key' => 'camera-en']).'?source=product')->assertOk();
+        $this->post(route('shop.locale.update', ['locale' => 'en', 'targetLocale' => 'ar']))
+            ->assertRedirect(route('shop.products.show', ['locale' => 'ar', 'url_key' => 'camera-ar']).'?source=product');
 
         $this->product('english-only', 'English Only', 'Summary');
-        $this->post(route('shop.locale.update', 'ar'), [
-            'return_to' => route('shop.products.show', 'english-only-en', absolute: false),
-        ])->assertRedirect('/');
+        $this->get(route('shop.products.show', ['locale' => 'en', 'url_key' => 'english-only-en']))->assertOk();
+        $this->post(route('shop.locale.update', ['locale' => 'en', 'targetLocale' => 'ar']))
+            ->assertRedirect(route('shop.home', ['locale' => 'ar']));
     }
 
     public function test_cms_page_with_empty_description_omits_description_and_keeps_open_graph(): void

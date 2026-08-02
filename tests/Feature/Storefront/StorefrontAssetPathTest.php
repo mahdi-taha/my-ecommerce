@@ -19,7 +19,7 @@ class StorefrontAssetPathTest extends TestCase
 
     public function test_shop_route_is_not_shadowed_by_a_public_directory(): void
     {
-        $this->assertSame('/shop', route('shop.products.index', absolute: false));
+        $this->assertSame('/en/shop', route('shop.products.index', absolute: false));
         $this->assertDirectoryDoesNotExist(public_path('shop'));
 
         $this->get(route('shop.products.index'))->assertOk();

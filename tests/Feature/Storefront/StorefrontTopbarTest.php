@@ -90,17 +90,17 @@ class StorefrontTopbarTest extends TestCase
 
     public function test_locale_switch_is_session_backed_local_and_does_not_change_admin_locale(): void
     {
-        $this->post(route('shop.locale.update', 'ar'), ['return_to' => '/login?source=topbar'])
-            ->assertRedirect('/login?source=topbar')
+        $this->get(route('customer.login', ['locale' => 'en', 'source' => 'topbar']))->assertOk();
+        $this->post(route('shop.locale.update', ['locale' => 'en', 'targetLocale' => 'ar']))
+            ->assertRedirect(route('customer.login', ['locale' => 'ar', 'source' => 'topbar']))
             ->assertSessionHas('storefront_locale', 'ar');
 
-        $this->get(route('customer.login'))
+        $this->get(route('customer.login', ['locale' => 'ar']))
             ->assertOk()
             ->assertSee('<html lang="ar" dir="rtl">', false);
 
-        $this->post(route('shop.locale.update', 'en'), ['return_to' => 'https://example.test/escape'])
-            ->assertRedirect('/');
-        $this->post(route('shop.locale.update', 'fr'), ['return_to' => '/'])->assertNotFound();
+        $this->post('/ar/locale/en')->assertRedirect('/en/login');
+        $this->post('/en/locale/fr')->assertNotFound();
 
         $admin = User::factory()->create();
         $this->withSession(['storefront_locale' => 'ar'])
@@ -114,13 +114,12 @@ class StorefrontTopbarTest extends TestCase
     {
         $this->setSetting('localization', 'default_locale', 'ar');
 
-        $this->get(route('customer.login'))
+        $this->get('/')->assertRedirect('/ar');
+        $this->get(route('customer.login', ['locale' => 'ar']))
             ->assertOk()
             ->assertSee('<html lang="ar" dir="rtl">', false);
 
-        $this->post(route('shop.locale.update', 'en'), ['return_to' => '/login']);
-
-        $this->get(route('customer.login'))
+        $this->get(route('customer.login', ['locale' => 'en']))
             ->assertOk()
             ->assertSee('<html lang="en" dir="ltr">', false);
     }
@@ -133,9 +132,9 @@ class StorefrontTopbarTest extends TestCase
             ['locale' => 'ar', 'name' => 'الهواتف', 'slug' => 'الهواتف'],
         ]);
 
-        $this->post(route('shop.locale.update', 'ar'), [
-            'return_to' => route('shop.categories.show', 'phones', absolute: false).'?sort=price_asc',
-        ])->assertRedirect(route('shop.categories.show', 'الهواتف', absolute: false).'?sort=price_asc');
+        $this->get(route('shop.categories.show', ['locale' => 'en', 'slug' => 'phones', 'sort' => 'price_asc']))->assertOk();
+        $this->post(route('shop.locale.update', ['locale' => 'en', 'targetLocale' => 'ar']))
+            ->assertRedirect(route('shop.categories.show', ['locale' => 'ar', 'slug' => 'الهواتف', 'sort' => 'price_asc']));
     }
 
     public function test_locale_switch_translates_an_active_cms_page_slug_and_preserves_query(): void
@@ -146,9 +145,9 @@ class StorefrontTopbarTest extends TestCase
             ['locale' => 'ar', 'title' => 'About Arabic', 'slug' => 'about-ar', 'body' => 'Arabic body.'],
         ]);
 
-        $this->post(route('shop.locale.update', 'ar'), [
-            'return_to' => route('shop.pages.show', 'about-us', absolute: false).'?source=footer',
-        ])->assertRedirect(route('shop.pages.show', 'about-ar', absolute: false).'?source=footer')
+        $this->get(route('shop.pages.show', ['locale' => 'en', 'slug' => 'about-us', 'source' => 'footer']))->assertOk();
+        $this->post(route('shop.locale.update', ['locale' => 'en', 'targetLocale' => 'ar']))
+            ->assertRedirect(route('shop.pages.show', ['locale' => 'ar', 'slug' => 'about-ar', 'source' => 'footer']))
             ->assertSessionHas('storefront_locale', 'ar');
     }
 
@@ -160,14 +159,14 @@ class StorefrontTopbarTest extends TestCase
             ['locale' => 'ar', 'name' => 'Arabic Camera', 'url_key' => 'camera-ar'],
         ]);
 
-        $this->post(route('shop.locale.update', 'ar'), [
-            'return_to' => route('shop.products.show', 'camera', absolute: false),
-        ])->assertRedirect(route('shop.products.show', 'camera-ar', absolute: false));
+        $this->get(route('shop.products.show', ['locale' => 'en', 'url_key' => 'camera']))->assertOk();
+        $this->post(route('shop.locale.update', ['locale' => 'en', 'targetLocale' => 'ar']))
+            ->assertRedirect(route('shop.products.show', ['locale' => 'ar', 'url_key' => 'camera-ar']));
 
         $product->translations()->where('locale', 'ar')->delete();
-        $this->post(route('shop.locale.update', 'ar'), [
-            'return_to' => route('shop.products.show', 'camera', absolute: false),
-        ])->assertRedirect('/');
+        $this->get(route('shop.products.show', ['locale' => 'en', 'url_key' => 'camera']))->assertOk();
+        $this->post(route('shop.locale.update', ['locale' => 'en', 'targetLocale' => 'ar']))
+            ->assertRedirect(route('shop.home', ['locale' => 'ar']));
     }
 
     private function setSetting(string $group, string $key, ?string $value): void

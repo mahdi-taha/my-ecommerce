@@ -89,7 +89,7 @@ class CustomerAccountLayoutTest extends TestCase
 
         $this->actingAs($customer, 'customer')
             ->withSession(['storefront_locale' => 'ar'])
-            ->get(route('customer.account.edit'))
+            ->get(route('customer.account.edit', ['locale' => 'ar']))
             ->assertOk()
             ->assertSee('<html lang="ar" dir="rtl">', false)
             ->assertSee(__('shop.account.navigation.profile'));

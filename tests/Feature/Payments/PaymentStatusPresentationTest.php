@@ -84,7 +84,7 @@ class PaymentStatusPresentationTest extends TestCase
         foreach (['en', 'ar'] as $locale) {
             $history = $this->withSession(['storefront_locale' => $locale])
                 ->actingAs($customer, 'customer')
-                ->get(route('shop.account.orders.index'));
+                ->get(route('shop.account.orders.index', ['locale' => $locale]));
 
             foreach (PaymentStatus::cases() as $status) {
                 $history->assertSee(
@@ -97,12 +97,12 @@ class PaymentStatusPresentationTest extends TestCase
             $label = Lang::get('shop.checkout.status.payment.awaiting_verification', [], $locale);
 
             $this->actingAs($customer, 'customer')
-                ->get(route('shop.account.orders.show', $order))
+                ->get(route('shop.account.orders.show', ['locale' => $locale, 'order' => $order]))
                 ->assertOk()
                 ->assertSee($label);
 
             $this->actingAs($customer, 'customer')
-                ->get(route('shop.checkout.success', $order))
+                ->get(route('shop.checkout.success', ['locale' => $locale, 'order' => $order]))
                 ->assertOk()
                 ->assertSee($label);
         }
