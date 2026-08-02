@@ -47,6 +47,10 @@ class StorefrontTopbarTest extends TestCase
             ->assertSee(route('customer.login'), false)
             ->assertSee(route('customer.register'), false)
             ->assertSee(route('shop.cart.index'), false);
+        $this->get(route('shop.home'))
+            ->assertOk()
+            ->assertSee('method="GET" action="'.route('shop.products.index').'"', false)
+            ->assertSee('name="q"', false);
     }
 
     public function test_authenticated_topbar_uses_customer_routes_and_scoped_notification_count(): void

@@ -40,6 +40,7 @@ class StorefrontNavbarTest extends TestCase
 
         $response->assertOk()
             ->assertSee('href="'.route('shop.home').'"', false)
+            ->assertSee('href="'.route('shop.products.index').'"', false)
             ->assertSee(__('shop.navigation.shop'))
             ->assertSee(__('shop.navigation.contact'))
             ->assertSee('href="#"', false)
