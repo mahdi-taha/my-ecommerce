@@ -56,9 +56,10 @@ class OrderCancellationRequestService
     public function approve(
         Order $order,
         OrderCancellationRequest $cancellationRequest,
-        User $administrator
+        User $administrator,
+        ?string $adminNote = null
     ): OrderCancellationRequest {
-        return DB::transaction(function () use ($order, $cancellationRequest, $administrator) {
+        return DB::transaction(function () use ($order, $cancellationRequest, $administrator, $adminNote) {
             $lockedOrder = $this->lockOrder($order);
             $lockedRequest = $this->lockRequest($lockedOrder, $cancellationRequest);
             $this->ensurePending($lockedRequest);
@@ -66,9 +67,11 @@ class OrderCancellationRequestService
             $this->orderStatusService->cancel($lockedOrder);
 
             $timestamp = now();
+            $normalizedAdminNote = trim((string) $adminNote);
             $lockedRequest->update([
                 'status' => OrderCancellationRequestStatus::Approved,
                 'pending_marker' => null,
+                'admin_note' => $normalizedAdminNote === '' ? null : $normalizedAdminNote,
                 'reviewed_by' => $administrator->getKey(),
                 'reviewed_at' => $timestamp,
             ]);

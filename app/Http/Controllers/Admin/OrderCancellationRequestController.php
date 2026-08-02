@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ApproveOrderCancellationRequest;
 use App\Http\Requests\Admin\RejectOrderCancellationRequest;
 use App\Models\Order;
 use App\Models\OrderCancellationRequest;
 use App\Services\OrderCancellationRequestService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use LogicException;
 use RuntimeException;
@@ -18,12 +18,17 @@ class OrderCancellationRequestController extends Controller
     public function __construct(private OrderCancellationRequestService $service) {}
 
     public function approve(
-        Request $request,
+        ApproveOrderCancellationRequest $request,
         Order $order,
         OrderCancellationRequest $cancellationRequest
     ): RedirectResponse {
         return $this->review(function () use ($request, $order, $cancellationRequest) {
-            $this->service->approve($order, $cancellationRequest, $request->user('admin'));
+            $this->service->approve(
+                $order,
+                $cancellationRequest,
+                $request->user('admin'),
+                $request->validated('admin_note')
+            );
 
             return 'Cancellation request approved and Order cancelled successfully.';
         }, $order);

@@ -396,6 +396,7 @@ return [
                 'request_button' => 'Request Cancellation',
                 'reason' => 'Cancellation Reason',
                 'rejection_reason' => 'Rejection Reason',
+                'admin_note' => 'Administrator Note',
                 'requested' => 'Your cancellation request was submitted for review.',
                 'already_pending' => 'A cancellation request for this Order is already pending.',
                 'not_eligible' => 'This Order is not eligible for a cancellation request.',

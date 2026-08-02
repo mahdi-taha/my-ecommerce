@@ -53,9 +53,14 @@
 
                                         @if ($cancellationRequest->status === \App\Enums\OrderCancellationRequestStatus::Pending)
                                             <div class="d-flex flex-wrap gap-3 align-items-start">
-                                                <form method="POST" action="{{ route('admin.orders.cancellation-requests.approve', [$order, $cancellationRequest]) }}">
+                                                <form class="flex-grow-1" method="POST" action="{{ route('admin.orders.cancellation-requests.approve', [$order, $cancellationRequest]) }}">
                                                     @csrf
-                                                    <button class="btn btn-danger" type="submit">Approve Cancellation</button>
+                                                    <label class="form-label" for="approval-note-{{ $cancellationRequest->id }}">Approval Note (optional)</label>
+                                                    <div class="input-group">
+                                                        <input class="form-control @error('admin_note') is-invalid @enderror"
+                                                            id="approval-note-{{ $cancellationRequest->id }}" name="admin_note" maxlength="2000">
+                                                        <button class="btn btn-danger" type="submit">Approve Cancellation</button>
+                                                    </div>
                                                 </form>
                                                 <form class="flex-grow-1" method="POST" action="{{ route('admin.orders.cancellation-requests.reject', [$order, $cancellationRequest]) }}">
                                                     @csrf

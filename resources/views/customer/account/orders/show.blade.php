@@ -43,8 +43,11 @@
                         <small class="text-muted">{{ $cancellationRequest->created_at?->format('Y-m-d H:i') }}</small>
                     </div>
                     <p class="mb-1"><strong>{{ __('shop.account.orders.cancellation.reason') }}:</strong> {{ $cancellationRequest->reason }}</p>
-                    @if ($cancellationRequest->status === \App\Enums\OrderCancellationRequestStatus::Rejected)
-                        <p class="mb-0 text-danger"><strong>{{ __('shop.account.orders.cancellation.rejection_reason') }}:</strong> {{ $cancellationRequest->admin_note }}</p>
+                    @if (in_array($cancellationRequest->status, [
+                        \App\Enums\OrderCancellationRequestStatus::Approved,
+                        \App\Enums\OrderCancellationRequestStatus::Rejected,
+                    ], true) && trim((string) $cancellationRequest->admin_note) !== '')
+                        <p class="mb-0"><strong>{{ __('shop.account.orders.cancellation.admin_note') }}:</strong> {{ $cancellationRequest->admin_note }}</p>
                     @endif
                 </div>
             @endforeach
