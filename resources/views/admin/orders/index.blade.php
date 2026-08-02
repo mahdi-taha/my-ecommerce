@@ -14,7 +14,10 @@
                 <div class="container-fluid">
                     <div class="card shadow mt-4">
                         <div class="card-head pt-4 px-4">
-                            <h3>Orders</h3>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h3 class="mb-0">Orders</h3>
+                                <a href="{{ route('admin.orders.create') }}" class="btn btn-primary">Create Order</a>
+                            </div>
 
                             <div class="row mt-3">
                                 <div class="col-lg-3 col-md-6 mb-2">

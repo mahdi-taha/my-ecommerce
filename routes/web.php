@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\OrderCancellationRequestController as AdminOrderCancellationRequestController;
+use App\Http\Controllers\Admin\OrderCreationController as AdminOrderCreationController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\AttributeOptionController;
@@ -163,6 +164,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('orders', [OrderController::class, 'index'])
             ->name('orders.index');
+        Route::get('orders/create', [AdminOrderCreationController::class, 'create'])
+            ->name('orders.create');
+        Route::post('orders', [AdminOrderCreationController::class, 'store'])
+            ->name('orders.store');
+        Route::post('orders/summary', [AdminOrderCreationController::class, 'summary'])
+            ->name('orders.summary');
+        Route::get('orders/lookups/customers', [AdminOrderCreationController::class, 'customers'])
+            ->name('orders.lookups.customers');
+        Route::get('orders/lookups/products', [AdminOrderCreationController::class, 'products'])
+            ->name('orders.lookups.products');
+        Route::get('orders/lookups/products/{product}/configuration', [AdminOrderCreationController::class, 'configuration'])
+            ->name('orders.lookups.products.configuration');
         Route::get('orders/{order}', [OrderController::class, 'show'])
             ->name('orders.show');
         Route::post('orders/{order}/process', [OrderController::class, 'process'])
