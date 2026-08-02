@@ -9,6 +9,7 @@ use Database\Seeders\SettingSeeder;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class CategoryListingQueryTest extends TestCase
@@ -23,7 +24,10 @@ class CategoryListingQueryTest extends TestCase
 
     public function test_category_page_reuses_one_two_query_hierarchy_as_depth_and_products_grow(): void
     {
+        Storage::fake('public');
+        Storage::disk('public')->put('categories/root-banner.webp', 'banner');
         $root = $this->category('Root', 'root');
+        $root->update(['banner_path' => 'categories/root-banner.webp']);
         $this->product('First', $root);
         $parent = $root;
         foreach (range(1, 8) as $index) {
@@ -46,7 +50,9 @@ class CategoryListingQueryTest extends TestCase
             }
         });
 
-        $this->get(route('shop.categories.show', 'root'))->assertOk();
+        $this->get(route('shop.categories.show', 'root'))
+            ->assertOk()
+            ->assertSee('data-category-hero', false);
 
         $this->assertSame(1, $hierarchyRootQueries);
         $this->assertSame(1, $facetConfigurationQueries);

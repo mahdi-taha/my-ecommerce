@@ -8,6 +8,7 @@ use App\Models\Product;
 use Database\Seeders\SettingSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class CategoryListingTest extends TestCase
@@ -95,13 +96,57 @@ class CategoryListingTest extends TestCase
         }
 
         $base = route('shop.categories.show', 'books');
-        $this->get($base.'?page=2')->assertOk()
+        $response = $this->get($base.'?page=2')->assertOk()
             ->assertSee('<title>Books Meta</title>', false)
             ->assertSee('content="Books Meta Description"', false)
+            ->assertSee('data-category-hero', false)
+            ->assertSee('class="storefront-category-hero-image"', false)
+            ->assertSee('alt="Books"', false)
+            ->assertSee('<h1 class="display-6 text-white mb-0 storefront-category-hero-title">', false)
             ->assertSee(Storage::disk('public')->url('categories/banner.webp'), false)
-            ->assertSee('<link rel="canonical" href="'.$base.'?page=2">', false);
+            ->assertSee('<link rel="canonical" href="'.$base.'?page=2">', false)
+            ->assertDontSee('<h1 class="display-6 mb-1">Books</h1>', false);
+        $response->assertSeeInOrder([__('shop.listing.breadcrumbs'), 'data-category-hero'], false);
         $this->get($base.'?q=Book&page=2')->assertOk()
             ->assertSee('<link rel="canonical" href="'.$base.'">', false);
+
+        $css = file_get_contents(resource_path('css/shop.css'));
+        $this->assertStringContainsString('.storefront-category-hero', $css);
+        $this->assertStringContainsString('aspect-ratio: 16 / 9', $css);
+        $this->assertStringContainsString('aspect-ratio: 16 / 7', $css);
+        $this->assertStringContainsString('aspect-ratio: 16 / 5', $css);
+        $this->assertStringContainsString('object-fit: cover', $css);
+        $this->assertStringContainsString('object-position: center', $css);
+    }
+
+    #[DataProvider('invalidBannerPaths')]
+    public function test_invalid_banner_paths_render_no_hero_and_keep_the_standalone_heading(?string $bannerPath): void
+    {
+        Storage::fake('public');
+        $category = $this->category('No Banner Category', 'no-banner-category', state: [
+            'banner_path' => $bannerPath,
+        ]);
+
+        $this->get(route('shop.categories.show', $category->translations->first()->slug))
+            ->assertOk()
+            ->assertDontSee('data-category-hero', false)
+            ->assertSee('<h1 class="display-6 mb-1">No Banner Category</h1>', false)
+            ->assertDontSee('categories/missing.webp', false);
+
+        $this->get(route('shop.products.index'))
+            ->assertOk()
+            ->assertDontSee('data-category-hero', false)
+            ->assertSee('<h1 class="display-6 mb-1">'.__('shop.listing.title').'</h1>', false);
+    }
+
+    public static function invalidBannerPaths(): array
+    {
+        return [
+            'null' => [null],
+            'empty' => [''],
+            'whitespace' => ['   '],
+            'missing file' => ['categories/missing.webp'],
+        ];
     }
 
     private function category(
