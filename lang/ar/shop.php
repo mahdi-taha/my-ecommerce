@@ -589,6 +589,8 @@ return [
         ],
     ],
 
+    'cms' => ['quick_links' => 'روابط سريعة', 'footer_navigation' => 'روابط تذييل الصفحة'],
+
     'reviews' => [
         'title' => 'تقييمات العملاء', 'my_reviews' => 'تقييماتي', 'rating' => 'التقييم',
         'review_title' => 'عنوان التقييم', 'review' => 'التقييم', 'submit' => 'إرسال التقييم',

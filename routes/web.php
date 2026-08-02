@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\CmsPageController as AdminCmsPageController;
+use App\Http\Controllers\Admin\HomepageBannerController as AdminHomepageBannerController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\OrderCancellationRequestController as AdminOrderCancellationRequestController;
 use App\Http\Controllers\Admin\OrderCreationController as AdminOrderCreationController;
@@ -27,6 +29,7 @@ use App\Http\Controllers\Shop\Account\ReviewController as ShopAccountReviewContr
 use App\Http\Controllers\Shop\CartController as ShopCartController;
 use App\Http\Controllers\Shop\CheckoutController as ShopCheckoutController;
 use App\Http\Controllers\Shop\CheckoutCouponController as ShopCheckoutCouponController;
+use App\Http\Controllers\Shop\CmsPageController as ShopCmsPageController;
 use App\Http\Controllers\Shop\LocaleController as ShopLocaleController;
 use App\Http\Controllers\Shop\ProductController as ShopProductController;
 use App\Http\Controllers\Shop\ProductListingController as ShopProductListingController;
@@ -45,6 +48,7 @@ Route::middleware(['storefront.cart', ShareStorefrontWishlist::class])->group(fu
     Route::get('/shop', [ShopProductListingController::class, 'index'])->name('shop.products.index');
     Route::get('/categories/{slug}', [ShopProductListingController::class, 'category'])
         ->name('shop.categories.show');
+    Route::get('/pages/{slug}', [ShopCmsPageController::class, 'show'])->name('shop.pages.show');
     Route::get('/products/{url_key}', [ShopProductController::class, 'show'])
         ->name('shop.products.show');
     Route::post('/products/{product}/reviews', [ShopProductReviewController::class, 'store'])
@@ -108,6 +112,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('reviews', [AdminProductReviewController::class, 'index'])->name('reviews.index');
         Route::get('reviews/{review}', [AdminProductReviewController::class, 'show'])->name('reviews.show');
         Route::patch('reviews/{review}', [AdminProductReviewController::class, 'update'])->name('reviews.update');
+        Route::resource('cms-pages', AdminCmsPageController::class)->only(['index', 'edit', 'update']);
+        Route::resource('homepage-banners', AdminHomepageBannerController::class)->except(['show']);
 
         Route::get('customers', [CustomerController::class, 'index'])
             ->name('customers.index');

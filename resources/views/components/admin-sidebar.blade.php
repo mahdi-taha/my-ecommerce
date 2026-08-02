@@ -144,6 +144,9 @@
           <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
           <span class="hide-menu">Configuration</span>
         </li>
+        <li class="nav-small-cap"><iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon><span class="hide-menu">Content</span></li>
+        <li class="sidebar-item"><a class="sidebar-link justify-content-between {{ request()->routeIs('admin.cms-pages.*') ? 'active' : '' }}" href="{{ route('admin.cms-pages.index') }}"><div class="d-flex align-items-center gap-3"><span class="d-flex"><i class="ti ti-file-text"></i></span><span class="hide-menu">CMS Pages</span></div></a></li>
+        <li class="sidebar-item"><a class="sidebar-link justify-content-between {{ request()->routeIs('admin.homepage-banners.*') ? 'active' : '' }}" href="{{ route('admin.homepage-banners.index') }}"><div class="d-flex align-items-center gap-3"><span class="d-flex"><i class="ti ti-photo"></i></span><span class="hide-menu">Homepage Content</span></div></a></li>
         <li class="sidebar-item">
           <a class="sidebar-link justify-content-between {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}"
             href="{{ route('admin.notifications.index') }}" aria-expanded="false">

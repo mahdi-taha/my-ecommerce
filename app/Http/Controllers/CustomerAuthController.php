@@ -158,6 +158,7 @@ class CustomerAuthController extends Controller
             'shop.home',
             'shop.products.show',
             'shop.categories.show',
+            'shop.pages.show',
             'shop.cart.index',
         ], true) ? $returnTo : null;
     }

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Enums\NotificationAudienceCode;
 use App\Models\Category;
+use App\Services\StorefrontContentService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
@@ -116,6 +117,15 @@ class AppServiceProvider extends ServiceProvider
                 'topbarCurrencyCode' => setting('currency.default_currency', 'USD'),
                 'topbarCustomer' => $customer,
                 'topbarNotificationCount' => $customerNotificationCount(),
+            ]);
+        });
+
+        View::composer(['shop.components.footer', 'shop.components.navbar'], function (IlluminateView $view): void {
+            $content = app(StorefrontContentService::class);
+            $locale = app()->getLocale();
+            $view->with([
+                'storefrontFooterPages' => $content->footerPages($locale),
+                'storefrontContactPage' => $content->pageByCode('contact', $locale),
             ]);
         });
 

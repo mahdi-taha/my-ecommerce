@@ -31,9 +31,9 @@
                             {{ __('shop.navigation.shop') }}
                         </a>
 
-                        <a href="#" class="nav-item nav-link me-lg-2">
-                            {{ __('shop.navigation.contact') }}
-                        </a>
+                        @if($storefrontContactPage)
+                            <a href="{{ route('shop.pages.show',$storefrontContactPage->translations->first()->slug) }}" class="nav-item nav-link me-lg-2 {{ request()->routeIs('shop.pages.show') && request()->route('slug') === $storefrontContactPage->translations->first()->slug ? 'active' : '' }}">{{ __('shop.navigation.contact') }}</a>
+                        @endif
 
                         <div class="nav-item d-block d-lg-none" data-category-navigation-mobile>
                             <button class="nav-link border-0 bg-transparent w-100 text-start"

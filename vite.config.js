@@ -18,6 +18,8 @@ export default defineConfig({
                 'resources/js/admin/order-create.js',
                 'resources/js/admin/customers.js',
                 'resources/js/admin/reviews.js',
+                'resources/js/admin/cms-pages.js',
+                'resources/js/admin/homepage-banners.js',
             ],
             refresh: true,
         }),

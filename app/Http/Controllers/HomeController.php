@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\HomepageBannerPlacement;
 use App\Enums\OrderStatus;
 use App\Enums\ProductType;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Tax;
+use App\Services\StorefrontContentService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +16,8 @@ use Illuminate\Support\Facades\Storage;
 
 class HomeController extends Controller
 {
+    public function __construct(private StorefrontContentService $content) {}
+
     public function index(): View
     {
         $timestamp = now();
@@ -111,6 +115,10 @@ class HomeController extends Controller
         $defaultTax = $defaultTaxId
             ? Tax::query()->active()->find($defaultTaxId)
             : null;
+        $homepageContent = $this->content->homepage(app()->getLocale());
+        $heroBanners = $homepageContent->where('placement', HomepageBannerPlacement::Hero);
+        $heroSideBanners = $homepageContent->where('placement', HomepageBannerPlacement::HeroSide);
+        $offerBanners = $homepageContent->where('placement', HomepageBannerPlacement::Offer);
 
         return view('shop.pages.home', compact(
             'allProducts',
@@ -122,6 +130,9 @@ class HomeController extends Controller
             'taxMode',
             'defaultTax',
             'homepageCategories',
+            'heroBanners',
+            'heroSideBanners',
+            'offerBanners',
         ));
     }
 }

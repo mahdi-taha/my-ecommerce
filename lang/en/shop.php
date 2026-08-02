@@ -589,6 +589,8 @@ return [
         ],
     ],
 
+    'cms' => ['quick_links' => 'Quick Links', 'footer_navigation' => 'Footer navigation'],
+
     'reviews' => [
         'title' => 'Customer Reviews', 'my_reviews' => 'My Reviews', 'rating' => 'Rating',
         'review_title' => 'Review title', 'review' => 'Review', 'submit' => 'Submit Review',

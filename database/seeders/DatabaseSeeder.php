@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             TaxSeeder::class,
             NotificationConfigurationSeeder::class,
             AdminUserSeeder::class,
+            CmsPageSeeder::class,
         ]);
 
         if (! app()->environment('production')) {
