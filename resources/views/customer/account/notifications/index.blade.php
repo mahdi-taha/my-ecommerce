@@ -26,7 +26,7 @@
                             <small class="text-muted">{{ $notification->created_at->format('Y-m-d H:i') }}</small>
                         </div>
                         @if (! $notification->read_at)
-                            <form method="POST" action="{{ route('shop.account.notifications.read', $notification) }}">
+                            <form method="POST" action="{{ route('shop.account.notifications.read', ['databaseNotification' => $notification]) }}">
                                 @csrf
                                 @method('PATCH')
                                 <button class="btn btn-sm btn-outline-primary" type="submit">

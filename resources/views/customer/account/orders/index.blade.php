@@ -41,7 +41,7 @@
                                     <td><span class="badge bg-secondary">{{ __('shop.checkout.status.payment.'.$order->payment_status) }}</span></td>
                                     <td><span class="badge bg-secondary">{{ __('shop.checkout.status.fulfillment.'.$order->fulfillment_status) }}</span></td>
                                     <td class="text-end">
-                                        <a class="btn btn-sm btn-outline-primary" href="{{ route('shop.account.orders.show', $order) }}">
+                                        <a class="btn btn-sm btn-outline-primary" href="{{ route('shop.account.orders.show', ['order' => $order]) }}">
                                             {{ __('shop.account.orders.view_order') }}
                                         </a>
                                     </td>

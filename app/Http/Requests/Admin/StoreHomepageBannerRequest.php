@@ -22,7 +22,7 @@ class StoreHomepageBannerRequest extends FormRequest
             $rules["eyebrow_{$locale}"] = ['nullable', 'string', 'max:255'];
             $rules["body_{$locale}"] = ['nullable', 'string', 'max:1000'];
             $rules["button_label_{$locale}"] = ['nullable', 'string', 'max:100'];
-            $rules["link_url_{$locale}"] = ['nullable', 'string', 'max:2048', new SafeStorefrontContentUrl];
+            $rules["link_url_{$locale}"] = ['nullable', 'string', 'max:2048', new SafeStorefrontContentUrl($locale)];
             $rules["image_alt_{$locale}"] = ['nullable', 'string', 'max:255'];
         }
 

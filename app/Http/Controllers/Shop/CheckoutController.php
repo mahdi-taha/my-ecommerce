@@ -122,7 +122,7 @@ class CheckoutController extends Controller
             $request->session()->put(self::GUEST_ORDER_SESSION_KEY, $orders);
         }
 
-        return redirect()->route('shop.checkout.success', $result->order);
+        return redirect()->route('shop.checkout.success', ['order' => $result->order]);
     }
 
     public function summary(CheckoutSummaryRequest $request): JsonResponse

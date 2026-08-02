@@ -21,7 +21,7 @@ class OrderCancellationRequestController extends Controller
         );
 
         return redirect()
-            ->route('shop.account.orders.show', $order)
+            ->route('shop.account.orders.show', ['order' => $order])
             ->with('success', __('shop.account.orders.cancellation.requested'));
     }
 }

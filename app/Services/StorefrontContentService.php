@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 
 class StorefrontContentService
 {
+    public function __construct(private StorefrontLocaleUrlService $urls) {}
+
     public function pages(string $locale): Collection
     {
         return Cache::rememberForever("storefront.cms.pages.{$locale}", fn () => CmsPage::query()->active()->whereHas('translations', fn ($q) => $q->where('locale', $locale))->with(['translations' => fn ($q) => $q->where('locale', $locale)])->orderBy('sort_order')->orderBy('id')->get());
@@ -32,7 +34,11 @@ class StorefrontContentService
 
     public function homepage(string $locale): Collection
     {
-        return Cache::rememberForever("storefront.homepage.{$locale}", fn () => HomepageBanner::query()->active()->whereHas('translations', fn ($q) => $q->where('locale', $locale))->with(['translations' => fn ($q) => $q->where('locale', $locale)])->orderBy('placement')->orderBy('sort_order')->orderBy('id')->get()->filter(fn ($banner) => filled($banner->image_path) && Storage::disk('public')->exists($banner->image_path))->each(fn ($banner) => $banner->setAttribute('image_url', Storage::disk('public')->url($banner->image_path)))->values());
+        return Cache::rememberForever("storefront.homepage.{$locale}", fn () => HomepageBanner::query()->active()->whereHas('translations', fn ($q) => $q->where('locale', $locale))->with(['translations' => fn ($q) => $q->where('locale', $locale)])->orderBy('placement')->orderBy('sort_order')->orderBy('id')->get()->filter(fn ($banner) => filled($banner->image_path) && Storage::disk('public')->exists($banner->image_path))->each(function ($banner) use ($locale): void {
+            $banner->setAttribute('image_url', Storage::disk('public')->url($banner->image_path));
+            $translation = $banner->translations->first();
+            $translation?->setAttribute('link_url', $this->urls->normalizeStoredUrl($translation->link_url, $locale));
+        })->values());
     }
 
     public function external(?string $url): bool

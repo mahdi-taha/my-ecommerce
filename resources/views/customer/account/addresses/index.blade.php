@@ -37,14 +37,14 @@
                         {{ $address->country_code }}<br>{{ $address->phone }}
                     </address>
                     <div class="d-flex flex-wrap gap-2">
-                        <a class="btn btn-sm btn-outline-primary" href="{{ route('customer.addresses.edit', $address) }}">{{ __('shop.account.addresses.edit') }}</a>
+                        <a class="btn btn-sm btn-outline-primary" href="{{ route('customer.addresses.edit', ['customerAddress' => $address]) }}">{{ __('shop.account.addresses.edit') }}</a>
                         @unless ($address->is_default_shipping)
-                            <form method="POST" action="{{ route('customer.addresses.default-shipping', $address) }}">@csrf @method('PATCH')<button class="btn btn-sm btn-outline-primary">{{ __('shop.account.addresses.make_default_shipping') }}</button></form>
+                            <form method="POST" action="{{ route('customer.addresses.default-shipping', ['customerAddress' => $address]) }}">@csrf @method('PATCH')<button class="btn btn-sm btn-outline-primary">{{ __('shop.account.addresses.make_default_shipping') }}</button></form>
                         @endunless
                         @unless ($address->is_default_billing)
-                            <form method="POST" action="{{ route('customer.addresses.default-billing', $address) }}">@csrf @method('PATCH')<button class="btn btn-sm btn-outline-success">{{ __('shop.account.addresses.make_default_billing') }}</button></form>
+                            <form method="POST" action="{{ route('customer.addresses.default-billing', ['customerAddress' => $address]) }}">@csrf @method('PATCH')<button class="btn btn-sm btn-outline-success">{{ __('shop.account.addresses.make_default_billing') }}</button></form>
                         @endunless
-                        <form method="POST" action="{{ route('customer.addresses.destroy', $address) }}">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">{{ __('shop.account.addresses.delete') }}</button></form>
+                        <form method="POST" action="{{ route('customer.addresses.destroy', ['customerAddress' => $address]) }}">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">{{ __('shop.account.addresses.delete') }}</button></form>
                     </div>
                 </div></article></div>
             @endforeach

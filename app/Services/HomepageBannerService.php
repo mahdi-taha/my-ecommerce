@@ -12,6 +12,8 @@ use Throwable;
 
 class HomepageBannerService
 {
+    public function __construct(private StorefrontLocaleUrlService $urls) {}
+
     public function create(array $data, ?UploadedFile $image): HomepageBanner
     {
         return $this->persist(null, $data, $image);
@@ -51,7 +53,7 @@ class HomepageBannerService
                 }
                 $locked->fill(['placement' => $data['placement'], 'image_path' => $path, 'is_active' => (bool) ($data['is_active'] ?? false), 'sort_order' => $data['sort_order']])->save();
                 foreach (['en', 'ar'] as $locale) {
-                    $locked->translations()->updateOrCreate(['locale' => $locale], ['title' => trim($data["title_{$locale}"]), 'eyebrow' => $this->nullable($data["eyebrow_{$locale}"] ?? null), 'body' => $this->nullable($data["body_{$locale}"] ?? null), 'button_label' => $this->nullable($data["button_label_{$locale}"] ?? null), 'link_url' => $this->nullable($data["link_url_{$locale}"] ?? null), 'image_alt' => $this->nullable($data["image_alt_{$locale}"] ?? null)]);
+                    $locked->translations()->updateOrCreate(['locale' => $locale], ['title' => trim($data["title_{$locale}"]), 'eyebrow' => $this->nullable($data["eyebrow_{$locale}"] ?? null), 'body' => $this->nullable($data["body_{$locale}"] ?? null), 'button_label' => $this->nullable($data["button_label_{$locale}"] ?? null), 'link_url' => $this->urls->normalizeStoredUrl($this->nullable($data["link_url_{$locale}"] ?? null), $locale), 'image_alt' => $this->nullable($data["image_alt_{$locale}"] ?? null)]);
                 }
 
                 return $locked->refresh();

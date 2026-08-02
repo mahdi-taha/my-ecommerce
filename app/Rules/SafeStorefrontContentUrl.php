@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Services\StorefrontLocaleUrlService;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Http\Request;
@@ -11,6 +12,8 @@ use Throwable;
 class SafeStorefrontContentUrl implements ValidationRule
 {
     private const ROUTES = ['shop.home', 'shop.products.index', 'shop.products.show', 'shop.categories.show', 'shop.pages.show', 'shop.cart.index'];
+
+    public function __construct(private ?string $locale = null) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
@@ -35,6 +38,20 @@ class SafeStorefrontContentUrl implements ValidationRule
             $fail('The :attribute must be a safe storefront URL.');
 
             return;
+        }
+        $normalized = app(StorefrontLocaleUrlService::class)->normalizeStoredUrl(
+            $url,
+            $this->locale ?? app(StorefrontLocaleUrlService::class)->defaultLocale()
+        );
+        if ($normalized !== null) {
+            try {
+                $route = Route::getRoutes()->match(Request::create($normalized, 'GET'));
+                if (in_array($route->getName(), self::ROUTES, true)) {
+                    return;
+                }
+            } catch (Throwable) {
+                // The common failure response is added below.
+            }
         }
         try {
             $route = Route::getRoutes()->match(Request::create($url, 'GET'));

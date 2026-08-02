@@ -53,7 +53,7 @@
             @endforeach
 
             @if ($canRequestCancellation)
-                <form method="POST" action="{{ route('shop.account.orders.cancellation-requests.store', $order) }}">
+                <form method="POST" action="{{ route('shop.account.orders.cancellation-requests.store', ['order' => $order]) }}">
                     @csrf
                     <div class="mb-3">
                         <label class="form-label" for="cancellation-reason">{{ __('shop.account.orders.cancellation.reason') }}</label>

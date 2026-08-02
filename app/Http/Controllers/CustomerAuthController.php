@@ -147,10 +147,13 @@ class CustomerAuthController extends Controller
         }
 
         try {
-            $routeName = Route::getRoutes()
-                ->match(Request::create($returnTo, 'GET'))
-                ->getName();
+            $matchedRoute = Route::getRoutes()->match(Request::create($returnTo, 'GET'));
+            $routeName = $matchedRoute->getName();
         } catch (Throwable) {
+            return null;
+        }
+
+        if (! in_array((string) $matchedRoute->parameter('locale'), ['en', 'ar'], true)) {
             return null;
         }
 

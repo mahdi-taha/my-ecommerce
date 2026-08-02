@@ -10,6 +10,7 @@ class CustomerResetPasswordNotification extends ResetPassword
     public function toMail($notifiable): MailMessage
     {
         $url = route('customer.password.reset', [
+            'locale' => in_array($this->locale, ['en', 'ar'], true) ? $this->locale : config('app.locale'),
             'token' => $this->token,
             'email' => $notifiable->getEmailForPasswordReset(),
         ]);

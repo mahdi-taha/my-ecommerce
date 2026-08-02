@@ -45,7 +45,7 @@
                     </button>
                     <div class="dropdown-menu rounded">
                         @foreach (['en' => __('shop.topbar.english'), 'ar' => __('shop.topbar.arabic')] as $locale => $label)
-                            <form method="POST" action="{{ route('shop.locale.update', $locale) }}">
+                            <form method="POST" action="{{ route('shop.locale.update', ['locale' => app()->getLocale(), 'targetLocale' => $locale]) }}">
                                 @csrf
                                 <input type="hidden" name="return_to" value="{{ request()->getRequestUri() }}">
                                 <button type="submit" class="dropdown-item"
