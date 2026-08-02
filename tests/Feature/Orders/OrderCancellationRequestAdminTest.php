@@ -2,10 +2,13 @@
 
 namespace Tests\Feature\Orders;
 
+use App\Http\Requests\Admin\ApproveOrderCancellationRequest;
 use App\Models\Order;
 use App\Models\OrderPayment;
 use App\Models\User;
+use App\Services\OrderCancellationRequestService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use RuntimeException;
 use Tests\TestCase;
 
 class OrderCancellationRequestAdminTest extends TestCase
@@ -30,17 +33,60 @@ class OrderCancellationRequestAdminTest extends TestCase
         ]);
 
         $this->actingAs($admin, 'admin')
-            ->post(route('admin.orders.cancellation-requests.approve', [$order, $request]))
+            ->post(route('admin.orders.cancellation-requests.approve', [$order, $request]), [
+                'admin_note' => '  Order cancelled successfully.  ',
+            ])
             ->assertRedirect(route('admin.orders.show', $order));
 
         $this->assertSame('cancelled', $order->fresh()->status);
         $this->assertDatabaseHas('order_cancellation_requests', [
             'id' => $request->id, 'status' => 'approved',
             'pending_marker' => null, 'reviewed_by' => $admin->id,
+            'admin_note' => 'Order cancelled successfully.',
         ]);
         $this->assertDatabaseHas('order_status_history', [
             'order_id' => $order->id, 'type' => 'order', 'to_status' => 'cancelled',
         ]);
+    }
+
+    public function test_approval_note_is_optional_normalized_and_length_limited(): void
+    {
+        $admin = User::factory()->create();
+        [$order, $request] = $this->orderWithRequest();
+
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.orders.cancellation-requests.approve', [$order, $request]), [
+                'admin_note' => str_repeat('x', 2001),
+            ])
+            ->assertSessionHasErrors('admin_note');
+
+        $this->assertSame('pending', $request->fresh()->status->value);
+
+        $formRequest = new ApproveOrderCancellationRequest;
+        $formRequest->merge(['admin_note' => '   ']);
+        $formRequest->setContainer(app())->validateResolved();
+
+        $this->assertNull($formRequest->validated('admin_note'));
+    }
+
+    public function test_failed_approval_rolls_back_the_decision_note(): void
+    {
+        $admin = User::factory()->create();
+        [$order, $request] = $this->orderWithRequest();
+
+        try {
+            app(OrderCancellationRequestService::class)->approve(
+                $order,
+                $request,
+                $admin,
+                'This must roll back.'
+            );
+            $this->fail('Cancellation without a Payment obligation was accepted.');
+        } catch (RuntimeException) {
+            $request->refresh();
+            $this->assertSame('pending', $request->status->value);
+            $this->assertNull($request->admin_note);
+        }
     }
 
     public function test_admin_can_reject_with_a_required_note_without_changing_order(): void

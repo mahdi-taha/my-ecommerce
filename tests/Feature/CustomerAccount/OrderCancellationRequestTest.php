@@ -91,6 +91,71 @@ class OrderCancellationRequestTest extends TestCase
             ->assertSee(__('shop.account.orders.cancellation.request_button'));
     }
 
+    public function test_customer_sees_only_non_empty_processed_notes_for_an_owned_order(): void
+    {
+        $customer = User::factory()->customer()->create();
+        $order = $this->order($customer);
+        $order->cancellationRequests()->createMany([
+            [
+                'user_id' => $customer->id,
+                'reason' => 'Approved request',
+                'status' => 'approved',
+                'pending_marker' => null,
+                'admin_note' => 'Order cancelled successfully.',
+                'reviewed_at' => now(),
+            ],
+            [
+                'user_id' => $customer->id,
+                'reason' => 'Rejected request',
+                'status' => 'rejected',
+                'pending_marker' => null,
+                'admin_note' => 'Product has already shipped.',
+                'reviewed_at' => now(),
+            ],
+            [
+                'user_id' => $customer->id,
+                'reason' => 'Empty note request',
+                'status' => 'rejected',
+                'pending_marker' => null,
+                'admin_note' => null,
+                'reviewed_at' => now(),
+            ],
+            [
+                'user_id' => $customer->id,
+                'reason' => 'Pending request',
+                'status' => 'pending',
+                'pending_marker' => true,
+                'admin_note' => 'Internal pending text',
+            ],
+        ]);
+
+        $response = $this->actingAs($customer, 'customer')
+            ->get(route('shop.account.orders.show', $order));
+
+        $response
+            ->assertOk()
+            ->assertSeeText(__('shop.account.orders.cancellation.admin_note'))
+            ->assertSeeText('Order cancelled successfully.')
+            ->assertSeeText('Product has already shipped.')
+            ->assertDontSeeText('Internal pending text');
+
+        $otherCustomer = User::factory()->customer()->create();
+        $this->actingAs($otherCustomer, 'customer')
+            ->get(route('shop.account.orders.show', $order))
+            ->assertNotFound();
+    }
+
+    public function test_order_without_cancellation_requests_has_no_administrator_note(): void
+    {
+        $customer = User::factory()->customer()->create();
+        $order = $this->order($customer);
+
+        $this->actingAs($customer, 'customer')
+            ->get(route('shop.account.orders.show', $order))
+            ->assertOk()
+            ->assertDontSeeText(__('shop.account.orders.cancellation.admin_note'));
+    }
+
     private function order(User $customer, array $state = []): Order
     {
         return Order::query()->create(array_merge([
