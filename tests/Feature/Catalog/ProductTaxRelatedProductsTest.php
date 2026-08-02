@@ -224,7 +224,6 @@ class ProductTaxRelatedProductsTest extends TestCase
             'special_price' => null,
             'special_price_from' => null,
             'special_price_to' => null,
-            'business_mode' => null,
             'use_default_tax' => true,
             'tax_id' => null,
             'related_product_ids' => [],

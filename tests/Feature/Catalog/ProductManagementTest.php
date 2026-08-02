@@ -131,7 +131,6 @@ class ProductManagementTest extends TestCase
                 'is_featured' => false,
                 'is_visible_individually' => true,
                 'status' => true,
-                'business_mode' => null,
                 'attributes' => [],
             ]);
 

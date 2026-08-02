@@ -34,7 +34,7 @@ class ProductImageTest extends TestCase
     {
         return array_merge(['sku' => 'IMAGE-1', 'product_number' => null, 'product_name_en' => 'Image',
             'product_name_ar' => 'صورة', 'url_key_en' => 'image-en', 'url_key_ar' => 'image-ar',
-            'price' => 10, 'special_price' => null, 'business_mode' => null, 'is_new' => false,
+            'price' => 10, 'special_price' => null, 'is_new' => false,
             'is_featured' => false, 'is_visible_individually' => true, 'status' => true,
             'category_ids' => [], 'attributes' => []], $overrides);
     }
