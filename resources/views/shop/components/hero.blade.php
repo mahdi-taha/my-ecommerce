@@ -5,7 +5,7 @@
                 <div class="header-carousel owl-carousel bg-light py-5">
                     <div class="row g-0 header-carousel-item align-items-center">
                         <div class="col-xl-6 carousel-img">
-                            <img src="{{ asset('shop/img/carousel-1.png') }}" class="img-fluid w-100"
+                            <img src="{{ asset('storefront-assets/img/carousel-1.png') }}" class="img-fluid w-100"
                                 alt="{{ __('shop.hero.image_alt') }}">
                         </div>
                         <div class="col-xl-6 carousel-content p-4">
@@ -19,7 +19,7 @@
                     </div>
                     <div class="row g-0 header-carousel-item align-items-center">
                         <div class="col-xl-6 carousel-img">
-                            <img src="{{ asset('shop/img/carousel-2.png') }}" class="img-fluid w-100"
+                            <img src="{{ asset('storefront-assets/img/carousel-2.png') }}" class="img-fluid w-100"
                                 alt="{{ __('shop.hero.image_alt') }}">
                         </div>
                         <div class="col-xl-6 carousel-content p-4">
@@ -35,7 +35,7 @@
             </div>
             <div class="col-12 col-lg-5 col-xl-3">
                 <div class="carousel-header-banner h-100">
-                    <img src="{{ asset('shop/img/header-img.jpg') }}" class="img-fluid w-100 h-100"
+                    <img src="{{ asset('storefront-assets/img/header-img.jpg') }}" class="img-fluid w-100 h-100"
                         style="object-fit: cover;" alt="{{ __('shop.hero.image_alt') }}">
                     <div class="carousel-banner-offer">
                         <p class="bg-primary text-white rounded fs-5 py-2 px-4 mb-0 me-3">

@@ -12,7 +12,7 @@ async function initializeStorefront() {
     initializeCategoryMegaMenu();
     initializeProductCardActions();
 
-    // const wowModule = await import('../../public/shop/lib/wow/wow.min.js');
+    // const wowModule = await import('../../public/storefront-assets/lib/wow/wow.min.js');
     // const WOW = wowModule.default?.default ?? wowModule.default ?? window.WOW;
 
     // if (typeof WOW !== 'function') {
@@ -21,13 +21,13 @@ async function initializeStorefront() {
 
     // window.WOW = WOW;
 
-    await import('../../public/shop/lib/owlcarousel/owl.carousel.min.js');
+    await import('../../public/storefront-assets/lib/owlcarousel/owl.carousel.min.js');
 
     if (typeof window.jQuery.fn?.owlCarousel !== 'function') {
         throw new Error('Storefront initialization failed: Owl Carousel did not register with window.jQuery.');
     }
 
-    await import('../../public/shop/js/main.js');
+    await import('../../public/storefront-assets/js/main.js');
     initializeConfigurableProducts();
     initializeCheckoutSummary();
 }

@@ -9,7 +9,7 @@
                             <h1 class="display-3 text-secondary mb-0">{{ __('shop.offers.camera_discount') }} <span
                                     class="text-primary fw-normal">{{ __('shop.offers.off') }}</span></h1>
                         </div>
-                        <img src="{{ asset('shop/img/product-1.png') }}" class="img-fluid"
+                        <img src="{{ asset('storefront-assets/img/product-1.png') }}" class="img-fluid"
                             alt="{{ __('shop.offers.camera_alt') }}">
                     </a>
                 </div>
@@ -21,7 +21,7 @@
                             <h1 class="display-3 text-secondary mb-0">{{ __('shop.offers.watch_discount') }} <span
                                     class="text-primary fw-normal">{{ __('shop.offers.off') }}</span></h1>
                         </div>
-                        <img src="{{ asset('shop/img/product-2.png') }}" class="img-fluid"
+                        <img src="{{ asset('storefront-assets/img/product-2.png') }}" class="img-fluid"
                             alt="{{ __('shop.offers.watch_alt') }}">
                     </a>
                 </div>
