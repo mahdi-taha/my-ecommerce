@@ -1,0 +1,78 @@
+@php
+    $categoryOptions = collect();
+    $flattenCategories = function ($categories, int $depth = 0) use (&$flattenCategories, $categoryOptions): void {
+        foreach ($categories as $category) {
+            $categoryOptions->push([
+                'id' => $category->id,
+                'name' => $category->translations->first()->name,
+                'depth' => $depth,
+            ]);
+            $flattenCategories($category->children, $depth + 1);
+        }
+    };
+    $flattenCategories($categoryTree);
+@endphp
+
+<aside class="border rounded bg-white p-4" aria-label="{{ __('shop.listing.filters') }}">
+    <form method="GET" action="{{ route('shop.products.index') }}">
+        <h2 class="h5 mb-4">{{ __('shop.listing.filters') }}</h2>
+
+        <div class="mb-3">
+            <label for="shop-filter-search" class="form-label">{{ __('shop.listing.search') }}</label>
+            <input id="shop-filter-search" type="search" name="q" class="form-control"
+                value="{{ $filters['q'] ?? '' }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="shop-filter-category" class="form-label">{{ __('shop.listing.category') }}</label>
+            <select id="shop-filter-category" name="category" class="form-select">
+                <option value="">{{ __('shop.listing.all_categories') }}</option>
+                @foreach ($categoryOptions as $category)
+                    <option value="{{ $category['id'] }}" @selected((int) ($filters['category'] ?? 0) === $category['id'])>
+                        {{ str_repeat('— ', $category['depth']) }}{{ $category['name'] }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <fieldset class="mb-3">
+            <legend class="form-label fs-6">{{ __('shop.listing.price') }}</legend>
+            <div class="row g-2">
+                <div class="col-6">
+                    <label for="shop-filter-min-price" class="visually-hidden">{{ __('shop.listing.minimum_price') }}</label>
+                    <input id="shop-filter-min-price" type="number" name="min_price" min="0" step="0.0001"
+                        class="form-control" value="{{ $filters['min_price'] ?? '' }}"
+                        placeholder="{{ __('shop.listing.minimum') }}">
+                </div>
+                <div class="col-6">
+                    <label for="shop-filter-max-price" class="visually-hidden">{{ __('shop.listing.maximum_price') }}</label>
+                    <input id="shop-filter-max-price" type="number" name="max_price" min="0" step="0.0001"
+                        class="form-control" value="{{ $filters['max_price'] ?? '' }}"
+                        placeholder="{{ __('shop.listing.maximum') }}">
+                </div>
+            </div>
+        </fieldset>
+
+        @foreach ([
+            'stock' => ['value' => 'in', 'label' => __('shop.listing.in_stock')],
+            'sale' => ['value' => '1', 'label' => __('shop.listing.on_sale')],
+            'featured' => ['value' => '1', 'label' => __('shop.listing.featured')],
+            'new' => ['value' => '1', 'label' => __('shop.listing.new')],
+        ] as $name => $option)
+            <div class="form-check mb-2">
+                <input id="shop-filter-{{ $name }}" class="form-check-input" type="checkbox"
+                    name="{{ $name }}" value="{{ $option['value'] }}"
+                    @checked(($filters[$name] ?? null) == $option['value'])>
+                <label class="form-check-label" for="shop-filter-{{ $name }}">{{ $option['label'] }}</label>
+            </div>
+        @endforeach
+
+        <input type="hidden" name="sort" value="{{ $filters['sort'] ?? 'newest' }}">
+        <div class="d-grid gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">{{ __('shop.listing.apply_filters') }}</button>
+            <a href="{{ route('shop.products.index') }}" class="btn btn-outline-secondary">
+                {{ __('shop.listing.clear_filters') }}
+            </a>
+        </div>
+    </form>
+</aside>

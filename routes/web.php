@@ -27,6 +27,7 @@ use App\Http\Controllers\Shop\CheckoutController as ShopCheckoutController;
 use App\Http\Controllers\Shop\CheckoutCouponController as ShopCheckoutCouponController;
 use App\Http\Controllers\Shop\LocaleController as ShopLocaleController;
 use App\Http\Controllers\Shop\ProductController as ShopProductController;
+use App\Http\Controllers\Shop\ProductListingController as ShopProductListingController;
 use App\Http\Controllers\Shop\WishlistController as ShopWishlistController;
 use App\Http\Controllers\VariantController;
 use App\Http\Middleware\ShareStorefrontWishlist;
@@ -38,6 +39,7 @@ Route::post('/locale/{locale}', ShopLocaleController::class)
 
 Route::middleware(['storefront.cart', ShareStorefrontWishlist::class])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('shop.home');
+    Route::get('/shop', ShopProductListingController::class)->name('shop.products.index');
     Route::get('/products/{url_key}', [ShopProductController::class, 'show'])
         ->name('shop.products.show');
     Route::get('/cart', [ShopCartController::class, 'index'])->name('shop.cart.index');

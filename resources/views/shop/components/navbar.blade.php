@@ -25,7 +25,9 @@
                             {{ __('shop.navigation.home') }}
                         </a>
 
-                        <a href="#" class="nav-item nav-link">
+                        <a href="{{ route('shop.products.index') }}"
+                            class="nav-item nav-link {{ request()->routeIs('shop.products.index') ? 'active' : '' }}"
+                            @if (request()->routeIs('shop.products.index')) aria-current="page" @endif>
                             {{ __('shop.navigation.shop') }}
                         </a>
 

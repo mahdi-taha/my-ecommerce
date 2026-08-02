@@ -132,14 +132,16 @@
 
         <div class="col-md-4 col-lg-6 text-center">
             <div class="position-relative ps-4">
-                <div class="d-flex border rounded-pill">
-                    <input class="form-control border-0 rounded-pill w-100 py-3" type="text"
-                        data-bs-target="#dropdownToggle123" placeholder="{{ __('shop.navigation.search_placeholder') }}"
+                <form method="GET" action="{{ route('shop.products.index') }}" class="d-flex border rounded-pill"
+                    role="search">
+                    <input class="form-control border-0 rounded-pill w-100 py-3" type="search" name="q"
+                        value="{{ request('q') }}" placeholder="{{ __('shop.navigation.search_placeholder') }}"
                         aria-label="{{ __('shop.navigation.search_label') }}">
-                    <button type="button" class="btn btn-primary rounded-pill py-3 px-5" style="border: 0;">
+                    <button type="submit" class="btn btn-primary rounded-pill py-3 px-5"
+                        style="border: 0;" aria-label="{{ __('shop.navigation.search_label') }}">
                         <i class="fas fa-search" aria-hidden="true"></i>
                     </button>
-                </div>
+                </form>
             </div>
         </div>
 
