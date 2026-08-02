@@ -157,6 +157,7 @@ class CustomerAuthController extends Controller
         return in_array($routeName, [
             'shop.home',
             'shop.products.show',
+            'shop.categories.show',
             'shop.cart.index',
         ], true) ? $returnTo : null;
     }

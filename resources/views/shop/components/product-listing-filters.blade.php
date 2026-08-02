@@ -14,14 +14,38 @@
 @endphp
 
 <aside class="border rounded bg-white p-4" aria-label="{{ __('shop.listing.filters') }}">
-    <form method="GET" action="{{ route('shop.products.index') }}">
+    <form method="GET" action="{{ $listingAction }}">
         <h2 class="h5 mb-4">{{ __('shop.listing.filters') }}</h2>
 
+        @if ($category)
+            <nav class="mb-3" aria-label="{{ __('shop.listing.category_navigation') }}">
+                <h3 class="h6">{{ __('shop.listing.category') }}</h3>
+                <ul class="list-unstyled mb-0">
+                    @foreach ($categoryBreadcrumbs as $breadcrumbCategory)
+                        @php($breadcrumbTranslation = $breadcrumbCategory->translations->first())
+                        <li class="mb-1">
+                            <a href="{{ route('shop.categories.show', $breadcrumbTranslation->slug) }}"
+                                class="{{ $breadcrumbCategory->is($category) ? 'fw-semibold' : '' }}"
+                                @if ($breadcrumbCategory->is($category)) aria-current="page" @endif>
+                                {{ $breadcrumbTranslation->name }}
+                            </a>
+                        </li>
+                    @endforeach
+                    @foreach ($category->children as $childCategory)
+                        @php($childTranslation = $childCategory->translations->first())
+                        <li class="ms-3 mb-1">
+                            <a href="{{ route('shop.categories.show', $childTranslation->slug) }}">{{ $childTranslation->name }}</a>
+                        </li>
+                    @endforeach
+                </ul>
+            </nav>
+        @else
         <div class="mb-3">
             <label for="shop-filter-search" class="form-label">{{ __('shop.listing.search') }}</label>
             <input id="shop-filter-search" type="search" name="q" class="form-control"
                 value="{{ $filters['q'] ?? '' }}">
         </div>
+        @endif
 
         <div class="mb-3">
             <label for="shop-filter-category" class="form-label">{{ __('shop.listing.category') }}</label>
@@ -70,7 +94,7 @@
         <input type="hidden" name="sort" value="{{ $filters['sort'] ?? 'newest' }}">
         <div class="d-grid gap-2 mt-4">
             <button type="submit" class="btn btn-primary">{{ __('shop.listing.apply_filters') }}</button>
-            <a href="{{ route('shop.products.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ $listingAction }}" class="btn btn-outline-secondary">
                 {{ __('shop.listing.clear_filters') }}
             </a>
         </div>

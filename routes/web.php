@@ -39,7 +39,9 @@ Route::post('/locale/{locale}', ShopLocaleController::class)
 
 Route::middleware(['storefront.cart', ShareStorefrontWishlist::class])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('shop.home');
-    Route::get('/shop', ShopProductListingController::class)->name('shop.products.index');
+    Route::get('/shop', [ShopProductListingController::class, 'index'])->name('shop.products.index');
+    Route::get('/categories/{slug}', [ShopProductListingController::class, 'category'])
+        ->name('shop.categories.show');
     Route::get('/products/{url_key}', [ShopProductController::class, 'show'])
         ->name('shop.products.show');
     Route::get('/cart', [ShopCartController::class, 'index'])->name('shop.cart.index');

@@ -28,7 +28,7 @@ function createCategoryAction(category, panelId, forceButton = false) {
         action.setAttribute('aria-controls', panelId);
         action.setAttribute('aria-expanded', 'false');
     } else {
-        action.href = '#';
+        action.href = category.url;
     }
 
     if (hasChildren) {
@@ -108,7 +108,10 @@ function initializeDesktop(categories, emptyLabel) {
         breadcrumb.replaceChildren(...path.map((category) => {
             const item = document.createElement('li');
             item.className = 'breadcrumb-item';
-            item.textContent = category.name;
+            const link = document.createElement('a');
+            link.href = category.url;
+            link.textContent = category.name;
+            item.append(link);
 
             return item;
         }));
@@ -266,7 +269,10 @@ function initializeMobile(categories, emptyLabel) {
         breadcrumb.replaceChildren(...path.map((category) => {
             const item = document.createElement('li');
             item.className = 'breadcrumb-item';
-            item.textContent = category.name;
+            const link = document.createElement('a');
+            link.href = category.url;
+            link.textContent = category.name;
+            item.append(link);
 
             return item;
         }));

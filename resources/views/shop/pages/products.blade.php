@@ -1,21 +1,43 @@
 @extends('shop.layouts.app')
 
-@section('title', __('shop.listing.title'))
+@section('title', $categoryTranslation?->meta_title ?: ($categoryTranslation?->name ?? __('shop.listing.title')))
 
 @section('meta')
-    <meta name="description" content="{{ __('shop.listing.meta_description') }}">
-    <link rel="canonical" href="{{ route('shop.products.index') }}">
+    <meta name="description" content="{{ $categoryTranslation?->meta_description ?: ($categoryTranslation ? __('shop.listing.category_meta_description', ['category' => $categoryTranslation->name]) : __('shop.listing.meta_description')) }}">
+    <link rel="canonical" href="{{ $canonicalUrl }}">
 @endsection
 
 @section('content')
     <section class="container-fluid py-5 bg-light">
         <div class="container">
+            @if ($category)
+                <nav aria-label="{{ __('shop.listing.breadcrumbs') }}" class="mb-3">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('shop.home') }}">{{ __('shop.navigation.home') }}</a></li>
+                        @foreach ($categoryBreadcrumbs as $breadcrumbCategory)
+                            @php($breadcrumbTranslation = $breadcrumbCategory->translations->first())
+                            <li class="breadcrumb-item {{ $breadcrumbCategory->is($category) ? 'active' : '' }}"
+                                @if ($breadcrumbCategory->is($category)) aria-current="page" @endif>
+                                @if ($breadcrumbCategory->is($category))
+                                    {{ $breadcrumbTranslation->name }}
+                                @else
+                                    <a href="{{ route('shop.categories.show', $breadcrumbTranslation->slug) }}">{{ $breadcrumbTranslation->name }}</a>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ol>
+                </nav>
+                @if ($categoryBannerUrl)
+                    <img src="{{ $categoryBannerUrl }}" alt="{{ $categoryTranslation->name }}"
+                        class="img-fluid w-100 rounded mb-4" data-category-banner>
+                @endif
+            @endif
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                 <div>
-                    <h1 class="display-6 mb-1">{{ __('shop.listing.title') }}</h1>
+                    <h1 class="display-6 mb-1">{{ $categoryTranslation?->name ?? __('shop.listing.title') }}</h1>
                     <p class="text-muted mb-0">{{ __('shop.listing.results', ['count' => $products->total()]) }}</p>
                 </div>
-                <form method="GET" action="{{ route('shop.products.index') }}" class="d-flex align-items-center gap-2">
+                <form method="GET" action="{{ $listingAction }}" class="d-flex align-items-center gap-2">
                     @foreach (request()->except(['sort', 'page']) as $name => $value)
                         @if (is_scalar($value))
                             <input type="hidden" name="{{ $name }}" value="{{ $value }}">

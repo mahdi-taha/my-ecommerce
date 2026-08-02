@@ -53,6 +53,7 @@ class AppServiceProvider extends ServiceProvider
                 return $nodes->map(fn (Category $category): array => [
                     'id' => $category->id,
                     'name' => $category->translations->first()->name,
+                    'url' => route('shop.categories.show', $category->translations->first()->slug),
                     'children' => $toNavigationArray($category->children),
                 ])->values()->all();
             };

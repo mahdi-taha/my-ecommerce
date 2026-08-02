@@ -556,6 +556,9 @@ return [
     'listing' => [
         'title' => 'المتجر',
         'meta_description' => 'تصفح المنتجات المتوفرة في متجرنا.',
+        'category_meta_description' => 'تصفح المنتجات المتوفرة في :category.',
+        'breadcrumbs' => 'مسار الفئة',
+        'category_navigation' => 'التنقل بين الفئات',
         'results' => 'تم العثور على :count منتج',
         'filters' => 'تصفية المنتجات',
         'search' => 'البحث عن المنتجات',

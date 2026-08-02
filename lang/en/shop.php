@@ -556,6 +556,9 @@ return [
     'listing' => [
         'title' => 'Shop',
         'meta_description' => 'Browse products available from our store.',
+        'category_meta_description' => 'Browse products available in :category.',
+        'breadcrumbs' => 'Category breadcrumb',
+        'category_navigation' => 'Category navigation',
         'results' => ':count products found',
         'filters' => 'Product filters',
         'search' => 'Search products',
