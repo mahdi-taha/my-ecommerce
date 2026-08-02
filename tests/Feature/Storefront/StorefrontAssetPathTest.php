@@ -34,8 +34,6 @@ class StorefrontAssetPathTest extends TestCase
             ->assertSee(asset('storefront-assets/css/style.css'), false)
             ->assertSee(asset('storefront-assets/lib/animate/animate.min.css'), false)
             ->assertSee(asset('storefront-assets/lib/owlcarousel/assets/owl.carousel.min.css'), false)
-            ->assertSee(asset('storefront-assets/img/carousel-1.png'), false)
-            ->assertSee(asset('storefront-assets/img/product-1.png'), false)
             ->assertDontSee('/shop/css/', false)
             ->assertDontSee('/shop/js/', false)
             ->assertDontSee('/shop/img/', false)

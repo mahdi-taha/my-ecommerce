@@ -4,6 +4,7 @@ namespace Tests\Feature\Identity;
 
 use App\Models\Cart;
 use App\Models\Category;
+use App\Models\CmsPage;
 use App\Models\User;
 use App\Services\GuestCartTokenService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -110,6 +111,25 @@ class CustomerAuthenticationReturnTest extends TestCase
         $category = Category::factory()->create();
         $category->translations()->create(['locale' => 'en', 'name' => 'Audio', 'slug' => 'audio']);
         $destination = route('shop.categories.show', 'audio');
+
+        $this->get(route('customer.login', ['return_to' => $destination]))
+            ->assertSessionHas('customer_return_to', $destination);
+        $this->post(route('customer.login.store'), $this->credentials($customer))
+            ->assertRedirect($destination)
+            ->assertSessionMissing('customer_return_to');
+    }
+
+    public function test_login_accepts_an_active_cms_page_as_a_public_return_destination(): void
+    {
+        $customer = $this->customer();
+        $page = CmsPage::query()->create(['code' => 'about', 'is_active' => true, 'sort_order' => 0]);
+        $page->translations()->create([
+            'locale' => 'en',
+            'title' => 'About Us',
+            'slug' => 'about-us',
+            'body' => 'About the store.',
+        ]);
+        $destination = route('shop.pages.show', 'about-us');
 
         $this->get(route('customer.login', ['return_to' => $destination]))
             ->assertSessionHas('customer_return_to', $destination);

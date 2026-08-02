@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Identity;
 
+use App\Models\CmsPage;
 use App\Models\User;
 use App\Services\GuestCartTokenService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,10 +15,18 @@ class CustomerLogoutRedirectTest extends TestCase
     public function test_public_storefront_destinations_are_preserved(): void
     {
         $customer = User::factory()->customer()->create();
+        $page = CmsPage::query()->create(['code' => 'about', 'is_active' => true, 'sort_order' => 0]);
+        $page->translations()->create([
+            'locale' => 'en',
+            'title' => 'About Us',
+            'slug' => 'about-us',
+            'body' => 'About the store.',
+        ]);
         $destinations = [
             route('shop.home'),
             route('shop.products.show', ['url_key' => 'example-product']),
             route('shop.categories.show', ['slug' => 'electronics']),
+            route('shop.pages.show', ['slug' => 'about-us']),
             route('shop.cart.index').'?source=header',
         ];
 

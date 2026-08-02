@@ -40,7 +40,7 @@ class AccessibilityMarkupTest extends TestCase
         $this->assertStringContainsString('aria-current="page"', $navigation);
         $this->assertStringContainsString('aria-label="{{ __(\'shop.account.navigation.label\') }}"', $navigation);
         $this->assertStringContainsString('alt="{{ $translation?->name ?? $product->sku }}"', $wishlist);
-        $this->assertStringContainsString('alt="{{ __(\'shop.hero.image_alt\') }}"', $hero);
+        $this->assertStringContainsString('alt="{{ $translation->image_alt?:$translation->title }}"', $hero);
     }
 
     public function test_admin_controls_and_customer_and_admin_tables_have_stable_semantics(): void

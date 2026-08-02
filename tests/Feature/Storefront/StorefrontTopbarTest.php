@@ -4,6 +4,7 @@ namespace Tests\Feature\Storefront;
 
 use App\Enums\NotificationAudienceCode;
 use App\Models\Category;
+use App\Models\CmsPage;
 use App\Models\DatabaseNotification;
 use App\Models\Setting;
 use App\Models\User;
@@ -133,6 +134,20 @@ class StorefrontTopbarTest extends TestCase
         $this->post(route('shop.locale.update', 'ar'), [
             'return_to' => route('shop.categories.show', 'phones', absolute: false).'?sort=price_asc',
         ])->assertRedirect(route('shop.categories.show', 'الهواتف', absolute: false).'?sort=price_asc');
+    }
+
+    public function test_locale_switch_translates_an_active_cms_page_slug_and_preserves_query(): void
+    {
+        $page = CmsPage::query()->create(['code' => 'about', 'is_active' => true, 'sort_order' => 0]);
+        $page->translations()->createMany([
+            ['locale' => 'en', 'title' => 'About Us', 'slug' => 'about-us', 'body' => 'About the store.'],
+            ['locale' => 'ar', 'title' => 'About Arabic', 'slug' => 'about-ar', 'body' => 'Arabic body.'],
+        ]);
+
+        $this->post(route('shop.locale.update', 'ar'), [
+            'return_to' => route('shop.pages.show', 'about-us', absolute: false).'?source=footer',
+        ])->assertRedirect(route('shop.pages.show', 'about-ar', absolute: false).'?source=footer')
+            ->assertSessionHas('storefront_locale', 'ar');
     }
 
     private function setSetting(string $group, string $key, ?string $value): void
