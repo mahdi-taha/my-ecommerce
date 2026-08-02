@@ -3,7 +3,8 @@
   $categoriesActive = request()->routeIs('admin.categories.*');
   $attributesActive = request()->routeIs('admin.attributes.*', 'admin.attribute-options.*');
   $inventoryActive = request()->routeIs('admin.inventory.*');
-  $catalogActive = $productsActive || $categoriesActive || $attributesActive || $inventoryActive;
+  $reviewsActive = request()->routeIs('admin.reviews.*');
+  $catalogActive = $productsActive || $categoriesActive || $attributesActive || $inventoryActive || $reviewsActive;
 @endphp
 
 <!-- Sidebar Start -->
@@ -78,6 +79,11 @@
                   </div>
                   <span class="hide-menu">Inventory</span>
                 </div>
+              </a>
+            </li>
+            <li class="sidebar-item">
+              <a class="sidebar-link justify-content-between {{ $reviewsActive ? 'active' : '' }}" href="{{ route('admin.reviews.index') }}">
+                <div class="d-flex align-items-center gap-3"><div class="round-16 d-flex align-items-center justify-content-center"><i class="ti ti-circle"></i></div><span class="hide-menu">Reviews</span></div>
               </a>
             </li>
           </ul>
