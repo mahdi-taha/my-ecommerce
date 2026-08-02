@@ -155,6 +155,49 @@
     }
 }
 
+/* Localized Category page hero. */
+.storefront-category-hero {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--bs-dark);
+}
+
+.storefront-category-hero-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.storefront-category-hero-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    padding: clamp(1rem, 4vw, 3rem);
+    background: linear-gradient(180deg, rgba(0, 0, 0, .08) 30%, rgba(0, 0, 0, .72) 100%);
+}
+
+.storefront-category-hero-title {
+    max-width: min(100%, 42rem);
+    overflow-wrap: anywhere;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, .55);
+}
+
+@media (min-width: 768px) {
+    .storefront-category-hero {
+        aspect-ratio: 16 / 7;
+    }
+}
+
+@media (min-width: 1200px) {
+    .storefront-category-hero {
+        aspect-ratio: 16 / 5;
+    }
+}
+
 /* Storefront header RTL corrections for the Electro LTR Bootstrap build. */
 [dir="rtl"] .storefront-topbar .dropdown-menu,
 [dir="rtl"] .storefront-navbar .dropdown-menu,

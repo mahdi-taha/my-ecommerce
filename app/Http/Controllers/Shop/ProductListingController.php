@@ -74,9 +74,10 @@ class ProductListingController extends Controller
         $defaultTax = $defaultTaxId ? Tax::query()->active()->find($defaultTaxId) : null;
         $categoryBreadcrumbs = $category ? $listingService->categoryBreadcrumbs($category) : collect();
         $categoryTranslation = $category?->translations->first();
-        $categoryBannerUrl = $category && filled($category->banner_path)
-            && Storage::disk('public')->exists($category->banner_path)
-                ? Storage::disk('public')->url($category->banner_path)
+        $categoryBannerPath = trim((string) $category?->banner_path);
+        $categoryBannerUrl = $categoryBannerPath !== ''
+            && Storage::disk('public')->exists($categoryBannerPath)
+                ? Storage::disk('public')->url($categoryBannerPath)
                 : null;
         $listingAction = $category
             ? route('shop.categories.show', $categoryTranslation->slug)

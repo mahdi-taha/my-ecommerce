@@ -28,13 +28,22 @@
                     </ol>
                 </nav>
                 @if ($categoryBannerUrl)
-                    <img src="{{ $categoryBannerUrl }}" alt="{{ $categoryTranslation->name }}"
-                        class="img-fluid w-100 rounded mb-4" data-category-banner>
+                    <section class="storefront-category-hero rounded mb-4" data-category-hero>
+                        <img src="{{ $categoryBannerUrl }}" alt="{{ $categoryTranslation->name }}"
+                            class="storefront-category-hero-image">
+                        <div class="storefront-category-hero-overlay">
+                            <h1 class="display-6 text-white mb-0 storefront-category-hero-title">
+                                {{ $categoryTranslation->name }}
+                            </h1>
+                        </div>
+                    </section>
                 @endif
             @endif
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                 <div>
-                    <h1 class="display-6 mb-1">{{ $categoryTranslation?->name ?? __('shop.listing.title') }}</h1>
+                    @if (! $categoryBannerUrl)
+                        <h1 class="display-6 mb-1">{{ $categoryTranslation?->name ?? __('shop.listing.title') }}</h1>
+                    @endif
                     <p class="text-muted mb-0">{{ __('shop.listing.results', ['count' => $products->total()]) }}</p>
                 </div>
                 <form method="GET" action="{{ $listingAction }}" class="d-flex align-items-center gap-2">
