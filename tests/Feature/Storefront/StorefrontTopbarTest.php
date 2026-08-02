@@ -6,6 +6,7 @@ use App\Enums\NotificationAudienceCode;
 use App\Models\Category;
 use App\Models\CmsPage;
 use App\Models\DatabaseNotification;
+use App\Models\Product;
 use App\Models\Setting;
 use App\Models\User;
 use Database\Seeders\SettingSeeder;
@@ -22,6 +23,7 @@ class StorefrontTopbarTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutVite();
 
         $this->seed(SettingSeeder::class);
     }
@@ -148,6 +150,24 @@ class StorefrontTopbarTest extends TestCase
             'return_to' => route('shop.pages.show', 'about-us', absolute: false).'?source=footer',
         ])->assertRedirect(route('shop.pages.show', 'about-ar', absolute: false).'?source=footer')
             ->assertSessionHas('storefront_locale', 'ar');
+    }
+
+    public function test_locale_switch_translates_product_url_key_or_returns_home_when_missing(): void
+    {
+        $product = Product::factory()->create();
+        $product->translations()->createMany([
+            ['locale' => 'en', 'name' => 'Camera', 'url_key' => 'camera'],
+            ['locale' => 'ar', 'name' => 'Arabic Camera', 'url_key' => 'camera-ar'],
+        ]);
+
+        $this->post(route('shop.locale.update', 'ar'), [
+            'return_to' => route('shop.products.show', 'camera', absolute: false),
+        ])->assertRedirect(route('shop.products.show', 'camera-ar', absolute: false));
+
+        $product->translations()->where('locale', 'ar')->delete();
+        $this->post(route('shop.locale.update', 'ar'), [
+            'return_to' => route('shop.products.show', 'camera', absolute: false),
+        ])->assertRedirect('/');
     }
 
     private function setSetting(string $group, string $key, ?string $value): void

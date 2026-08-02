@@ -14,6 +14,13 @@ class ConfigurableProductDetailsTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->withoutVite();
+    }
+
     public function test_configurable_parent_displays_only_options_used_by_active_variants(): void
     {
         [$parent, $color, $red, $blue, $green] = $this->configuredProduct();
@@ -23,6 +30,7 @@ class ConfigurableProductDetailsTest extends TestCase
 
         $this->get(route('shop.products.show', 'configurable-shirt'))
             ->assertOk()
+            ->assertSee('application/ld+json', false)
             ->assertSee('$ 100.00')
             ->assertSee('Color')
             ->assertSee('Red')

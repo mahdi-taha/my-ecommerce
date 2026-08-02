@@ -18,6 +18,7 @@ class CategoryListingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutVite();
         $this->seed(SettingSeeder::class);
     }
 
@@ -105,6 +106,7 @@ class CategoryListingTest extends TestCase
             ->assertSee('<h1 class="display-6 text-white mb-0 storefront-category-hero-title">', false)
             ->assertSee(Storage::disk('public')->url('categories/banner.webp'), false)
             ->assertSee('<link rel="canonical" href="'.$base.'?page=2">', false)
+            ->assertSee('<meta property="og:image" content="'.Storage::disk('public')->url('categories/banner.webp').'">', false)
             ->assertDontSee('<h1 class="display-6 mb-1">Books</h1>', false);
         $response->assertSeeInOrder([__('shop.listing.breadcrumbs'), 'data-category-hero'], false);
         $this->get($base.'?q=Book&page=2')->assertOk()

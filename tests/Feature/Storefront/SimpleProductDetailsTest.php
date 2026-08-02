@@ -17,6 +17,13 @@ class SimpleProductDetailsTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->withoutVite();
+    }
+
     public function test_standalone_simple_product_loads_by_current_locale_url_key(): void
     {
         $product = $this->product();
@@ -194,6 +201,8 @@ class SimpleProductDetailsTest extends TestCase
 
         $response
             ->assertOk()
+            ->assertSee(route('shop.categories.show', 'electronics'), false)
+            ->assertSee(route('shop.categories.show', 'cameras'), false)
             ->assertSeeInOrder([
                 'Home',
                 'Electronics',

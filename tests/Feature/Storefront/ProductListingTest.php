@@ -17,6 +17,7 @@ class ProductListingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutVite();
         $this->seed(SettingSeeder::class);
     }
 
@@ -39,7 +40,8 @@ class ProductListingTest extends TestCase
 
         $second = $this->get(route('shop.products.index', ['page' => 2]))->assertOk();
         $this->assertCount(1, $second->viewData('products')->items());
-        $second->assertSee('Product 1');
+        $second->assertSee('Product 1')
+            ->assertSee('<link rel="canonical" href="'.route('shop.products.index').'?page=2">', false);
     }
 
     public function test_search_sorting_and_flags_are_applied_in_sql(): void
