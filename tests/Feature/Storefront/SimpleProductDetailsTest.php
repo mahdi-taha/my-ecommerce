@@ -8,7 +8,9 @@ use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class SimpleProductDetailsTest extends TestCase
@@ -109,6 +111,10 @@ class SimpleProductDetailsTest extends TestCase
 
     public function test_gallery_places_base_image_before_remaining_sorted_images(): void
     {
+        Storage::fake('public');
+        foreach (['products/third.jpg', 'products/base.jpg', 'products/second.jpg'] as $path) {
+            Storage::disk('public')->put($path, 'image');
+        }
         $product = $this->product();
         $product->images()->createMany([
             ['path' => 'products/third.jpg', 'is_base' => false, 'sort_order' => 20],
@@ -123,6 +129,56 @@ class SimpleProductDetailsTest extends TestCase
                 '/storage/products/second.jpg',
                 '/storage/products/third.jpg',
             ], false);
+    }
+
+    public function test_single_valid_image_creates_one_main_image_and_thumbnail(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('products/only.jpg', 'image');
+        $product = $this->product();
+        $product->images()->create([
+            'path' => 'products/only.jpg',
+            'is_base' => true,
+            'sort_order' => 0,
+        ]);
+
+        $gallery = $this->gallery($this->get(route('shop.products.show', 'camera-en'))->assertOk()->getContent());
+
+        $this->assertSame(1, substr_count($gallery, 'class="single-item"'));
+        $this->assertSame(2, substr_count($gallery, '/storage/products/only.jpg'));
+        $this->assertStringNotContainsString('data-product-image-placeholder', $gallery);
+    }
+
+    public function test_invalid_and_absent_images_use_one_placeholder_without_invalid_sources(): void
+    {
+        Storage::fake('public');
+        $product = $this->product();
+        $product->images()->createMany([
+            ['path' => '', 'is_base' => true, 'sort_order' => 0],
+            ['path' => '   ', 'is_base' => false, 'sort_order' => 1],
+            ['path' => 'products/missing.jpg', 'is_base' => false, 'sort_order' => 2],
+        ]);
+
+        $gallery = $this->gallery($this->get(route('shop.products.show', 'camera-en'))->assertOk()->getContent());
+
+        $this->assertSame(1, substr_count($gallery, 'class="single-item"'));
+        $this->assertSame(1, substr_count($gallery, 'data-product-image-placeholder'));
+        $this->assertSame(1, substr_count($gallery, 'data-dot='));
+        $this->assertStringNotContainsString('products/missing.jpg', $gallery);
+        $this->assertStringNotContainsString('src=""', $gallery);
+        $this->assertStringNotContainsString('undefined', $gallery);
+    }
+
+    public function test_database_rejects_null_image_paths(): void
+    {
+        $product = $this->product();
+
+        $this->expectException(QueryException::class);
+        $product->images()->create([
+            'path' => null,
+            'is_base' => true,
+            'sort_order' => 0,
+        ]);
     }
 
     public function test_breadcrumb_uses_first_active_category_and_its_parent_hierarchy(): void
@@ -266,5 +322,18 @@ class SimpleProductDetailsTest extends TestCase
         ]);
 
         return $category;
+    }
+
+    private function gallery(string $content): string
+    {
+        $matched = preg_match(
+            '/<div class="single-carousel owl-carousel">(.*?)<div class="col-xl-6">/s',
+            $content,
+            $matches
+        );
+
+        $this->assertSame(1, $matched);
+
+        return $matches[1];
     }
 }

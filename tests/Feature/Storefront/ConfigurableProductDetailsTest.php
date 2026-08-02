@@ -7,6 +7,7 @@ use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ConfigurableProductDetailsTest extends TestCase
@@ -33,6 +34,8 @@ class ConfigurableProductDetailsTest extends TestCase
 
     public function test_variant_presentation_uses_variant_commerce_data_and_parent_content(): void
     {
+        Storage::fake('public');
+        Storage::disk('public')->put('products/red-shirt.jpg', 'image');
         [$parent, $color, $red] = $this->configuredProduct();
         $variant = $this->variant($parent, [$color->id => $red->id], stock: 3);
         $variant->update([
@@ -55,6 +58,37 @@ class ConfigurableProductDetailsTest extends TestCase
             ->assertSee('$ 75.00', false)
             ->assertSee('$ 90.00', false)
             ->assertSee('red-shirt.jpg', false);
+    }
+
+    public function test_variant_images_use_valid_files_and_javascript_never_sets_an_empty_source(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('products/parent.jpg', 'image');
+        Storage::disk('public')->put('products/valid-variant.jpg', 'image');
+        [$parent, $color, $red] = $this->configuredProduct();
+        $parent->images()->create([
+            'path' => 'products/parent.jpg',
+            'is_base' => true,
+            'sort_order' => 0,
+        ]);
+        $variant = $this->variant($parent, [$color->id => $red->id], stock: 3);
+        $variant->images()->createMany([
+            ['path' => 'products/missing-variant.jpg', 'is_base' => true, 'sort_order' => 0],
+            ['path' => 'products/valid-variant.jpg', 'is_base' => false, 'sort_order' => 1],
+        ]);
+
+        $this->get(route('shop.products.show', 'configurable-shirt'))
+            ->assertOk()
+            ->assertSee('products/parent.jpg', false)
+            ->assertSee('valid-variant.jpg', false)
+            ->assertDontSee('missing-variant.jpg', false)
+            ->assertDontSee('src=""', false)
+            ->assertDontSee('undefined', false);
+
+        $script = file_get_contents(resource_path('js/shop/configurable-product.js'));
+        $this->assertIsString($script);
+        $this->assertStringContainsString("image.removeAttribute('src')", $script);
+        $this->assertStringNotContainsString("image.setAttribute('src', imageUrl || '')", $script);
     }
 
     public function test_zero_price_variants_are_excluded_and_parent_remains_unavailable(): void
