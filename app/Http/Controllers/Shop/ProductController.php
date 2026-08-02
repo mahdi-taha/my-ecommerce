@@ -129,10 +129,26 @@ class ProductController extends Controller
         $breadcrumbCategories = $this->breadcrumbCategories($category);
         $specifications = $this->specifications($product);
         $galleryImages = $product->images
-            ->map(fn ($image) => [
-                'url' => Storage::disk('public')->url($image->path),
-                'is_base' => $image->is_base,
+            ->map(function ($image): ?array {
+                $url = $this->productImageUrl($image->path);
+
+                return $url === null
+                    ? null
+                    : [
+                        'url' => $url,
+                        'is_base' => $image->is_base,
+                        'is_placeholder' => false,
+                    ];
+            })
+            ->filter()
+            ->values();
+        if ($galleryImages->isEmpty()) {
+            $galleryImages->push([
+                'url' => null,
+                'is_base' => true,
+                'is_placeholder' => true,
             ]);
+        }
         $currencyCode = setting('currency.default_currency', 'USD');
         $taxMode = setting('tax.tax_mode', 'b2c');
         $defaultTax = $this->defaultTax();
@@ -236,8 +252,14 @@ class ProductController extends Controller
                 rtrim(number_format($taxRate, 4, '.', ''), '0'),
                 '.'
             );
-            $primaryImage = $variant->images->firstWhere('is_base', true)
-                ?? $variant->images->first();
+            $primaryImageUrl = $variant->images
+                ->sortBy([
+                    ['is_base', 'desc'],
+                    ['sort_order', 'asc'],
+                    ['id', 'asc'],
+                ])
+                ->map(fn ($image): ?string => $this->productImageUrl($image->path))
+                ->first(fn (?string $url): bool => $url !== null);
 
             $presentation[$key] = [
                 'options' => $options->all(),
@@ -264,9 +286,7 @@ class ProductController extends Controller
                     ])
                     : __('shop.product.out_of_stock'),
                 'in_stock' => (float) $available > 0,
-                'image_url' => $primaryImage
-                    ? Storage::disk('public')->url($primaryImage->path)
-                    : null,
+                'image_url' => $primaryImageUrl,
             ];
         }
 
@@ -342,6 +362,17 @@ class ProductController extends Controller
         return Tax::query()
             ->active()
             ->find($defaultTaxId);
+    }
+
+    private function productImageUrl(?string $path): ?string
+    {
+        $path = trim((string) $path);
+
+        if ($path === '' || ! Storage::disk('public')->exists($path)) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($path);
     }
 
     private function withWishlistState(Builder $query): void

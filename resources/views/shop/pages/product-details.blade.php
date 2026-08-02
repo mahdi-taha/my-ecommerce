@@ -27,27 +27,27 @@
                     <div class="row g-4 single-product">
                         <div class="col-xl-6" style="direction: ltr;">
                             <div class="single-carousel owl-carousel">
-                                @forelse ($galleryImages as $image)
+                                @foreach ($galleryImages as $image)
                                     <div class="single-item"
-                                        data-dot="<img class='img-fluid' src='{{ $image['url'] }}' alt=''>">
+                                        data-dot="{!! $image['is_placeholder']
+                                            ? '<span class=\'d-flex align-items-center justify-content-center text-muted\'><i class=\'bi bi-image\' aria-hidden=\'true\'></i></span>'
+                                            : '<img class=\'img-fluid\' src=\''.e($image['url']).'\' alt=\'\'>' !!}">
                                         <div class="single-inner bg-light rounded">
-                                            <img src="{{ $image['url'] }}" class="img-fluid rounded"
-                                                alt="{{ $translation->name }}"
-                                                @if ($loop->first) data-product-main-image @endif>
+                                            @if ($image['is_placeholder'])
+                                                <img class="img-fluid rounded d-none"
+                                                    alt="{{ $translation->name }}" data-product-main-image>
+                                                <div class="text-muted text-center" data-product-image-placeholder>
+                                                    <i class="bi bi-image fs-1 d-block mb-2"></i>
+                                                    {{ __('shop.product_details.image_unavailable') }}
+                                                </div>
+                                            @else
+                                                <img src="{{ $image['url'] }}" class="img-fluid rounded"
+                                                    alt="{{ $translation->name }}"
+                                                    @if ($loop->first) data-product-main-image @endif>
+                                            @endif
                                         </div>
                                     </div>
-                                @empty
-                                    <div class="single-item">
-                                        <div class="single-inner bg-light rounded">
-                                            <img src="" class="img-fluid rounded d-none"
-                                                alt="{{ $translation->name }}" data-product-main-image>
-                                            <div class="text-muted text-center" data-product-image-placeholder>
-                                                <i class="bi bi-image fs-1 d-block mb-2"></i>
-                                                {{ __('shop.product_details.image_unavailable') }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforelse
+                                @endforeach
                             </div>
                         </div>
 

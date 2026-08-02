@@ -116,7 +116,13 @@ export function initializeConfigurableProducts() {
 
             mainImages.forEach((image) => {
                 const imageUrl = variant?.image_url || parentImage;
-                image.setAttribute('src', imageUrl || '');
+
+                if (imageUrl) {
+                    image.setAttribute('src', imageUrl);
+                } else {
+                    image.removeAttribute('src');
+                }
+
                 image.classList.toggle('d-none', !imageUrl);
             });
             imagePlaceholders.forEach((placeholder) => {
