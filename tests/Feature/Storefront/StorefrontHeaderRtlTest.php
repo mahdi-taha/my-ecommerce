@@ -77,7 +77,14 @@ class StorefrontHeaderRtlTest extends TestCase
         $this->assertStringContainsString('[dir="rtl"] .storefront-category-menu .storefront-category-panel-menu', $css);
         $this->assertStringContainsString('[dir="rtl"] .storefront-category-action', $css);
         $this->assertStringContainsString('[dir="rtl"] .storefront-category-forward-icon', $css);
+        $this->assertStringContainsString('[dir="rtl"] .storefront-category-carousel', $css);
+        $this->assertStringContainsString('[dir="rtl"] .storefront-category-carousel.owl-carousel .owl-prev i', $css);
         $this->assertStringContainsString('border-inline-end', $css);
         $this->assertStringNotContainsString('[dir="ltr"] .storefront-navbar', $css);
+
+        $script = file_get_contents(resource_path('js/shop/homepage-category-carousel.js'));
+
+        $this->assertIsString($script);
+        $this->assertStringContainsString("rtl: document.documentElement.dir === 'rtl'", $script);
     }
 }

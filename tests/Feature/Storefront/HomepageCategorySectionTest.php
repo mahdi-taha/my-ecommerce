@@ -44,6 +44,12 @@ class HomepageCategorySectionTest extends TestCase
         $this->assertStringNotContainsString('Inactive Root', $section);
         $this->assertStringNotContainsString('Arabic Root', $section);
         $this->assertStringNotContainsString('products_count', $section);
+        $this->assertStringContainsString('data-homepage-category-carousel', $section);
+        $this->assertStringContainsString('data-category-count="2"', $section);
+        $this->assertStringContainsString('storefront-category-carousel-slide', $section);
+        $this->assertStringContainsString('storefront-category-carousel-media', $section);
+        $this->assertStringContainsString('storefront-category-carousel-name', $section);
+        $this->assertStringNotContainsString('owl-carousel', $section);
 
         $this->assertTrue($later->exists);
     }
@@ -63,8 +69,40 @@ class HomepageCategorySectionTest extends TestCase
             ->assertSee('alt="With Logo"', false)
             ->assertSeeInOrder(['Missing Logo', 'Without Logo'])
             ->assertSee('fas fa-th-large fa-3x text-muted', false)
+            ->assertSee('aria-hidden="true"', false)
             ->assertSee('href="'.route('shop.categories.show', 'with-logo').'"', false)
             ->assertDontSee('categories/logos/missing.png', false);
+    }
+
+    public function test_homepage_category_carousel_exposes_accessible_progressive_enhancement_hooks(): void
+    {
+        $this->category('Only Category');
+
+        $response = $this->get(route('shop.home'))->assertOk();
+        $section = $this->categorySection($response->getContent());
+
+        $this->assertStringContainsString('data-category-count="1"', $section);
+        $this->assertStringContainsString('data-previous-label="Previous categories"', $section);
+        $this->assertStringContainsString('data-next-label="Next categories"', $section);
+        $this->assertStringContainsString('aria-labelledby="homepage-categories-title"', $section);
+        $this->assertMatchesRegularExpression(
+            '/storefront-category-carousel-media.*storefront-category-carousel-name/s',
+            $section
+        );
+        $this->assertStringNotContainsString('owl-carousel', $section);
+
+        $script = file_get_contents(resource_path('js/shop/homepage-category-carousel.js'));
+
+        $this->assertIsString($script);
+        $this->assertStringContainsString('[0, 2]', $script);
+        $this->assertStringContainsString('[576, 3]', $script);
+        $this->assertStringContainsString('[768, 4]', $script);
+        $this->assertStringContainsString('[992, 5]', $script);
+        $this->assertStringContainsString('[1200, 6]', $script);
+        $this->assertStringContainsString('loop: categoryCount > capacity', $script);
+        $this->assertStringContainsString('nav: categoryCount > capacity', $script);
+        $this->assertStringContainsString('autoplay: false', $script);
+        $this->assertStringContainsString("classList.add('owl-carousel')", $script);
     }
 
     public function test_homepage_category_loading_uses_two_bounded_queries(): void
