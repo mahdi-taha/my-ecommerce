@@ -28,6 +28,7 @@ class AdminSidebarTest extends TestCase
             'admin.coupons.index',
             'admin.notifications.index',
             'admin.settings.index',
+            'admin.homepage-services.index',
         ] as $routeName) {
             $response->assertSee(route($routeName), false);
         }
@@ -75,6 +76,7 @@ class AdminSidebarTest extends TestCase
             'admin.coupons.index',
             'admin.notifications.index',
             'admin.settings.index',
+            'admin.homepage-services.index',
         ] as $routeName) {
             $response = $this->actingAs($admin, 'admin')->get(route($routeName));
 
@@ -102,6 +104,7 @@ class AdminSidebarTest extends TestCase
             "request()->routeIs('admin.coupons.*')",
             "request()->routeIs('admin.notifications.*')",
             "request()->routeIs('admin.settings.*')",
+            "request()->routeIs('admin.homepage-services.*')",
         ] as $routeMatcher) {
             $this->assertStringContainsString($routeMatcher, $sidebar);
         }

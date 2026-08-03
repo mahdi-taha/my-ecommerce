@@ -26,4 +26,20 @@ class CmsContentQueryTest extends TestCase
         $this->assertSame($first, count(DB::getQueryLog()));
         $this->assertLessThanOrEqual(2, $first);
     }
+
+    public function test_homepage_services_use_a_separate_locale_cache(): void
+    {
+        Cache::flush();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $service = app(StorefrontContentService::class);
+
+        $service->homepageServices('en');
+        $englishQueries = count(DB::getQueryLog());
+        $service->homepageServices('en');
+        $this->assertSame($englishQueries, count(DB::getQueryLog()));
+
+        $service->homepageServices('ar');
+        $this->assertGreaterThan($englishQueries, count(DB::getQueryLog()));
+    }
 }

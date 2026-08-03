@@ -1,10 +1,12 @@
 <?php
 
 use App\Models\Cart;
+use App\Models\HomepageService;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\CheckoutOrderPlacementService;
 use App\Services\DocumentNumberService;
+use App\Services\HomepageServiceService;
 use App\Services\OrderStatusService;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
@@ -46,6 +48,7 @@ try {
         ]),
         'checkout' => checkout($payload),
         'process_order' => processOrder($payload),
+        'activate_homepage_service' => activateHomepageService($payload),
         default => throw new RuntimeException("Unknown concurrency action [{$action}]."),
     };
 } catch (ValidationException $exception) {
@@ -86,5 +89,19 @@ function processOrder(array $payload): array
         'successful' => true,
         'order_id' => $order->getKey(),
         'status' => $order->status,
+    ];
+}
+
+/** @param array<string, mixed> $payload */
+function activateHomepageService(array $payload): array
+{
+    $service = app(HomepageServiceService::class)->update(
+        HomepageService::query()->findOrFail($payload['service_id']),
+        $payload['data']
+    );
+
+    return [
+        'successful' => true,
+        'service_id' => $service->getKey(),
     ];
 }
