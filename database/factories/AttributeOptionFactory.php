@@ -15,4 +15,9 @@ class AttributeOptionFactory extends Factory
         return ['attribute_id' => Attribute::factory()->state(['type' => AttributeType::Select->value]),
             'code' => fake()->unique()->slug(1), 'sort_order' => 0, 'swatch_value' => null];
     }
+
+    public function ordered(int $position): static
+    {
+        return $this->state(fn (): array => ['sort_order' => $position]);
+    }
 }
