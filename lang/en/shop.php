@@ -518,6 +518,8 @@ return [
     'categories' => [
         'title' => 'Shop by Category',
         'subtitle' => 'Browse our top categories and discover thousands of products.',
+        'previous' => 'Previous categories',
+        'next' => 'Next categories',
         'electronics' => 'Electronics',
         'fashion' => 'Fashion',
         'products_count' => ':count Products',

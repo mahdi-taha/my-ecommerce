@@ -518,6 +518,8 @@ return [
     'categories' => [
         'title' => 'تسوّق حسب الفئة',
         'subtitle' => 'تصفح أبرز فئاتنا واكتشف آلاف المنتجات.',
+        'previous' => 'الفئات السابقة',
+        'next' => 'الفئات التالية',
         'electronics' => 'إلكترونيات',
         'fashion' => 'أزياء',
         'products_count' => ':count منتج',
