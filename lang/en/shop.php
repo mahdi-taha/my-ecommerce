@@ -55,6 +55,7 @@ return [
     'home' => [
         'meta_description' => 'Discover products, offers, and categories from our online store.',
         'title' => 'Home',
+        'services' => 'Store services',
         'products_title' => 'Our Products',
         'products_subtitle' => 'Explore the latest products available in our store.',
         'all_products' => 'All Products',
@@ -512,21 +513,6 @@ return [
         'banner_product' => 'Apple iPad Mini G2356',
         'banner_original_price' => '$1,250.00',
         'banner_price' => '$1,050.00',
-    ],
-
-    'services' => [
-        'free_return' => 'Free Return',
-        'free_return_description' => '30-day money-back guarantee!',
-        'free_shipping' => 'Free Shipping',
-        'free_shipping_description' => 'Free shipping on all orders',
-        'support' => 'Support 24/7',
-        'support_description' => 'We provide online support 24 hours a day',
-        'gift_card' => 'Receive Gift Card',
-        'gift_card_description' => 'Receive a gift on orders over $50',
-        'secure_payment' => 'Secure Payment',
-        'secure_payment_description' => 'We value your security',
-        'online_service' => 'Online Service',
-        'online_service_description' => 'Free product returns within 30 days',
     ],
 
     'categories' => [

@@ -4,12 +4,16 @@ namespace App\Services;
 
 use App\Models\CmsPage;
 use App\Models\HomepageBanner;
+use App\Models\HomepageService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class StorefrontContentService
 {
+    /** @var array<string, Collection<int, HomepageService>> */
+    private array $resolvedServices = [];
+
     public function __construct(private StorefrontLocaleUrlService $urls) {}
 
     public function pages(string $locale): Collection
@@ -39,6 +43,32 @@ class StorefrontContentService
             $translation = $banner->translations->first();
             $translation?->setAttribute('link_url', $this->urls->normalizeStoredUrl($translation->link_url, $locale));
         })->values());
+    }
+
+    /** @return Collection<int, HomepageService> */
+    public function homepageServices(string $locale): Collection
+    {
+        return $this->resolvedServices[$locale] ??= Cache::rememberForever(
+            "storefront.homepage.services.{$locale}",
+            fn () => HomepageService::query()
+                ->active()
+                ->whereHas('translations', fn ($query) => $query
+                    ->where('locale', $locale)
+                    ->whereNotNull('title')
+                    ->whereNotNull('description'))
+                ->with(['translations' => fn ($query) => $query->where('locale', $locale)])
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get()
+                ->filter(function (HomepageService $service): bool {
+                    $translation = $service->translations->first();
+
+                    return filled(trim((string) $translation?->title))
+                        && filled(trim((string) $translation?->description));
+                })
+                ->take(HomepageServiceService::MAX_ACTIVE)
+                ->values()
+        );
     }
 
     public function external(?string $url): bool

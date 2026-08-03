@@ -55,6 +55,7 @@ return [
     'home' => [
         'meta_description' => 'اكتشف المنتجات والعروض والفئات في متجرنا الإلكتروني.',
         'title' => 'الرئيسية',
+        'services' => 'خدمات المتجر',
         'products_title' => 'منتجاتنا',
         'products_subtitle' => 'اكتشف أحدث المنتجات المتوفرة في متجرنا.',
         'all_products' => 'جميع المنتجات',
@@ -512,21 +513,6 @@ return [
         'banner_product' => 'آبل آيباد ميني G2356',
         'banner_original_price' => '1,250.00 دولارًا',
         'banner_price' => '1,050.00 دولارًا',
-    ],
-
-    'services' => [
-        'free_return' => 'إرجاع مجاني',
-        'free_return_description' => 'ضمان استرداد الأموال خلال 30 يومًا!',
-        'free_shipping' => 'شحن مجاني',
-        'free_shipping_description' => 'شحن مجاني على جميع الطلبات',
-        'support' => 'دعم على مدار الساعة',
-        'support_description' => 'نقدم الدعم عبر الإنترنت على مدار 24 ساعة',
-        'gift_card' => 'احصل على بطاقة هدية',
-        'gift_card_description' => 'احصل على هدية للطلبات التي تتجاوز 50 دولارًا',
-        'secure_payment' => 'دفع آمن',
-        'secure_payment_description' => 'نحن نحرص على أمانك',
-        'online_service' => 'خدمة عبر الإنترنت',
-        'online_service_description' => 'إرجاع مجاني للمنتجات خلال 30 يومًا',
     ],
 
     'categories' => [

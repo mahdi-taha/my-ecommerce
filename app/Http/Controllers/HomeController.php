@@ -119,6 +119,7 @@ class HomeController extends Controller
         $heroBanners = $homepageContent->where('placement', HomepageBannerPlacement::Hero);
         $heroSideBanners = $homepageContent->where('placement', HomepageBannerPlacement::HeroSide);
         $offerBanners = $homepageContent->where('placement', HomepageBannerPlacement::Offer);
+        $homepageServices = $this->content->homepageServices(app()->getLocale());
 
         return view('shop.pages.home', compact(
             'allProducts',
@@ -133,6 +134,7 @@ class HomeController extends Controller
             'heroBanners',
             'heroSideBanners',
             'offerBanners',
+            'homepageServices',
         ));
     }
 }
