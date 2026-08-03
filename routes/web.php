@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CmsPageController as AdminCmsPageController;
 use App\Http\Controllers\Admin\HomepageBannerController as AdminHomepageBannerController;
+use App\Http\Controllers\Admin\HomepageServiceController as AdminHomepageServiceController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\OrderCancellationRequestController as AdminOrderCancellationRequestController;
 use App\Http\Controllers\Admin\OrderCreationController as AdminOrderCreationController;
@@ -135,6 +136,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::patch('reviews/{review}', [AdminProductReviewController::class, 'update'])->name('reviews.update');
         Route::resource('cms-pages', AdminCmsPageController::class)->only(['index', 'edit', 'update']);
         Route::resource('homepage-banners', AdminHomepageBannerController::class)->except(['show']);
+        Route::resource('homepage-services', AdminHomepageServiceController::class)->except(['show']);
 
         Route::get('customers', [CustomerController::class, 'index'])
             ->name('customers.index');

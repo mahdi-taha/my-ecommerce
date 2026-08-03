@@ -20,6 +20,7 @@ export default defineConfig({
                 'resources/js/admin/reviews.js',
                 'resources/js/admin/cms-pages.js',
                 'resources/js/admin/homepage-banners.js',
+                'resources/js/admin/homepage-services.js',
             ],
             refresh: true,
         }),
