@@ -606,6 +606,25 @@ return [
         'errors' => ['duplicate' => 'You have already reviewed this product.', 'not_eligible' => 'A completed purchase is required to review this product.', 'throttled' => 'Too many review attempts. Please try again in one minute.'],
     ],
 
+    'order_print' => [
+        'title' => 'Order', 'print_order' => 'Print Order', 'print' => 'Print',
+        'order_summary' => 'Order Summary', 'order_details' => 'Order Details',
+        'placed_at' => 'Placed Date', 'order_status' => 'Order Status',
+        'payment_status' => 'Payment Status', 'fulfillment_status' => 'Fulfillment Status',
+        'currency' => 'Currency', 'customer' => 'Customer',
+        'billing_address' => 'Billing Address', 'shipping_address' => 'Shipping Address',
+        'same_as_billing' => 'Same as billing address', 'items' => 'Order Items',
+        'product' => 'Product', 'sku' => 'SKU', 'quantity' => 'Quantity',
+        'unit_price' => 'Unit Price', 'subtotal' => 'Subtotal', 'discount' => 'Discount',
+        'tax' => 'Tax', 'line_total' => 'Line Total', 'no_items' => 'No Order Items.',
+        'payment' => 'Payment', 'shipping' => 'Shipping', 'method' => 'Method',
+        'status' => 'Status', 'amount_paid' => 'Amount Paid', 'type' => 'Type',
+        'amount' => 'Amount', 'refunds' => 'Refunds', 'refund_number' => 'Refund Number',
+        'date' => 'Date', 'merchandise_refund' => 'Merchandise Refund',
+        'shipping_deduction' => 'Shipping Deduction', 'customer_refund' => 'Customer Refund',
+        'totals' => 'Order Totals', 'grand_total' => 'Grand Total',
+    ],
+
     'payment_instructions' => [
         'heading' => 'Payment Instructions',
         'amount_to_pay' => 'Amount to Pay',

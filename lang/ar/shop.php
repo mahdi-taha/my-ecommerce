@@ -606,6 +606,25 @@ return [
         'errors' => ['duplicate' => 'لقد قيّمت هذا المنتج مسبقاً.', 'not_eligible' => 'يلزم شراء مكتمل لتقييم هذا المنتج.', 'throttled' => 'محاولات تقييم كثيرة. يرجى المحاولة بعد دقيقة.'],
     ],
 
+    'order_print' => [
+        'title' => 'الطلب', 'print_order' => 'طباعة الطلب', 'print' => 'طباعة',
+        'order_summary' => 'ملخص الطلب', 'order_details' => 'تفاصيل الطلب',
+        'placed_at' => 'تاريخ الطلب', 'order_status' => 'حالة الطلب',
+        'payment_status' => 'حالة الدفع', 'fulfillment_status' => 'حالة التنفيذ',
+        'currency' => 'العملة', 'customer' => 'العميل',
+        'billing_address' => 'عنوان الفوترة', 'shipping_address' => 'عنوان الشحن',
+        'same_as_billing' => 'نفس عنوان الفوترة', 'items' => 'عناصر الطلب',
+        'product' => 'المنتج', 'sku' => 'رمز المنتج', 'quantity' => 'الكمية',
+        'unit_price' => 'سعر الوحدة', 'subtotal' => 'المجموع الفرعي', 'discount' => 'الخصم',
+        'tax' => 'الضريبة', 'line_total' => 'إجمالي السطر', 'no_items' => 'لا توجد عناصر في الطلب.',
+        'payment' => 'الدفع', 'shipping' => 'الشحن', 'method' => 'الطريقة',
+        'status' => 'الحالة', 'amount_paid' => 'المبلغ المدفوع', 'type' => 'النوع',
+        'amount' => 'المبلغ', 'refunds' => 'المبالغ المستردة', 'refund_number' => 'رقم الاسترداد',
+        'date' => 'التاريخ', 'merchandise_refund' => 'استرداد البضاعة',
+        'shipping_deduction' => 'خصم الشحن', 'customer_refund' => 'مبلغ العميل المسترد',
+        'totals' => 'إجماليات الطلب', 'grand_total' => 'الإجمالي النهائي',
+    ],
+
     'payment_instructions' => [
         'heading' => 'تعليمات الدفع',
         'amount_to_pay' => 'المبلغ المطلوب',

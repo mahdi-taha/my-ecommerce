@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/css/styles.min.css',
                 'resources/css/myStyle.css',
+                'resources/css/order-print.css',
                 'resources/js/app.js',
                 'resources/js/shop.js',
                 'resources/js/admin/categories.js',

@@ -1,0 +1,237 @@
+:root {
+    color: #111;
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    color: #111;
+    background: #f3f4f6;
+}
+
+.order-print-document {
+    width: min(100% - 2rem, 1100px);
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #fff;
+    box-shadow: 0 1px 8px rgb(0 0 0 / 12%);
+}
+
+.order-print-actions {
+    margin-block-end: 1.5rem;
+    text-align: end;
+}
+
+.order-print-actions button {
+    padding: .65rem 1.25rem;
+    color: #fff;
+    background: #222;
+    border: 1px solid #222;
+    border-radius: .25rem;
+    cursor: pointer;
+}
+
+.order-print-header,
+.order-print-addresses,
+.order-print-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+
+.order-print-header {
+    align-items: start;
+    padding-block-end: 1.5rem;
+    border-block-end: 2px solid #111;
+}
+
+.order-print-header h1,
+.order-print-header h2,
+.order-print-section h2 {
+    margin-block: 0 .75rem;
+}
+
+.order-print-heading {
+    text-align: end;
+}
+
+.order-print-logo {
+    display: block;
+    max-width: 180px;
+    max-height: 80px;
+    margin-block-end: .75rem;
+    object-fit: contain;
+}
+
+.order-print-section {
+    margin-block-start: 1.5rem;
+    break-inside: avoid;
+}
+
+.order-print-section h2 {
+    font-size: 1.1rem;
+}
+
+.order-print-facts dl,
+.order-print-compact-list,
+.order-print-totals dl {
+    margin: 0;
+}
+
+.order-print-facts dl {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: .75rem;
+}
+
+dl div {
+    min-width: 0;
+}
+
+dt {
+    color: #444;
+    font-size: .82rem;
+    font-weight: 600;
+}
+
+dd {
+    margin: .25rem 0 0;
+    overflow-wrap: anywhere;
+}
+
+address,
+p {
+    margin: 0;
+    font-style: normal;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.order-print-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+th,
+td {
+    padding: .55rem;
+    vertical-align: top;
+    border: 1px solid #777;
+    text-align: start;
+    overflow-wrap: anywhere;
+}
+
+th {
+    background: #eee;
+    font-size: .78rem;
+}
+
+tr {
+    break-inside: avoid;
+}
+
+.order-print-items th:first-child,
+.order-print-items td:first-child {
+    width: 24%;
+}
+
+td small {
+    display: block;
+    margin-block-start: .2rem;
+    color: #444;
+}
+
+.number {
+    text-align: end;
+}
+
+.order-print-context-row td {
+    background: #e5e5e5;
+}
+
+.order-print-child-row td:first-child {
+    padding-inline-start: 1.5rem;
+}
+
+.order-print-compact-list div,
+.order-print-totals dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: .35rem;
+}
+
+.order-print-totals {
+    width: min(100%, 380px);
+    margin-inline-start: auto;
+}
+
+.order-print-totals .grand-total {
+    margin-block-start: .4rem;
+    padding-block-start: .75rem;
+    border-block-start: 2px solid #111;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+@media (max-width: 760px) {
+    .order-print-header,
+    .order-print-addresses,
+    .order-print-summary-grid,
+    .order-print-facts dl {
+        grid-template-columns: 1fr;
+    }
+
+    .order-print-document {
+        width: 100%;
+        margin: 0;
+        padding: 1rem;
+        box-shadow: none;
+    }
+}
+
+@page {
+    size: auto;
+    margin: 12mm;
+}
+
+@media print {
+    :root {
+        font-size: 10pt;
+    }
+
+    body {
+        background: #fff;
+    }
+
+    .order-print-document {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+    }
+
+    .order-print-actions {
+        display: none !important;
+    }
+
+    .order-print-table-wrap {
+        overflow: visible;
+    }
+
+    thead {
+        display: table-header-group;
+    }
+}
