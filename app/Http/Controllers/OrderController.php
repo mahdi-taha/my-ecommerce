@@ -7,6 +7,7 @@ use App\Enums\OrderCancellationRequestStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
+use App\Presenters\OrderPrintPresenter;
 use App\Services\OrderCancellationRequestService;
 use App\Services\OrderStatusService;
 use App\Services\PaymentStatusService;
@@ -25,7 +26,8 @@ class OrderController extends Controller
     public function __construct(
         private OrderStatusService $orderStatusService,
         private PaymentStatusService $paymentStatusService,
-        private OrderCancellationRequestService $cancellationRequests
+        private OrderCancellationRequestService $cancellationRequests,
+        private OrderPrintPresenter $orderPrint
     ) {}
 
     public function index(Request $request): JsonResponse|View
@@ -238,6 +240,11 @@ class OrderController extends Controller
             'paymentBadgeClasses',
             'availableActions'
         ));
+    }
+
+    public function printOrder(Order $order): View
+    {
+        return view('orders.print', $this->orderPrint->present($order));
     }
 
     public function process(Order $order): RedirectResponse

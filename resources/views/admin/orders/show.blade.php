@@ -21,7 +21,11 @@
                                 {!! $badges['fulfillment'] !!}
                             </div>
                         </div>
-                        <a href="{{ route('admin.orders.index') }}" class="btn btn-transparent">Back to Orders</a>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ route('admin.orders.print', ['order' => $order]) }}"
+                                class="btn btn-outline-secondary" target="_blank" rel="noopener">Print Order</a>
+                            <a href="{{ route('admin.orders.index') }}" class="btn btn-transparent">Back to Orders</a>
+                        </div>
                     </div>
 
                     @if (in_array($order->payment_status, [\App\Enums\PaymentStatus::Paid->value, \App\Enums\PaymentStatus::PartiallyRefunded->value], true))

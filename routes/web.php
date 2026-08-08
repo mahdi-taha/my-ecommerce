@@ -246,6 +246,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('orders.lookups.products.configuration');
         Route::get('orders/{order}', [OrderController::class, 'show'])
             ->name('orders.show');
+        Route::get('orders/{order}/print', [OrderController::class, 'printOrder'])
+            ->name('orders.print');
         Route::post('orders/{order}/process', [OrderController::class, 'process'])
             ->name('orders.process');
         Route::post('orders/{order}/out-for-delivery', [OrderController::class, 'markOutForDelivery'])
