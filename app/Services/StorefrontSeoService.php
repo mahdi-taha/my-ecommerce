@@ -153,6 +153,7 @@ class StorefrontSeoService
         foreach (StorefrontLocaleUrlService::LOCALES as $locale) {
             $urls->push(route('shop.home', ['locale' => $locale]));
             $urls->push(route('shop.products.index', ['locale' => $locale]));
+            $urls->push(route('shop.products.top-selling', ['locale' => $locale]));
 
             foreach ($this->reachableCategories($categories, $locale) as $category) {
                 $translation = $category->translations->firstWhere('locale', $locale);
