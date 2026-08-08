@@ -22,6 +22,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\Shop\Account\NotificationController as ShopAccountNotificationController;
 use App\Http\Controllers\Shop\Account\OrderCancellationRequestController as ShopOrderCancellationRequestController;
@@ -39,8 +40,20 @@ use App\Http\Controllers\Shop\ProductReviewController as ShopProductReviewContro
 use App\Http\Controllers\Shop\WishlistController as ShopWishlistController;
 use App\Http\Controllers\VariantController;
 use App\Http\Middleware\ShareStorefrontWishlist;
+use App\Http\Middleware\EnforceActiveCustomerSession;
+use App\Http\Middleware\SetStorefrontLocale;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+
+Route::get('/robots.txt', [SeoController::class, 'robots'])
+    ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, ValidateCsrfToken::class, SetStorefrontLocale::class, EnforceActiveCustomerSession::class])
+    ->name('seo.robots');
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])
+    ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, ValidateCsrfToken::class, SetStorefrontLocale::class, EnforceActiveCustomerSession::class])
+    ->name('seo.sitemap');
 
 Route::prefix('{locale}')->whereIn('locale', ['en', 'ar'])->group(function () {
     Route::post('/locale/{targetLocale}', ShopLocaleController::class)
