@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\NotificationEventCode;
 use App\Enums\PaymentStatus;
 use App\Enums\ShippingTreatment;
+use App\Events\CommerceEventOccurred;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderPayment;
@@ -126,6 +128,11 @@ class RefundService
                     $refund,
                     $target,
                     (int) $lockedAdmin->getKey(),
+                );
+                CommerceEventOccurred::dispatch(
+                    NotificationEventCode::PaymentRefunded,
+                    'refund',
+                    (int) $refund->getKey(),
                 );
 
                 return $refund->fresh(['items', 'order', 'payment', 'creator']);

@@ -425,6 +425,10 @@ return [
                 'title' => 'تم تقديم الطلب',
                 'body' => 'تم تقديم الطلب رقم :order_number.',
             ],
+            'payment_refunded' => [
+                'title' => 'اكتمل استرداد المبلغ',
+                'body' => 'اكتمل الاسترداد :refund_number بمبلغ :refund_amount للطلب :order_number.',
+            ],
             'order_completed' => [
                 'title' => 'اكتمل الطلب',
                 'body' => 'اكتمل الطلب رقم :order_number.',

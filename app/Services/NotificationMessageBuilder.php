@@ -7,6 +7,7 @@ use App\Enums\NotificationEventCode;
 use App\Models\Order;
 use App\Models\OrderCancellationRequest;
 use App\Models\OrderPayment;
+use App\Models\Refund;
 
 class NotificationMessageBuilder
 {
@@ -49,6 +50,8 @@ class NotificationMessageBuilder
         $replacements = [
             'order_number' => $context['order_number'],
             'payment_number' => $context['payment_number'] ?? '',
+            'refund_number' => $context['refund_number'] ?? '',
+            'refund_amount' => $context['refund_amount'] ?? '',
         ];
 
         return [
@@ -83,6 +86,22 @@ class NotificationMessageBuilder
             ]);
         }
 
+        if ($decision->entityType === 'refund' && $decision->event === NotificationEventCode::PaymentRefunded->value) {
+            $refund = Refund::query()
+                ->with('order:id,user_id,order_number,locale')
+                ->find($decision->entityId, ['id', 'order_id', 'refund_number', 'currency_code', 'customer_refund_amount']);
+
+            if (! $refund?->order) {
+                return null;
+            }
+
+            return $this->orderContext($refund->order, [
+                'refund_id' => $refund->getKey(),
+                'refund_number' => $refund->refund_number,
+                'refund_amount' => $refund->currency_code.' '.$refund->customer_refund_amount,
+            ]);
+        }
+
         if ($decision->entityType === 'order_cancellation_request'
             && in_array($decision->event, self::CANCELLATION_EVENTS, true)) {
             $request = OrderCancellationRequest::query()
@@ -106,6 +125,8 @@ class NotificationMessageBuilder
         return [
             'order_number' => $order->order_number,
             'payment_number' => $extraPayload['payment_number'] ?? null,
+            'refund_number' => $extraPayload['refund_number'] ?? null,
+            'refund_amount' => $extraPayload['refund_amount'] ?? null,
             'customer_id' => $order->user_id ? (int) $order->user_id : null,
             'customer_locale' => $order->locale,
             'payload' => array_merge([

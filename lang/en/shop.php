@@ -425,6 +425,10 @@ return [
                 'title' => 'Order placed',
                 'body' => 'Order #:order_number has been placed.',
             ],
+            'payment_refunded' => [
+                'title' => 'Refund completed',
+                'body' => 'Refund :refund_number for :refund_amount was completed for Order :order_number.',
+            ],
             'order_completed' => [
                 'title' => 'Order completed',
                 'body' => 'Order #:order_number has been completed.',
