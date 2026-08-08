@@ -327,6 +327,8 @@ Route::prefix('{locale}')->whereIn('locale', ['en', 'ar'])->group(function () {
                 ->name('orders.index');
             Route::get('orders/{order}', [ShopAccountOrderController::class, 'show'])
                 ->name('orders.show');
+            Route::get('orders/{order}/print', [ShopAccountOrderController::class, 'printOrder'])
+                ->name('orders.print');
             Route::get('reviews', [ShopAccountReviewController::class, 'index'])->name('reviews.index');
             Route::get('reviews/{review}/edit', [ShopAccountReviewController::class, 'edit'])->name('reviews.edit');
             Route::put('reviews/{review}', [ShopAccountReviewController::class, 'update'])->name('reviews.update');

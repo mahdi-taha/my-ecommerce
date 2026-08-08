@@ -12,9 +12,15 @@
             <h1 class="h3 mb-1">{{ __('shop.account.orders.order_details') }}</h1>
             <span class="text-muted">{{ $order->order_number }}</span>
         </div>
-        <a class="btn btn-outline-secondary" href="{{ route('shop.account.orders.index') }}">
-            {{ __('shop.account.orders.back_to_orders') }}
-        </a>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-secondary" href="{{ route('shop.account.orders.print', ['order' => $order]) }}"
+                target="_blank" rel="noopener">
+                {{ __('shop.order_print.print_order') }}
+            </a>
+            <a class="btn btn-outline-secondary" href="{{ route('shop.account.orders.index') }}">
+                {{ __('shop.account.orders.back_to_orders') }}
+            </a>
+        </div>
     </div>
 
     <div class="card shadow-sm border-0 mb-4"><div class="card-body p-4">

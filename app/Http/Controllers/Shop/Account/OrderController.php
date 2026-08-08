@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Shop\Account;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Presenters\ManualPaymentInstructionsPresenter;
+use App\Presenters\OrderPrintPresenter;
 use App\Services\OrderCancellationRequestService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -13,7 +14,8 @@ class OrderController extends Controller
 {
     public function __construct(
         private ManualPaymentInstructionsPresenter $paymentInstructions,
-        private OrderCancellationRequestService $cancellationRequests
+        private OrderCancellationRequestService $cancellationRequests,
+        private OrderPrintPresenter $orderPrint
     ) {}
 
     public function index(Request $request): View
@@ -29,10 +31,7 @@ class OrderController extends Controller
 
     public function show(Request $request, Order $order): View
     {
-        abort_unless(
-            (int) $order->user_id === (int) $request->user('customer')->getKey(),
-            404
-        );
+        $this->authorizeOwnedOrder($request, $order);
 
         $order->load([
             'addresses',
@@ -60,5 +59,20 @@ class OrderController extends Controller
             'manualPayment',
             'canRequestCancellation'
         ));
+    }
+
+    public function printOrder(Request $request, Order $order): View
+    {
+        $this->authorizeOwnedOrder($request, $order);
+
+        return view('orders.print', $this->orderPrint->present($order));
+    }
+
+    private function authorizeOwnedOrder(Request $request, Order $order): void
+    {
+        abort_unless(
+            (int) $order->user_id === (int) $request->user('customer')->getKey(),
+            404
+        );
     }
 }
