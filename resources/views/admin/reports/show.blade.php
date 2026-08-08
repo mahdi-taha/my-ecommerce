@@ -1,0 +1,6 @@
+<x-admin-main :page="$report->title()"><x-slot name="header">@vite(['resources/css/app.css', 'resources/css/styles.min.css', 'resources/css/myStyle.css', 'resources/js/app.js'])</x-slot>
+<div class="page-wrapper" id="main-wrapper"><x-admin-sidebar /><div class="body-wrapper"><x-admin-topbar /><div class="container-fluid py-4"><div class="d-flex justify-content-between"><h3>{{ $report->title() }}</h3><a href="{{ route('admin.reports.index') }}" class="btn btn-outline-secondary">All Reports</a></div>
+@include('admin.reports._filters')
+<div class="row g-3 mb-4">@foreach($summary as $label=>$value)<div class="col-md-3"><div class="card card-body h-100"><small class="text-muted">{{ str($label)->headline() }}</small><strong>{{ $value }}</strong></div></div>@endforeach</div>
+<div class="card"><div class="card-body table-responsive"><table class="table"><thead><tr>@foreach($report->columns() as $label)<th>{{ $label }}</th>@endforeach</tr></thead><tbody>@forelse($rows as $row)<tr>@foreach(array_keys($report->columns()) as $key)<td>{{ data_get($row,$key) }}</td>@endforeach</tr>@empty<tr><td colspan="{{ count($report->columns()) }}">No results.</td></tr>@endforelse</tbody></table>{{ $rows->withQueryString()->links() }}</div></div>
+</div></div></div></x-admin-main>

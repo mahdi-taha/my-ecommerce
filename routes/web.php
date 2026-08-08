@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\OrderCancellationRequestController as AdminOrderC
 use App\Http\Controllers\Admin\OrderCreationController as AdminOrderCreationController;
 use App\Http\Controllers\Admin\ProductReviewController as AdminProductReviewController;
 use App\Http\Controllers\Admin\RefundController as AdminRefundController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\AttributeOptionController;
@@ -156,6 +157,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('refunds/create', [AdminRefundController::class, 'create'])->name('refunds.create');
         Route::post('refunds', [AdminRefundController::class, 'store'])->name('refunds.store');
         Route::get('refunds/{refund}', [AdminRefundController::class, 'show'])->name('refunds.show');
+        Route::get('reports', [AdminReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/{report}', [AdminReportController::class, 'show'])->name('reports.show');
 
         Route::get('customers', [CustomerController::class, 'index'])
             ->name('customers.index');
