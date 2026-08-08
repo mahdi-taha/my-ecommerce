@@ -146,6 +146,11 @@ class ConfigurablePriceRangeTest extends TestCase
         $script = file_get_contents(resource_path('js/shop/configurable-product.js'));
         $this->assertStringContainsString('initialPriceNodes', $script);
         $this->assertStringContainsString('node.cloneNode(true)', $script);
+        $this->assertStringContainsString('selectedValue', $script);
+        $this->assertStringContainsString('optionControls', $script);
+        $this->assertStringContainsString('clearSelection(group)', $script);
+        $this->assertStringContainsString('option.disabled = !variants.some', $script);
+        $this->assertStringNotContainsString('Array.from(selector.options)', $script);
     }
 
     public function test_variant_resolution_refuses_to_lazy_load_relations(): void

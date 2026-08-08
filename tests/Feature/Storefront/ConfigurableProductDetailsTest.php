@@ -6,7 +6,9 @@ use App\Enums\ProductType;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Product;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -68,6 +70,126 @@ class ConfigurableProductDetailsTest extends TestCase
             ->assertSee('red-shirt.jpg', false);
     }
 
+    public function test_color_swatch_uses_native_radio_safe_color_and_visible_localized_name(): void
+    {
+        [$parent, $color, $red] = $this->configuredProduct();
+        $color->update(['swatch_type' => 'color']);
+        $red->update(['swatch_value' => '#aa0000']);
+        $this->variant($parent, [$color->id => $red->id], stock: 4);
+
+        $this->get(route('shop.products.show', 'configurable-shirt'))
+            ->assertOk()
+            ->assertSee('type="radio"', false)
+            ->assertSee('name="options['.$color->id.']"', false)
+            ->assertSee('style="--storefront-swatch-color: #AA0000"', false)
+            ->assertSee('aria-hidden="true"', false)
+            ->assertSee('Red');
+    }
+
+    public function test_invalid_legacy_color_uses_safe_fallback_without_outputting_css(): void
+    {
+        [$parent, $color, $red] = $this->configuredProduct();
+        $color->update(['swatch_type' => 'color']);
+        $red->update(['swatch_value' => '#000000;background:url(evil)']);
+        $this->variant($parent, [$color->id => $red->id], stock: 4);
+
+        $this->get(route('shop.products.show', 'configurable-shirt'))
+            ->assertOk()
+            ->assertSee('storefront-configurable-option__swatch--missing', false)
+            ->assertDontSee('background:url(evil)', false)
+            ->assertSee('Red');
+    }
+
+    public function test_text_swatch_uses_a_labeled_native_radio_group(): void
+    {
+        [$parent, $color, $red] = $this->configuredProduct();
+        $color->update(['swatch_type' => 'text']);
+        $this->variant($parent, [$color->id => $red->id], stock: 4);
+
+        $this->get(route('shop.products.show', 'configurable-shirt'))
+            ->assertOk()
+            ->assertSee('<fieldset', false)
+            ->assertSee('<legend class="form-label fw-semibold">', false)
+            ->assertSee('type="radio"', false)
+            ->assertSee('for="configurable_attribute_'.$color->id.'_option_'.$red->id.'"', false);
+    }
+
+    public function test_null_swatch_falls_back_to_localized_dropdown(): void
+    {
+        [$parent, $color, $red] = $this->configuredProduct();
+        $color->update(['swatch_type' => null]);
+        $this->variant($parent, [$color->id => $red->id], stock: 4);
+
+        $this->get(route('shop.products.show', 'configurable-shirt'))
+            ->assertOk()
+            ->assertSee('data-configurable-control="dropdown"', false)
+            ->assertSee('<select', false)
+            ->assertSee(__('shop.product_details.choose_attribute', ['attribute' => 'Color']));
+    }
+
+    public function test_arabic_swatch_keeps_localized_attribute_and_option_names_visible(): void
+    {
+        [$parent, $color, $red] = $this->configuredProduct();
+        $color->update(['swatch_type' => 'color']);
+        $red->update(['swatch_value' => '#FF0000']);
+        $this->variant($parent, [$color->id => $red->id], stock: 4);
+
+        $this->get(route('shop.products.show', [
+            'locale' => 'ar',
+            'url_key' => 'configurable-shirt-ar',
+        ]))->assertOk()
+            ->assertSee('اللون')
+            ->assertSee('أحمر')
+            ->assertSee('dir="rtl"', false);
+    }
+
+    public function test_configurable_attributes_use_configured_sort_order_then_id(): void
+    {
+        [$parent, $color, $red] = $this->configuredProduct();
+        $color->update(['sort_order' => 20]);
+        $size = Attribute::factory()->create([
+            'type' => 'select',
+            'swatch_type' => 'text',
+            'is_configurable' => true,
+            'is_active' => true,
+            'sort_order' => 5,
+        ]);
+        $size->translations()->create(['locale' => 'en', 'admin_name' => 'Size']);
+        $small = $this->option($size, 'small', 'Small');
+        $sizeSuperAttribute = $parent->superAttributes()->create(['attribute_id' => $size->id]);
+        $sizeSuperAttribute->options()->sync([$small->id]);
+        $this->variant($parent, [
+            $color->id => $red->id,
+            $size->id => $small->id,
+        ], stock: 4);
+
+        $this->get(route('shop.products.show', 'configurable-shirt'))
+            ->assertOk()
+            ->assertSeeInOrder(['Size', 'Color']);
+    }
+
+    public function test_product_details_queries_do_not_grow_with_swatch_option_count(): void
+    {
+        [$parent, $color, $red, $blue] = $this->configuredProduct();
+        $this->variant($parent, [$color->id => $red->id], stock: 4);
+        $this->get(route('shop.products.show', 'configurable-shirt'))->assertOk();
+        $phase = 'small';
+        $counts = ['small' => 0, 'large' => 0];
+        DB::listen(function (QueryExecuted $query) use (&$phase, &$counts): void {
+            if (isset($counts[$phase])) {
+                $counts[$phase]++;
+            }
+        });
+
+        $this->get(route('shop.products.show', 'configurable-shirt'))->assertOk();
+        $phase = 'setup';
+        $this->variant($parent, [$color->id => $blue->id], stock: 4);
+        $phase = 'large';
+        $this->get(route('shop.products.show', 'configurable-shirt'))->assertOk();
+
+        $this->assertSame($counts['small'], $counts['large']);
+    }
+
     public function test_variant_images_use_valid_files_and_javascript_never_sets_an_empty_source(): void
     {
         Storage::fake('public');
@@ -113,12 +235,17 @@ class ConfigurableProductDetailsTest extends TestCase
     {
         $color = Attribute::factory()->create([
             'type' => 'select',
+            'swatch_type' => 'dropdown',
             'is_configurable' => true,
             'is_active' => true,
         ]);
         $color->translations()->create([
             'locale' => 'en',
             'admin_name' => 'Color',
+        ]);
+        $color->translations()->create([
+            'locale' => 'ar',
+            'admin_name' => 'اللون',
         ]);
         $red = $this->option($color, 'red', 'Red');
         $blue = $this->option($color, 'blue', 'Blue');
@@ -135,6 +262,12 @@ class ConfigurableProductDetailsTest extends TestCase
             'name' => 'Configured Shirt',
             'url_key' => 'configurable-shirt',
             'short_description' => 'Configured product description.',
+        ]);
+        $parent->translations()->create([
+            'locale' => 'ar',
+            'name' => 'قميص معد',
+            'url_key' => 'configurable-shirt-ar',
+            'short_description' => 'وصف المنتج المعد.',
         ]);
         $superAttribute = $parent->superAttributes()->create([
             'attribute_id' => $color->id,
@@ -156,6 +289,14 @@ class ConfigurableProductDetailsTest extends TestCase
         $option->translations()->create([
             'locale' => 'en',
             'label' => $label,
+        ]);
+        $option->translations()->create([
+            'locale' => 'ar',
+            'label' => match ($code) {
+                'red' => 'أحمر',
+                'blue' => 'أزرق',
+                default => 'أخضر',
+            },
         ]);
 
         return $option;

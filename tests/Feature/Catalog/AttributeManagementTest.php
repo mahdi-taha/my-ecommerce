@@ -119,6 +119,56 @@ class AttributeManagementTest extends TestCase
         $this->assertSame('blue', $attribute->options()->sole()->code);
     }
 
+    public function test_color_swatches_require_safe_hex_values_and_are_normalized(): void
+    {
+        $attribute = Attribute::factory()->create(['type' => 'select', 'swatch_type' => 'color']);
+        $admin = User::factory()->create();
+        $payload = [
+            'swatch_type' => 'color',
+            'options' => [[
+                'label_en' => 'Blue',
+                'label_ar' => 'أزرق',
+                'sort_order' => 0,
+                'swatch_value' => '#aabbcc',
+            ]],
+        ];
+
+        $this->actingAs($admin, 'admin')
+            ->postJson(route('admin.attribute-options.save', $attribute), $payload)
+            ->assertOk();
+        $this->assertSame('#AABBCC', $attribute->options()->sole()->swatch_value);
+
+        foreach ([null, '#ABC', 'red', '#000000;background:url(javascript:alert(1))'] as $invalid) {
+            $payload['options'][0]['swatch_value'] = $invalid;
+            $this->actingAs($admin, 'admin')
+                ->postJson(route('admin.attribute-options.save', $attribute), $payload)
+                ->assertUnprocessable()
+                ->assertJsonValidationErrors('options.0.swatch_value');
+        }
+    }
+
+    public function test_non_color_presentation_clears_a_stored_color(): void
+    {
+        $attribute = Attribute::factory()->create(['type' => 'select', 'swatch_type' => 'color']);
+        $option = $attribute->options()->create([
+            'code' => 'blue',
+            'sort_order' => 0,
+            'swatch_value' => '#0000FF',
+        ]);
+
+        app(AttributeService::class)->saveOptions($attribute, [
+            'swatch_type' => 'text',
+            'options' => [[
+                'id' => $option->id,
+                'label_en' => 'Blue',
+                'label_ar' => 'أزرق',
+                'sort_order' => 0,
+            ]],
+        ]);
+
+        $this->assertNull($option->fresh()->swatch_value);
+    }
+
     public function test_unused_attribute_can_be_deleted(): void
     {
         $attribute = Attribute::factory()->create();
