@@ -6,9 +6,12 @@ use App\Enums\ProductType;
 use App\Models\Category;
 use App\Models\CmsPage;
 use App\Models\Product;
+use App\Services\StorefrontSeoService;
 use DOMDocument;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class StorefrontSitemapTest extends TestCase
@@ -79,6 +82,31 @@ class StorefrontSitemapTest extends TestCase
             'locale' => 'en',
             'url_key' => 'out-of-stock-en',
         ]), false);
+    }
+
+    public function test_sitemap_query_count_is_bounded_as_catalog_grows(): void
+    {
+        $this->product('initial', 10);
+        $seo = app(StorefrontSeoService::class);
+        $seo->sitemapUrls();
+        $phase = 'small';
+        $counts = ['small' => 0, 'large' => 0];
+        DB::listen(function (QueryExecuted $query) use (&$phase, &$counts): void {
+            if ($phase !== null) {
+                $counts[$phase]++;
+            }
+        });
+
+        $seo->sitemapUrls();
+        $phase = null;
+        foreach (range(1, 20) as $index) {
+            $this->product('bulk-'.$index, 10);
+        }
+        $phase = 'large';
+        $seo->sitemapUrls();
+
+        $this->assertSame(3, $counts['small']);
+        $this->assertSame($counts['small'], $counts['large']);
     }
 
     private function product(string $key, float $price): Product

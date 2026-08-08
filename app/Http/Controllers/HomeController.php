@@ -126,6 +126,7 @@ class HomeController extends Controller
         $homepageServices = $this->content->homepageServices(app()->getLocale());
         $alternateLinks = $this->seo->routeAlternates('shop.home');
         $robotsMeta = 'index,follow';
+        $siteStructuredData = $this->seo->siteStructuredData(app()->getLocale());
 
         return view('shop.pages.home', compact(
             'allProducts',
@@ -143,6 +144,7 @@ class HomeController extends Controller
             'homepageServices',
             'alternateLinks',
             'robotsMeta',
+            'siteStructuredData',
         ));
     }
 }

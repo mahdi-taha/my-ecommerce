@@ -99,18 +99,14 @@ class ConfigurableProductDetailsTest extends TestCase
         $this->assertStringNotContainsString("image.setAttribute('src', imageUrl || '')", $script);
     }
 
-    public function test_zero_price_variants_are_excluded_and_parent_remains_unavailable(): void
+    public function test_parent_without_an_eligible_variant_is_not_storefront_eligible(): void
     {
         [$parent, $color, $red] = $this->configuredProduct();
         $variant = $this->variant($parent, [$color->id => $red->id], stock: 5);
         $variant->update(['price' => 0]);
 
         $this->get(route('shop.products.show', 'configurable-shirt'))
-            ->assertOk()
-            ->assertSee('Configured Shirt')
-            ->assertSee(__('shop.product.unavailable'))
-            ->assertDontSee('Red')
-            ->assertDontSee('data-configurable-attribute', false);
+            ->assertNotFound();
     }
 
     private function configuredProduct(): array

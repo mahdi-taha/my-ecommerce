@@ -7,6 +7,7 @@ use App\Models\CmsPage;
 use App\Models\ProductTranslation;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use LogicException;
 
 class StorefrontSeoService
@@ -88,6 +89,53 @@ class StorefrontSeoService
         }
 
         return $this->withDefault($urls);
+    }
+
+    /** @return array<string, mixed> */
+    public function siteStructuredData(string $locale): array
+    {
+        $baseUrl = url('/');
+        $organizationId = $baseUrl.'/#organization';
+        $websiteId = $baseUrl.'/#website';
+        $name = (string) setting('store.store_name', config('app.name'));
+        $logoPath = trim((string) setting('store.store_logo_path', ''));
+        $logoUrl = $logoPath !== '' && Storage::disk('public')->exists($logoPath)
+            ? Storage::disk('public')->url($logoPath)
+            : null;
+        $organization = array_filter([
+            '@type' => 'Organization',
+            '@id' => $organizationId,
+            'name' => $name,
+            'url' => $baseUrl,
+            'logo' => $logoUrl,
+            'email' => $this->filledSetting('store.store_email'),
+            'telephone' => $this->filledSetting('store.store_phone'),
+            'address' => ($address = $this->filledSetting('store.store_address'))
+                ? ['@type' => 'PostalAddress', 'streetAddress' => $address]
+                : null,
+            'sameAs' => collect([
+                $this->filledSetting('store.facebook_url'),
+                $this->filledSetting('store.whatsapp_url'),
+                $this->filledSetting('store.instagram_url'),
+            ])->filter(fn (?string $url): bool => $url !== null
+                && filter_var($url, FILTER_VALIDATE_URL) !== false
+                && str_starts_with(strtolower($url), 'https://'))->values()->all() ?: null,
+        ], fn (mixed $value): bool => $value !== null && $value !== '');
+
+        return [
+            '@context' => 'https://schema.org',
+            '@graph' => [
+                $organization,
+                [
+                    '@type' => 'WebSite',
+                    '@id' => $websiteId,
+                    'url' => route('shop.home', ['locale' => $locale]),
+                    'name' => $name,
+                    'inLanguage' => $locale,
+                    'publisher' => ['@id' => $organizationId],
+                ],
+            ],
+        ];
     }
 
     /** @return Collection<int, string> */
@@ -183,5 +231,12 @@ class StorefrontSeoService
         }
 
         return $links->all();
+    }
+
+    private function filledSetting(string $key): ?string
+    {
+        $value = trim((string) setting($key, ''));
+
+        return $value !== '' ? $value : null;
     }
 }
