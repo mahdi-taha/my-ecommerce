@@ -8,6 +8,7 @@ use App\Services\CheckoutOrderPlacementService;
 use App\Services\DocumentNumberService;
 use App\Services\HomepageServiceService;
 use App\Services\OrderStatusService;
+use App\Services\RefundService;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -49,6 +50,7 @@ try {
         'checkout' => checkout($payload),
         'process_order' => processOrder($payload),
         'activate_homepage_service' => activateHomepageService($payload),
+        'refund' => refund($payload),
         default => throw new RuntimeException("Unknown concurrency action [{$action}]."),
     };
 } catch (ValidationException $exception) {
@@ -90,6 +92,19 @@ function processOrder(array $payload): array
         'order_id' => $order->getKey(),
         'status' => $order->status,
     ];
+}
+
+/** @param array<string, mixed> $payload */
+function refund(array $payload): array
+{
+    $refund = app(RefundService::class)->create(
+        Order::query()->findOrFail($payload['order_id']),
+        User::query()->findOrFail($payload['admin_id']),
+        $payload['data'],
+        $payload['idempotency_key'],
+    );
+
+    return ['successful' => true, 'refund_id' => $refund->id];
 }
 
 /** @param array<string, mixed> $payload */
