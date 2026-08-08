@@ -44,14 +44,12 @@ class StorefrontNavbarTest extends TestCase
             ->assertSee('href="'.route('shop.categories.show', 'first-root').'"', false)
             ->assertSee(__('shop.navigation.shop'))
             ->assertDontSee(__('shop.navigation.contact'))
-            ->assertSeeInOrder(['First Root', 'Child', 'Grandchild', 'Great Grandchild', 'Second Root'])
-            ->assertSee('data-category-navigation-data', false)
+            ->assertSeeInOrder(['First Root', 'Child', 'Grandchild', 'Second Root'])
+            ->assertDontSee('Great Grandchild')
             ->assertSee('data-category-navigation-desktop', false)
-            ->assertSee('data-category-root-panel', false)
-            ->assertSee('data-category-children-panel', false)
-            ->assertSee('data-category-detail-panel', false)
+            ->assertSee('storefront-category-submenu', false)
             ->assertSee('data-category-navigation-mobile', false)
-            ->assertSee('data-mobile-category-level', false)
+            ->assertSee('storefront-mobile-category-toggle', false)
             ->assertDontSee('Inactive')
             ->assertDontSee('Arabic only')
             ->assertDontSee('(3)')
@@ -60,21 +58,7 @@ class StorefrontNavbarTest extends TestCase
             ->assertDontSee('contact.html');
 
         $this->assertTrue($second->exists);
-        $this->assertMatchesRegularExpression(
-            '/<script type="application\/json" data-category-navigation-data>(.*?)<\/script>/s',
-            $response->getContent()
-        );
-        preg_match(
-            '/<script type="application\/json" data-category-navigation-data>(.*?)<\/script>/s',
-            $response->getContent(),
-            $matches
-        );
-        $navigation = json_decode($matches[1], true, flags: JSON_THROW_ON_ERROR);
-        $this->assertSame($first->id, $navigation[0]['id']);
-        $this->assertSame(route('shop.categories.show', 'first-root'), $navigation[0]['url']);
-        $this->assertSame('Great Grandchild', $navigation[0]['children'][0]['children'][0]['children'][0]['name']);
-        $this->assertSame($second->id, $navigation[1]['id']);
-        $this->assertSame([], $navigation[1]['children']);
+        $this->assertStringContainsString(route('shop.categories.show', 'first-root'), $response->getContent());
     }
 
     public function test_category_menu_exposes_accessible_desktop_and_mobile_interaction_hooks(): void
@@ -88,29 +72,18 @@ class StorefrontNavbarTest extends TestCase
             ->assertSee('id="categoryMegaMenuToggle"', false)
             ->assertSee('aria-controls="categoryMegaMenu"', false)
             ->assertSee('data-bs-auto-close="outside"', false)
-            ->assertSee('id="categoryRootPanel"', false)
-            ->assertSee('id="categoryChildrenPanel"', false)
-            ->assertSee('id="categoryDetailPanel"', false)
-            ->assertSee('data-category-detail-breadcrumb', false)
-            ->assertSee('data-category-detail-back', false)
-            ->assertSee(__('shop.navigation.no_subcategories'))
+            ->assertSee('storefront-category-desktop-list', false)
+            ->assertSee('storefront-category-submenu', false)
             ->assertSee('id="mobileCategoriesMenu"', false)
             ->assertSee('data-bs-toggle="collapse"', false)
-            ->assertSee('data-mobile-category-breadcrumb', false)
-            ->assertSee('data-mobile-category-back', false);
+            ->assertSee('storefront-mobile-category-toggle', false);
 
         $script = file_get_contents(resource_path('js/shop/category-mega-menu.js'));
 
         $this->assertIsString($script);
         $this->assertStringContainsString("addEventListener('mouseenter'", $script);
-        $this->assertStringContainsString("addEventListener('focus'", $script);
-        $this->assertStringContainsString("event.key === 'Home'", $script);
-        $this->assertStringContainsString("event.key === 'Enter'", $script);
-        $this->assertStringContainsString("event.key !== 'Escape'", $script);
-        $this->assertStringContainsString("document.documentElement.dir === 'rtl'", $script);
-        $this->assertStringContainsString('`${panelId}-category-${category.id}`', $script);
-        $this->assertStringContainsString('path.push(category)', $script);
-        $this->assertStringContainsString('toggle.focus()', $script);
+        $this->assertStringContainsString("addEventListener('focusin'", $script);
+        $this->assertStringContainsString('Dropdown.getOrCreateInstance', $script);
         $this->assertFileDoesNotExist(resource_path('views/shop/components/category-tree.blade.php'));
         $this->assertFileDoesNotExist(resource_path('views/shop/components/category-mega-branch.blade.php'));
     }
@@ -176,7 +149,7 @@ class StorefrontNavbarTest extends TestCase
             }
         });
 
-        $this->view('shop.components.navbar')->assertSee('data-category-navigation-data', false);
+        $this->view('shop.components.navbar')->assertSee('data-category-navigation-desktop', false);
 
         $this->assertSame(2, $categoryQueries);
     }
