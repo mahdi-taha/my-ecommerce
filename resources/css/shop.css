@@ -1,4 +1,4 @@
-.storefront-category-carousel {
+﻿.storefront-category-carousel {
     --storefront-category-circle-size: 104px;
     display: flex;
     gap: 1.25rem;
@@ -616,5 +616,85 @@
         padding-right: .25rem;
         overflow-x: hidden;
         overflow-y: auto;
+    }
+}
+.storefront-configurable-options {
+    min-inline-size: 0;
+}
+
+.storefront-configurable-options__items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.storefront-configurable-option {
+    min-inline-size: 0;
+}
+
+.storefront-configurable-option__input {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.storefront-configurable-option__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    max-inline-size: 100%;
+    padding-block: 0.5rem;
+    padding-inline: 0.75rem;
+    border: 2px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    background: var(--bs-body-bg);
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.storefront-configurable-option__input:checked + .storefront-configurable-option__label {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.16);
+}
+
+.storefront-configurable-option__input:focus-visible + .storefront-configurable-option__label {
+    outline: 3px solid rgba(var(--bs-primary-rgb), 0.35);
+    outline-offset: 2px;
+}
+
+.storefront-configurable-option__input:disabled + .storefront-configurable-option__label {
+    color: var(--bs-secondary-color);
+    border-style: dashed;
+    opacity: 0.6;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+.storefront-configurable-option__swatch {
+    flex: 0 0 auto;
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 50%;
+    background: var(--storefront-swatch-color);
+}
+
+.storefront-configurable-option__swatch--missing {
+    background-color: var(--bs-tertiary-bg);
+    background-image:
+        linear-gradient(45deg, var(--bs-border-color) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--bs-border-color) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--bs-border-color) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--bs-border-color) 75%);
+    background-position: 0 0, 0 0.375rem, 0.375rem -0.375rem, -0.375rem 0;
+    background-size: 0.75rem 0.75rem;
+}
+
+@media (max-width: 575.98px) {
+    .storefront-configurable-option__label {
+        white-space: normal;
+        overflow-wrap: anywhere;
     }
 }

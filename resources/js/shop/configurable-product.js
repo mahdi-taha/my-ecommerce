@@ -1,8 +1,8 @@
-export function initializeConfigurableProducts() {
+﻿export function initializeConfigurableProducts() {
     document.querySelectorAll('[data-configurable-product-form]').forEach((form) => {
         const variantData = form.querySelector('[data-configurable-variants]');
         const variants = Object.values(JSON.parse(variantData?.textContent || '{}'));
-        const selectors = Array.from(form.querySelectorAll('[data-configurable-attribute]'));
+        const attributeGroups = Array.from(form.querySelectorAll('[data-configurable-attribute]'));
         const quantity = form.querySelector('input[name="quantity"]');
         const quantityButtons = form.querySelectorAll('.quantity button');
         const submit = form.querySelector('button[type="submit"]');
@@ -18,14 +18,40 @@ export function initializeConfigurableProducts() {
         const imagePlaceholders = document.querySelectorAll('[data-product-image-placeholder]');
         const parentImage = mainImages[0]?.getAttribute('src') ?? null;
 
+        const selectedValue = (group) => {
+            const select = group.querySelector('[data-configurable-select]');
+
+            return select?.value
+                ?? group.querySelector('[data-configurable-option]:checked')?.value
+                ?? '';
+        };
+
+        const optionControls = (group) => Array.from(
+            group.querySelectorAll('[data-configurable-option]'),
+        );
+
+        const clearSelection = (group) => {
+            const select = group.querySelector('[data-configurable-select]');
+
+            if (select) {
+                select.value = '';
+
+                return;
+            }
+
+            group.querySelectorAll('[data-configurable-option]:checked').forEach((option) => {
+                option.checked = false;
+            });
+        };
+
         const selections = (excludedAttribute = null, optionOverride = null) => {
             const selected = {};
 
-            selectors.forEach((selector) => {
-                const attributeId = selector.dataset.configurableAttribute;
+            attributeGroups.forEach((group) => {
+                const attributeId = group.dataset.configurableAttribute;
                 const value = attributeId === excludedAttribute
                     ? optionOverride
-                    : selector.value;
+                    : selectedValue(group);
 
                 if (value) {
                     selected[attributeId] = Number(value);
@@ -88,21 +114,30 @@ export function initializeConfigurableProducts() {
         };
 
         const renderState = () => {
-            selectors.forEach((selector) => {
-                const attributeId = selector.dataset.configurableAttribute;
+            let clearedSelection;
 
-                Array.from(selector.options).forEach((option) => {
-                    if (!option.value) {
-                        return;
+            do {
+                clearedSelection = false;
+                attributeGroups.forEach((group) => {
+                    const attributeId = group.dataset.configurableAttribute;
+
+                    optionControls(group).forEach((option) => {
+                        const candidateSelections = selections(attributeId, Number(option.value));
+                        option.disabled = !variants.some((variant) => matches(variant, candidateSelections));
+                    });
+
+                    const selectedOption = optionControls(group).find((option) => (
+                        option.value === selectedValue(group)
+                    ));
+                    if (selectedOption?.disabled) {
+                        clearSelection(group);
+                        clearedSelection = true;
                     }
-
-                    const candidateSelections = selections(attributeId, Number(option.value));
-                    option.disabled = !variants.some((variant) => matches(variant, candidateSelections));
                 });
-            });
+            } while (clearedSelection);
 
             const selected = selections();
-            const complete = Object.keys(selected).length === selectors.length;
+            const complete = Object.keys(selected).length === attributeGroups.length;
             const variant = complete
                 ? variants.find((candidate) => matches(candidate, selected))
                 : null;
@@ -146,7 +181,9 @@ export function initializeConfigurableProducts() {
             }
         };
 
-        selectors.forEach((selector) => selector.addEventListener('change', renderState));
+        attributeGroups.forEach((group) => {
+            group.addEventListener('change', renderState);
+        });
         renderState();
     });
 }
