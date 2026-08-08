@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\ProductReview;
 use App\Models\Tax;
 use App\Services\ProductReviewService;
+use App\Services\StorefrontProductListingService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -17,20 +18,19 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    public function __construct(private ProductReviewService $reviewService) {}
+    public function __construct(
+        private ProductReviewService $reviewService,
+        private StorefrontProductListingService $listingService,
+    ) {}
 
     public function show(string $url_key): View
     {
         $locale = app()->getLocale();
+        $eligibleProductId = $this->listingService->eligibleProductIdByUrlKey($url_key, $locale);
+        abort_unless($eligibleProductId, 404);
 
         $productQuery = Product::query()
-            ->active()
-            ->visible()
-            ->whereNull('configurable_id')
-            ->whereIn('type', [
-                ProductType::Simple->value,
-                ProductType::Configurable->value,
-            ])
+            ->whereKey($eligibleProductId)
             ->whereHas('translations', fn (Builder $query) => $query
                 ->where('locale', $locale)
                 ->where('url_key', $url_key))

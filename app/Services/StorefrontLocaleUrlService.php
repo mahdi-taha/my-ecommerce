@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\ProductType;
 use App\Models\Category;
 use App\Models\CategoryTranslation;
 use App\Models\CmsPage;
@@ -15,6 +14,8 @@ use Throwable;
 class StorefrontLocaleUrlService
 {
     public const LOCALES = ['en', 'ar'];
+
+    public function __construct(private StorefrontProductListingService $listingService) {}
 
     private const PUBLIC_ROUTES = [
         'shop.home',
@@ -219,18 +220,15 @@ class StorefrontLocaleUrlService
             ->where('locale', $sourceLocale)
             ->where('url_key', $key)
             ->first();
-        $product = $translation?->product()->active()->visible()
-            ->whereNull('configurable_id')
-            ->whereIn('type', [ProductType::Simple->value, ProductType::Configurable->value])
-            ->withStorefrontCardData($sourceLocale)
-            ->first();
-        $eligible = $product !== null && match ($product->type) {
-            ProductType::Simple->value => $product->hasPositiveEffectivePrice(),
-            ProductType::Configurable->value => $product->eligibleStorefrontVariants()->isNotEmpty(),
-            default => false,
-        };
+        $eligible = $translation !== null && $this->listingService->productIsEligible(
+            (int) $translation->product_id,
+            $sourceLocale,
+        );
         $target = $eligible
-            ? $product->translations()->where('locale', $targetLocale)->first()
+            ? ProductTranslation::query()
+                ->where('product_id', $translation->product_id)
+                ->where('locale', $targetLocale)
+                ->first()
             : null;
 
         return $target

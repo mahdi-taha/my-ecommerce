@@ -41,6 +41,36 @@ class StorefrontProductListingService
         return $query->paginate(self::PAGE_SIZE)->withQueryString();
     }
 
+    public function eligibleProductIdByUrlKey(
+        string $urlKey,
+        string $locale,
+        ?CarbonInterface $at = null
+    ): ?int {
+        return $this->eligibleRootQuery($locale, $at ?? now())
+            ->where('listing_translation.url_key', $urlKey)
+            ->value('products.id');
+    }
+
+    public function productIsEligible(
+        int $productId,
+        string $locale,
+        ?CarbonInterface $at = null
+    ): bool {
+        return $this->eligibleRootQuery($locale, $at ?? now())
+            ->where('products.id', $productId)
+            ->exists();
+    }
+
+    /** @return Collection<int, object{id: int, url_key: string}> */
+    public function eligibleSitemapProducts(
+        string $locale,
+        ?CarbonInterface $at = null
+    ): Collection {
+        return $this->eligibleRootQuery($locale, $at ?? now())
+            ->orderBy('products.id')
+            ->get(['products.id', 'listing_translation.url_key']);
+    }
+
     private function eligibleRootQuery(string $locale, CarbonInterface $at): Builder
     {
         $query = Product::query()
