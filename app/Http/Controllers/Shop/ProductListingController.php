@@ -97,6 +97,9 @@ class ProductListingController extends Controller
         $alternateLinks = $category
             ? $this->seo->categoryAlternates((int) $category->getKey(), $alternateParameters)
             : $this->seo->routeAlternates('shop.products.index', $alternateParameters);
+        $robotsMeta = empty(array_diff_key($publicFilters, array_flip(['page'])))
+            ? 'index,follow'
+            : 'noindex,nofollow';
 
         return view('shop.pages.products', compact(
             'products',
@@ -112,6 +115,7 @@ class ProductListingController extends Controller
             'canonicalUrl',
             'attributeFacets',
             'alternateLinks',
+            'robotsMeta',
         ));
     }
 }

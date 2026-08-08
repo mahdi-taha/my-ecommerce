@@ -125,6 +125,7 @@ class HomeController extends Controller
         $offerBanners = $homepageContent->where('placement', HomepageBannerPlacement::Offer);
         $homepageServices = $this->content->homepageServices(app()->getLocale());
         $alternateLinks = $this->seo->routeAlternates('shop.home');
+        $robotsMeta = 'index,follow';
 
         return view('shop.pages.home', compact(
             'allProducts',
@@ -141,6 +142,7 @@ class HomeController extends Controller
             'offerBanners',
             'homepageServices',
             'alternateLinks',
+            'robotsMeta',
         ));
     }
 }

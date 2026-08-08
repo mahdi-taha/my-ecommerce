@@ -209,6 +209,7 @@ class ProductController extends Controller
             $configurablePriceRange,
         );
         $alternateLinks = $this->seo->productAlternates((int) $product->getKey());
+        $robotsMeta = 'index,follow';
 
         return view('shop.pages.product-details', compact(
             'product',
@@ -232,6 +233,7 @@ class ProductController extends Controller
             'approvedReviews',
             'ratingBreakdown',
             'alternateLinks',
+            'robotsMeta',
             'customerReview',
             'canReview',
             'productCanonicalUrl',

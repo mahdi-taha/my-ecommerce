@@ -14,6 +14,7 @@
     @endphp
 
     <title>{{ $pageTitle }}</title>
+    <meta name="robots" content="{{ $robotsMeta ?? 'noindex,nofollow' }}">
     @if ($pageDescription !== '')
         <meta name="description" content="{{ $pageDescription }}">
     @endif
