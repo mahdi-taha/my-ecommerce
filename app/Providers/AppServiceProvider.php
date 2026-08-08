@@ -56,12 +56,16 @@ class AppServiceProvider extends ServiceProvider
                 }
             };
             $collectReachable($tree);
-            $toNavigationArray = function (Collection $nodes) use (&$toNavigationArray): array {
+            $toNavigationArray = function (Collection $nodes, int $depth = 0) use (&$toNavigationArray): array {
+                if ($depth >= 3) {
+                    return [];
+                }
+
                 return $nodes->map(fn (Category $category): array => [
                     'id' => $category->id,
                     'name' => $category->translations->first()->name,
                     'url' => route('shop.categories.show', ['slug' => $category->translations->first()->slug]),
-                    'children' => $toNavigationArray($category->children),
+                    'children' => $toNavigationArray($category->children, $depth + 1),
                 ])->values()->all();
             };
 

@@ -44,16 +44,51 @@
                             </button>
                             <div class="collapse" id="mobileCategoriesMenu" aria-labelledby="mobileCategoriesToggle">
                                 <div class="storefront-mobile-category-browser px-3 pb-3">
-                                    <button class="btn btn-sm btn-link px-0 text-decoration-none" type="button"
-                                        data-mobile-category-back hidden>
-                                        <i class="fas fa-chevron-left" aria-hidden="true"></i>
-                                        {{ __('shop.navigation.back') }}
-                                    </button>
-                                    <nav aria-label="{{ __('shop.navigation.category_children') }}">
-                                        <ol class="breadcrumb small mb-2" data-mobile-category-breadcrumb></ol>
-                                    </nav>
-                                    <div class="storefront-category-list" id="mobileCategoryLevel"
-                                        data-mobile-category-level></div>
+                                    @forelse ($storefrontCategoryNavigation as $rootCategory)
+                                        @php($rootCollapseId = 'mobile-category-' . $rootCategory['id'])
+                                        <div class="storefront-mobile-category-item">
+                                            <div class="d-flex align-items-center">
+                                                <a class="nav-link flex-grow-1" href="{{ $rootCategory['url'] }}">{{ $rootCategory['name'] }}</a>
+                                                @if ($rootCategory['children'] !== [])
+                                                    <button class="btn storefront-mobile-category-toggle" type="button"
+                                                        data-bs-toggle="collapse" data-bs-target="#{{ $rootCollapseId }}"
+                                                        aria-expanded="false" aria-controls="{{ $rootCollapseId }}"
+                                                        aria-label="{{ __('shop.navigation.category_children') }}: {{ $rootCategory['name'] }}">
+                                                        <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                                                    </button>
+                                                @endif
+                                            </div>
+                                            @if ($rootCategory['children'] !== [])
+                                                <div class="collapse storefront-mobile-category-children" id="{{ $rootCollapseId }}">
+                                                    @foreach ($rootCategory['children'] as $childCategory)
+                                                        @php($childCollapseId = 'mobile-category-' . $rootCategory['id'] . '-' . $childCategory['id'])
+                                                        <div class="storefront-mobile-category-item">
+                                                            <div class="d-flex align-items-center">
+                                                                <a class="nav-link flex-grow-1" href="{{ $childCategory['url'] }}">{{ $childCategory['name'] }}</a>
+                                                                @if ($childCategory['children'] !== [])
+                                                                    <button class="btn storefront-mobile-category-toggle" type="button"
+                                                                        data-bs-toggle="collapse" data-bs-target="#{{ $childCollapseId }}"
+                                                                        aria-expanded="false" aria-controls="{{ $childCollapseId }}"
+                                                                        aria-label="{{ __('shop.navigation.category_children') }}: {{ $childCategory['name'] }}">
+                                                                        <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                                                                    </button>
+                                                                @endif
+                                                            </div>
+                                                            @if ($childCategory['children'] !== [])
+                                                                <div class="collapse storefront-mobile-category-children" id="{{ $childCollapseId }}">
+                                                                    @foreach ($childCategory['children'] as $grandchildCategory)
+                                                                        <a class="nav-link" href="{{ $grandchildCategory['url'] }}">{{ $grandchildCategory['name'] }}</a>
+                                                                    @endforeach
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @empty
+                                        <p class="text-muted small py-2 mb-0">{{ __('shop.navigation.no_subcategories') }}</p>
+                                    @endforelse
                                 </div>
                             </div>
                         </div>

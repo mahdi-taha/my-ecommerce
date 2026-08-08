@@ -12,37 +12,45 @@
 
         <div class="dropdown-menu storefront-category-panel-menu p-0" id="categoryMegaMenu"
             aria-labelledby="categoryMegaMenuToggle" data-category-navigation-desktop>
-            <div class="row g-0 storefront-category-browser">
-                <section class="col-4 storefront-category-column storefront-category-root-column"
-                    aria-labelledby="categoryRootHeading">
-                    <h2 class="h6 px-3 pt-3" id="categoryRootHeading">{{ __('shop.navigation.category_root') }}</h2>
-                    <div class="storefront-category-list" id="categoryRootPanel" data-category-root-panel></div>
-                </section>
-
-                <section class="col-4 storefront-category-column" aria-labelledby="categoryChildrenHeading">
-                    <h2 class="h6 px-3 pt-3" id="categoryChildrenHeading">{{ __('shop.navigation.category_children') }}</h2>
-                    <div class="storefront-category-list" id="categoryChildrenPanel" data-category-children-panel></div>
-                </section>
-
-                <section class="col-4 storefront-category-column storefront-category-detail-column"
-                    aria-labelledby="categoryDetailHeading">
-                    <div class="d-flex align-items-center gap-2 px-3 pt-3">
-                        <button class="btn btn-sm btn-link p-0 text-decoration-none" type="button"
-                            data-category-detail-back hidden>
-                            <i class="fas fa-chevron-left" aria-hidden="true"></i>
-                            {{ __('shop.navigation.back') }}
-                        </button>
-                        <h2 class="h6 mb-0" id="categoryDetailHeading">{{ __('shop.navigation.category_children') }}</h2>
-                    </div>
-                    <nav class="px-3 pt-2" aria-label="{{ __('shop.navigation.category_children') }}">
-                        <ol class="breadcrumb small mb-2" data-category-detail-breadcrumb></ol>
-                    </nav>
-                    <div class="storefront-category-list" id="categoryDetailPanel" data-category-detail-panel></div>
-                </section>
-            </div>
+            <ul class="storefront-category-desktop-list list-unstyled mb-0" role="list">
+                @forelse ($storefrontCategoryNavigation as $rootCategory)
+                    <li class="storefront-category-menu-item {{ $rootCategory['children'] !== [] ? 'has-children' : '' }}">
+                        <a class="dropdown-item storefront-category-link" href="{{ $rootCategory['url'] }}">
+                            <span>{{ $rootCategory['name'] }}</span>
+                            @if ($rootCategory['children'] !== [])
+                                <i class="fas fa-chevron-right storefront-category-forward-icon" aria-hidden="true"></i>
+                            @endif
+                        </a>
+                        @if ($rootCategory['children'] !== [])
+                            <ul class="dropdown-menu storefront-category-submenu list-unstyled" role="list">
+                                @foreach ($rootCategory['children'] as $childCategory)
+                                    <li class="storefront-category-menu-item {{ $childCategory['children'] !== [] ? 'has-children' : '' }}">
+                                        <a class="dropdown-item storefront-category-link" href="{{ $childCategory['url'] }}">
+                                            <span>{{ $childCategory['name'] }}</span>
+                                            @if ($childCategory['children'] !== [])
+                                                <i class="fas fa-chevron-right storefront-category-forward-icon" aria-hidden="true"></i>
+                                            @endif
+                                        </a>
+                                        @if ($childCategory['children'] !== [])
+                                            <ul class="dropdown-menu storefront-category-submenu list-unstyled" role="list">
+                                                @foreach ($childCategory['children'] as $grandchildCategory)
+                                                    <li>
+                                                        <a class="dropdown-item storefront-category-link" href="{{ $grandchildCategory['url'] }}">
+                                                            {{ $grandchildCategory['name'] }}
+                                                        </a>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </li>
+                @empty
+                    <li class="px-3 py-2 text-muted small">{{ __('shop.navigation.no_subcategories') }}</li>
+                @endforelse
+            </ul>
         </div>
     </nav>
-
-    <script type="application/json" data-category-navigation-data>{!! Illuminate\Support\Js::encode($storefrontCategoryNavigation) !!}</script>
-    <span class="d-none" data-category-empty-label>{{ __('shop.navigation.no_subcategories') }}</span>
 </div>
