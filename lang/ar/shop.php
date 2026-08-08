@@ -114,6 +114,7 @@ return [
         'select_options_for_price' => 'اختر الخيارات لعرض السعر',
         'select_options' => 'اختر خيارات المنتج',
         'choose_option' => 'اختر خياراً',
+        'choose_attribute' => 'اختر :attribute',
         'unavailable_combination' => 'هذه التركيبة غير متوفرة',
         'sku' => 'رمز المنتج:',
         'short_description' => 'التقط كل لحظة بكاميرا ذكية ومدمجة مصممة لصور واضحة وأداء موثوق واستخدام يومي.',

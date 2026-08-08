@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Shop;
 
+use App\Enums\AttributeSwatchType;
 use App\Enums\ProductType;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
@@ -338,6 +339,10 @@ class ProductController extends Controller
             ->map(fn ($id) => (int) $id)
             ->unique();
         $attributes = $product->superAttributes
+            ->sortBy([
+                ['attribute.sort_order', 'asc'],
+                ['attribute.id', 'asc'],
+            ])
             ->map(function ($superAttribute) use ($usedOptionIds) {
                 $attribute = $superAttribute->attribute;
                 $options = $attribute?->options
@@ -352,9 +357,12 @@ class ProductController extends Controller
                 return [
                     'id' => (int) $attribute->getKey(),
                     'label' => $attribute->translations->first()->admin_name,
+                    'swatch_type' => AttributeSwatchType::tryFrom((string) $attribute->swatch_type)?->value
+                        ?? AttributeSwatchType::Dropdown->value,
                     'options' => $options->map(fn ($option) => [
                         'id' => (int) $option->getKey(),
                         'label' => $option->translations->first()->label,
+                        'swatch_value' => $this->safeColorSwatch($option->swatch_value),
                     ])->all(),
                 ];
             })
@@ -419,6 +427,13 @@ class ProductController extends Controller
         }
 
         return [$attributes, $presentation];
+    }
+
+    private function safeColorSwatch(?string $value): ?string
+    {
+        return is_string($value) && preg_match('/^#[0-9A-Fa-f]{6}$/', $value) === 1
+            ? strtoupper($value)
+            : null;
     }
 
     private function breadcrumbCategories(?Category $category): Collection

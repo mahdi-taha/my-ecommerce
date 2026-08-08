@@ -1,4 +1,4 @@
-@extends('shop.layouts.app')
+﻿@extends('shop.layouts.app')
 
 @section('title', filled($translation->meta_title) ? $translation->meta_title : $translation->name)
 @section('meta_description', $productMetaDescription)
@@ -196,27 +196,58 @@
                                     @if ($isConfigurable)
                                         <div class="mb-4">
                                             @foreach ($configurableAttributes as $configurableAttribute)
-                                                <div class="mb-3">
-                                                    <label for="configurable_attribute_{{ $configurableAttribute['id'] }}"
-                                                        class="form-label fw-semibold">
-                                                        {{ $configurableAttribute['label'] }}
-                                                    </label>
-                                                    <select
-                                                        id="configurable_attribute_{{ $configurableAttribute['id'] }}"
-                                                        name="options[{{ $configurableAttribute['id'] }}]"
-                                                        class="form-select @error('options.'.$configurableAttribute['id']) is-invalid @enderror"
-                                                        data-configurable-attribute="{{ $configurableAttribute['id'] }}"
-                                                        required>
-                                                        <option value="">{{ __('shop.product_details.choose_option') }}</option>
-                                                        @foreach ($configurableAttribute['options'] as $option)
-                                                            <option value="{{ $option['id'] }}"
-                                                                @selected((string) old('options.'.$configurableAttribute['id']) === (string) $option['id'])>
-                                                                {{ $option['label'] }}
+                                                @php($attributeInputName = 'options['.$configurableAttribute['id'].']')
+                                                @php($attributeInputId = 'configurable_attribute_'.$configurableAttribute['id'])
+                                                <div class="mb-3 storefront-configurable-option-group"
+                                                    data-configurable-attribute="{{ $configurableAttribute['id'] }}"
+                                                    data-configurable-control="{{ $configurableAttribute['swatch_type'] }}">
+                                                    @if ($configurableAttribute['swatch_type'] === 'dropdown')
+                                                        <label for="{{ $attributeInputId }}" class="form-label fw-semibold">
+                                                            {{ $configurableAttribute['label'] }}
+                                                        </label>
+                                                        <select id="{{ $attributeInputId }}" name="{{ $attributeInputName }}"
+                                                            class="form-select @error('options.'.$configurableAttribute['id']) is-invalid @enderror"
+                                                            data-configurable-select required>
+                                                            <option value="">
+                                                                {{ __('shop.product_details.choose_attribute', ['attribute' => $configurableAttribute['label']]) }}
                                                             </option>
-                                                        @endforeach
-                                                    </select>
+                                                            @foreach ($configurableAttribute['options'] as $option)
+                                                                <option value="{{ $option['id'] }}" data-configurable-option
+                                                                    @selected((string) old('options.'.$configurableAttribute['id']) === (string) $option['id'])>
+                                                                    {{ $option['label'] }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    @else
+                                                        <fieldset class="storefront-configurable-options">
+                                                            <legend class="form-label fw-semibold">
+                                                                {{ $configurableAttribute['label'] }}
+                                                            </legend>
+                                                            <div class="storefront-configurable-options__items">
+                                                                @foreach ($configurableAttribute['options'] as $option)
+                                                                    @php($optionInputId = $attributeInputId.'_option_'.$option['id'])
+                                                                    <div class="storefront-configurable-option">
+                                                                        <input type="radio" id="{{ $optionInputId }}"
+                                                                            name="{{ $attributeInputName }}" value="{{ $option['id'] }}"
+                                                                            class="storefront-configurable-option__input"
+                                                                            data-configurable-option required
+                                                                            @checked((string) old('options.'.$configurableAttribute['id']) === (string) $option['id'])>
+                                                                        <label for="{{ $optionInputId }}"
+                                                                            class="storefront-configurable-option__label storefront-configurable-option__label--{{ $configurableAttribute['swatch_type'] }}">
+                                                                            @if ($configurableAttribute['swatch_type'] === 'color')
+                                                                                <span class="storefront-configurable-option__swatch {{ $option['swatch_value'] === null ? 'storefront-configurable-option__swatch--missing' : '' }}"
+                                                                                    @if ($option['swatch_value'] !== null) style="--storefront-swatch-color: {{ $option['swatch_value'] }}" @endif
+                                                                                    aria-hidden="true"></span>
+                                                                            @endif
+                                                                            <span>{{ $option['label'] }}</span>
+                                                                        </label>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        </fieldset>
+                                                    @endif
                                                     @error('options.'.$configurableAttribute['id'])
-                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                        <div class="text-danger mt-2">{{ $message }}</div>
                                                     @enderror
                                                 </div>
                                             @endforeach

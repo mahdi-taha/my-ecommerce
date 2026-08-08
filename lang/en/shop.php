@@ -114,6 +114,7 @@ return [
         'select_options_for_price' => 'Select options to view price',
         'select_options' => 'Select product options',
         'choose_option' => 'Choose an option',
+        'choose_attribute' => 'Choose :attribute',
         'unavailable_combination' => 'This combination is unavailable',
         'sku' => 'SKU:',
         'short_description' => 'Capture every moment with a compact smart camera designed for clear photos, reliable performance, and everyday use.',
