@@ -24,6 +24,17 @@
                         <a href="{{ route('admin.orders.index') }}" class="btn btn-transparent">Back to Orders</a>
                     </div>
 
+                    @if (in_array($order->payment_status, [\App\Enums\PaymentStatus::Paid->value, \App\Enums\PaymentStatus::PartiallyRefunded->value], true))
+                        <div class="mb-3"><a class="btn btn-danger" href="{{ route('admin.refunds.create', ['order' => $order->id]) }}">Create Refund</a></div>
+                    @endif
+
+                    @if ($order->refunds->isNotEmpty())
+                        <div class="card shadow mb-4"><div class="card-header"><h5 class="mb-0">Refunds</h5></div><div class="card-body table-responsive"><table class="table">
+                            <thead><tr><th>Refund</th><th>Customer Amount</th><th>Created By</th><th>Date</th></tr></thead><tbody>
+                            @foreach ($order->refunds as $refund)<tr><td><a href="{{ route('admin.refunds.show', $refund) }}">{{ $refund->refund_number }}</a></td><td>{{ $refund->currency_code }} {{ $refund->customer_refund_amount }}</td><td>{{ $refund->creator?->name ?? 'Deleted administrator' }}</td><td>{{ $refund->refunded_at->format('Y-m-d H:i') }}</td></tr>@endforeach
+                            </tbody></table></div></div>
+                    @endif
+
                     @if ($order->status === \App\Enums\OrderStatus::Cancelled->value
                         && $order->payment_status === \App\Enums\PaymentStatus::Paid->value)
                         <div class="alert alert-warning" role="alert">

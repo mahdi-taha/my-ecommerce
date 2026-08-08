@@ -153,6 +153,7 @@ class OrderController extends Controller
                 ->with(['requester:id,name,email', 'reviewer:id,name'])
                 ->latest('created_at')
                 ->latest('id'),
+            'refunds' => fn ($query) => $query->with('creator:id,name')->latest('refunded_at'),
         ]);
 
         $rootItems = $order->items

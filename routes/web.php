@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\NotificationController as AdminNotificationContro
 use App\Http\Controllers\Admin\OrderCancellationRequestController as AdminOrderCancellationRequestController;
 use App\Http\Controllers\Admin\OrderCreationController as AdminOrderCreationController;
 use App\Http\Controllers\Admin\ProductReviewController as AdminProductReviewController;
+use App\Http\Controllers\Admin\RefundController as AdminRefundController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\AttributeOptionController;
@@ -21,8 +22,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SeoController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\Shop\Account\NotificationController as ShopAccountNotificationController;
 use App\Http\Controllers\Shop\Account\OrderCancellationRequestController as ShopOrderCancellationRequestController;
@@ -39,14 +40,14 @@ use App\Http\Controllers\Shop\ProductListingController as ShopProductListingCont
 use App\Http\Controllers\Shop\ProductReviewController as ShopProductReviewController;
 use App\Http\Controllers\Shop\WishlistController as ShopWishlistController;
 use App\Http\Controllers\VariantController;
-use App\Http\Middleware\ShareStorefrontWishlist;
 use App\Http\Middleware\EnforceActiveCustomerSession;
 use App\Http\Middleware\SetStorefrontLocale;
+use App\Http\Middleware\ShareStorefrontWishlist;
 use App\Models\User;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Session\Middleware\StartSession;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 Route::get('/robots.txt', [SeoController::class, 'robots'])
     ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, ValidateCsrfToken::class, SetStorefrontLocale::class, EnforceActiveCustomerSession::class])
@@ -150,6 +151,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('cms-pages', AdminCmsPageController::class)->only(['index', 'edit', 'update']);
         Route::resource('homepage-banners', AdminHomepageBannerController::class)->except(['show']);
         Route::resource('homepage-services', AdminHomepageServiceController::class)->except(['show']);
+        Route::get('refunds/lookups/orders', [AdminRefundController::class, 'orders'])->name('refunds.lookups.orders');
+        Route::get('refunds', [AdminRefundController::class, 'index'])->name('refunds.index');
+        Route::get('refunds/create', [AdminRefundController::class, 'create'])->name('refunds.create');
+        Route::post('refunds', [AdminRefundController::class, 'store'])->name('refunds.store');
+        Route::get('refunds/{refund}', [AdminRefundController::class, 'show'])->name('refunds.show');
 
         Route::get('customers', [CustomerController::class, 'index'])
             ->name('customers.index');
