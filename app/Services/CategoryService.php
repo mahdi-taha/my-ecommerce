@@ -12,6 +12,10 @@ use Throwable;
 
 class CategoryService
 {
+    private const MAX_LEVEL = 2;
+
+    private const MAX_LEVEL_MESSAGE = 'Categories can only have three hierarchy levels.';
+
     public function create(array $data): Category
     {
         $logo = $this->storeImage($data['logo'] ?? null, 'categories/logos');
@@ -20,6 +24,7 @@ class CategoryService
         try {
             return DB::transaction(function () use ($data, $logo, $banner) {
                 $parent = ! empty($data['parent_id']) ? Category::whereKey($data['parent_id'])->lockForUpdate()->firstOrFail() : null;
+                $this->ensureParentCanHaveChildren($parent);
                 $category = Category::create([
                     'parent_id' => $parent?->id, 'position' => $data['position'],
                     'level' => $parent ? $parent->level + 1 : 0, 'logo_path' => $logo,
@@ -46,21 +51,34 @@ class CategoryService
         try {
             $result = DB::transaction(function () use ($category, $data, $newLogo, $newBanner) {
                 $locked = Category::whereKey($category->id)->lockForUpdate()->firstOrFail();
-                $descendants = $this->descendantIds($locked, true);
-                if (! empty($data['parent_id']) && in_array((int) $data['parent_id'], $descendants, true)) {
+                $descendantLevels = $this->descendantLevels($locked, true);
+                $descendants = array_keys($descendantLevels);
+                if (! empty($data['parent_id']) && (
+                    (int) $data['parent_id'] === (int) $locked->id
+                    || in_array((int) $data['parent_id'], $descendants, true)
+                )) {
                     throw ValidationException::withMessages(['parent_id' => 'A descendant category cannot be selected as the parent.']);
                 }
                 $parent = ! empty($data['parent_id']) ? Category::whereKey($data['parent_id'])->lockForUpdate()->firstOrFail() : null;
-                $difference = ($parent ? $parent->level + 1 : 0) - $locked->level;
+                $newLevel = $parent ? $parent->level + 1 : 0;
+                $deepestRelativeLevel = $descendantLevels === [] ? 0 : max($descendantLevels);
+                if ($newLevel + $deepestRelativeLevel > self::MAX_LEVEL) {
+                    $this->throwMaximumLevelValidation();
+                }
                 $locked->update([
-                    'parent_id' => $parent?->id, 'position' => $data['position'], 'level' => $locked->level + $difference,
+                    'parent_id' => $parent?->id, 'position' => $data['position'], 'level' => $newLevel,
                     'logo_path' => $newLogo ?? $locked->logo_path, 'banner_path' => $newBanner ?? $locked->banner_path,
                     'status' => $data['status'],
                 ]);
                 $this->syncTranslations($locked, $data);
                 $locked->filterableAttributes()->sync($data['filterable_attributes'] ?? []);
-                if ($difference !== 0 && $descendants !== []) {
-                    Category::whereIn('id', $descendants)->increment('level', $difference);
+                foreach (collect($descendantLevels)->groupBy(
+                    fn (int $relativeLevel): int => $relativeLevel,
+                    preserveKeys: true
+                ) as $relativeLevel => $ids) {
+                    Category::query()->whereKey($ids->keys())->update([
+                        'level' => $newLevel + (int) $relativeLevel,
+                    ]);
                 }
 
                 return $locked->refresh();
@@ -77,9 +95,16 @@ class CategoryService
 
     public function descendantIds(Category $category, bool $lock = false): array
     {
+        return array_keys($this->descendantLevels($category, $lock));
+    }
+
+    /** @return array<int, int> category id => depth relative to the supplied category */
+    private function descendantLevels(Category $category, bool $lock = false): array
+    {
         $result = [];
         $parents = [$category->id];
         $visited = [$category->id];
+        $relativeLevel = 1;
         while ($parents !== []) {
             $query = Category::whereIn('parent_id', $parents)->orderBy('id');
             if ($lock) {
@@ -87,12 +112,29 @@ class CategoryService
             }
             $children = $query->pluck('id')->map(fn ($id) => (int) $id)->all();
             $children = array_values(array_diff($children, $visited));
-            $result = array_merge($result, $children);
+            foreach ($children as $child) {
+                $result[$child] = $relativeLevel;
+            }
             $visited = array_merge($visited, $children);
             $parents = $children;
+            $relativeLevel++;
         }
 
         return $result;
+    }
+
+    private function ensureParentCanHaveChildren(?Category $parent): void
+    {
+        if ($parent && $parent->level >= self::MAX_LEVEL) {
+            $this->throwMaximumLevelValidation();
+        }
+    }
+
+    private function throwMaximumLevelValidation(): never
+    {
+        throw ValidationException::withMessages([
+            'parent_id' => self::MAX_LEVEL_MESSAGE,
+        ]);
     }
 
     public function delete(Category $category): void

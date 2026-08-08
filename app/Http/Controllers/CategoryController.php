@@ -90,7 +90,8 @@ class CategoryController extends Controller
     {
         $categories = Category::with(['translations' => fn ($query) => $query->where('locale', 'en')])
             ->when($excluded !== [], fn ($query) => $query->whereNotIn('id', $excluded))
-            ->orderBy('level')->orderBy('position')->get();
+            ->where('level', '<', 2)
+            ->orderBy('level')->orderBy('position')->orderBy('id')->get();
         $attributes = Attribute::with(['translations' => fn ($query) => $query->where('locale', 'en')])
             ->where('is_filterable', true)->orderBy('sort_order')->get();
 
