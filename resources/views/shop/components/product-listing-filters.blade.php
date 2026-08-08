@@ -1,4 +1,4 @@
-<aside class="border rounded bg-white p-4" aria-label="{{ __('shop.listing.filters') }}">
+﻿<aside class="border rounded bg-white p-4" aria-label="{{ __('shop.listing.filters') }}">
     <form method="GET" action="{{ $listingAction }}">
         <h2 class="h5 mb-4">{{ __('shop.listing.filters') }}</h2>
 
@@ -82,7 +82,9 @@
             </fieldset>
         @endforeach
 
-        <input type="hidden" name="sort" value="{{ $filters['sort'] ?? 'newest' }}">
+        @if ($showSort)
+            <input type="hidden" name="sort" value="{{ $filters['sort'] ?? 'newest' }}">
+        @endif
         <div class="d-grid gap-2 mt-4">
             <button type="submit" class="btn btn-primary">{{ __('shop.listing.apply_filters') }}</button>
             <a href="{{ $listingAction }}" class="btn btn-outline-secondary">

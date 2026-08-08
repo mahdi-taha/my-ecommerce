@@ -1,8 +1,8 @@
-@extends('shop.layouts.app')
+﻿@extends('shop.layouts.app')
 
-@section('title', $categoryTranslation?->meta_title ?: ($categoryTranslation?->name ?? __('shop.listing.title')))
+@section('title', $listingTitle ?? ($categoryTranslation?->meta_title ?: ($categoryTranslation?->name ?? __('shop.listing.title'))))
 
-@section('meta_description', $categoryTranslation?->meta_description ?: ($categoryTranslation ? __('shop.listing.category_meta_description', ['category' => $categoryTranslation->name]) : __('shop.listing.meta_description')))
+@section('meta_description', $listingMetaDescription ?? ($categoryTranslation?->meta_description ?: ($categoryTranslation ? __('shop.listing.category_meta_description', ['category' => $categoryTranslation->name]) : __('shop.listing.meta_description'))))
 @section('canonical', $canonicalUrl)
 @section('open_graph', 'enabled')
 @if ($categoryBannerUrl)
@@ -44,11 +44,12 @@
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                 <div>
                     @if (! $categoryBannerUrl)
-                        <h1 class="display-6 mb-1">{{ $categoryTranslation?->name ?? __('shop.listing.title') }}</h1>
+                        <h1 class="display-6 mb-1">{{ $listingTitle ?? $categoryTranslation?->name ?? __('shop.listing.title') }}</h1>
                     @endif
                     <p class="text-muted mb-0">{{ __('shop.listing.results', ['count' => $products->total()]) }}</p>
                 </div>
-                <form method="GET" action="{{ $listingAction }}" class="d-flex align-items-center gap-2">
+                    @if ($showSort)
+                    <form method="GET" action="{{ $listingAction }}" class="d-flex align-items-center gap-2">
                     @foreach (request()->except(['sort', 'page']) as $name => $value)
                         @if (is_scalar($value))
                             <input type="hidden" name="{{ $name }}" value="{{ $value }}">
@@ -76,7 +77,8 @@
                         @endforeach
                     </select>
                     <noscript><button class="btn btn-primary" type="submit">{{ __('shop.listing.submit_sort') }}</button></noscript>
-                </form>
+                    </form>
+                    @endif
             </div>
 
             <div class="row g-4">
@@ -86,7 +88,7 @@
                 <div class="col-12 col-lg-9">
                     @if ($products->isEmpty())
                         <div class="bg-white border rounded text-center text-muted py-5">
-                            {{ __('shop.listing.empty') }}
+                            {{ $listingEmptyMessage }}
                         </div>
                     @else
                         <div class="row g-4">

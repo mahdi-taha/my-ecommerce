@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Shop\ProductListingRequest;
+use App\Http\Requests\Shop\TopSellingProductListingRequest;
 use App\Models\Category;
 use App\Models\Tax;
 use App\Services\StorefrontProductListingService;
@@ -63,14 +64,28 @@ class ProductListingController extends Controller
         return $this->render($filters, $listingService, $category, $facets, $at);
     }
 
+    public function topSelling(
+        TopSellingProductListingRequest $request,
+        StorefrontProductListingService $listingService
+    ): View {
+        return $this->render(
+            $request->validated(),
+            $listingService,
+            topSelling: true,
+        );
+    }
+
     private function render(
         array $filters,
         StorefrontProductListingService $listingService,
         ?Category $category = null,
         array $attributeFacets = [],
-        ?CarbonInterface $at = null
+        ?CarbonInterface $at = null,
+        bool $topSelling = false,
     ): View {
-        $products = $listingService->paginate($filters, app()->getLocale(), $category, $at);
+        $products = $topSelling
+            ? $listingService->paginateTopSelling($filters, app()->getLocale(), $at)
+            : $listingService->paginate($filters, app()->getLocale(), $category, $at);
         $currencyCode = setting('currency.default_currency', 'USD');
         $taxMode = setting('tax.tax_mode', 'b2c');
         $defaultTaxId = setting('tax.default_tax_id');
@@ -82,9 +97,11 @@ class ProductListingController extends Controller
             && Storage::disk('public')->exists($categoryBannerPath)
                 ? Storage::disk('public')->url($categoryBannerPath)
                 : null;
-        $listingAction = $category
-            ? route('shop.categories.show', ['slug' => $categoryTranslation->slug])
-            : route('shop.products.index');
+        $listingAction = match (true) {
+            $topSelling => route('shop.products.top-selling'),
+            $category !== null => route('shop.categories.show', ['slug' => $categoryTranslation->slug]),
+            default => route('shop.products.index'),
+        };
         $canonicalUrl = $listingAction;
         $publicFilters = Arr::except($filters, '_attribute_filters');
         if (empty(array_diff_key($publicFilters, array_flip(['page']))) && ($filters['page'] ?? 1) > 1) {
@@ -94,12 +111,18 @@ class ProductListingController extends Controller
             && ($filters['page'] ?? 1) > 1
                 ? ['page' => $filters['page']]
                 : [];
-        $alternateLinks = $category
-            ? $this->seo->categoryAlternates((int) $category->getKey(), $alternateParameters)
-            : $this->seo->routeAlternates('shop.products.index', $alternateParameters);
+        $alternateLinks = match (true) {
+            $topSelling => $this->seo->routeAlternates('shop.products.top-selling', $alternateParameters),
+            $category !== null => $this->seo->categoryAlternates((int) $category->getKey(), $alternateParameters),
+            default => $this->seo->routeAlternates('shop.products.index', $alternateParameters),
+        };
         $robotsMeta = empty(array_diff_key($publicFilters, array_flip(['page'])))
             ? 'index,follow'
             : 'noindex,nofollow';
+        $listingTitle = $topSelling ? __('shop.listing.top_selling.title') : null;
+        $listingMetaDescription = $topSelling ? __('shop.listing.top_selling.meta_description') : null;
+        $listingEmptyMessage = $topSelling ? __('shop.listing.top_selling.empty') : __('shop.listing.empty');
+        $showSort = ! $topSelling;
 
         return view('shop.pages.products', compact(
             'products',
@@ -116,6 +139,10 @@ class ProductListingController extends Controller
             'attributeFacets',
             'alternateLinks',
             'robotsMeta',
+            'listingTitle',
+            'listingMetaDescription',
+            'listingEmptyMessage',
+            'showSort',
         ));
     }
 }

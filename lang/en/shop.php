@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 return [
     'auth' => [
@@ -576,6 +576,11 @@ return [
         'sort_by' => 'Sort by',
         'submit_sort' => 'Sort',
         'empty' => 'No products match the selected filters.',
+        'top_selling' => [
+            'title' => 'Top Selling Products',
+            'meta_description' => 'Browse the products most purchased by our customers.',
+            'empty' => 'No top-selling products are available yet.',
+        ],
         'sort' => [
             'newest' => 'Newest',
             'oldest' => 'Oldest',

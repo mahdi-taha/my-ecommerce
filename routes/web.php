@@ -65,6 +65,8 @@ Route::prefix('{locale}')->whereIn('locale', ['en', 'ar'])->group(function () {
     Route::middleware(['storefront.cart', ShareStorefrontWishlist::class])->group(function () {
         Route::get('/', [HomeController::class, 'index'])->name('shop.home');
         Route::get('/shop', [ShopProductListingController::class, 'index'])->name('shop.products.index');
+        Route::get('/top-selling', [ShopProductListingController::class, 'topSelling'])
+            ->name('shop.products.top-selling');
         Route::get('/categories/{slug}', [ShopProductListingController::class, 'category'])
             ->name('shop.categories.show');
         Route::get('/pages/{slug}', [ShopCmsPageController::class, 'show'])->name('shop.pages.show');

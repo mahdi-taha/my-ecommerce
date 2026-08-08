@@ -1,4 +1,4 @@
-@extends('shop.layouts.app')
+﻿@extends('shop.layouts.app')
 
 @section('title', __('shop.home.title'))
 @section('meta_description', __('shop.home.meta_description'))
@@ -28,6 +28,7 @@
         $productTabs['top-selling'] = [
             'label' => __('shop.home.top_selling'),
             'products' => $topSellingProducts,
+            'url' => route('shop.products.top-selling'),
         ];
     @endphp
 
