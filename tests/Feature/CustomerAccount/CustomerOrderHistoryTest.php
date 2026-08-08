@@ -124,6 +124,7 @@ class CustomerOrderHistoryTest extends TestCase
 
         $this->actingAs($customer, 'customer')->get(route('shop.account.orders.show', $order))
             ->assertOk()
+            ->assertSee(route('shop.account.orders.print', $order), false)
             ->assertSee('Snapshot Product')
             ->assertSee('SNAPSHOT-SKU')
             ->assertSee('Color: Black')

@@ -77,7 +77,8 @@ class CheckoutStorefrontTest extends TestCase
 
         $this->get(route('shop.checkout.success', $order))
             ->assertOk()
-            ->assertSee($order->order_number);
+            ->assertSee($order->order_number)
+            ->assertSee(route('shop.checkout.success.print', $order), false);
         $this->assertDatabaseCount('orders', 1);
     }
 
