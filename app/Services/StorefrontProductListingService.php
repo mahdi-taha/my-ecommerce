@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Enums\AttributeType;
+use App\Enums\PaymentStatus;
 use App\Enums\ProductType;
 use App\Models\Category;
+use App\Models\OrderItem;
 use App\Models\Product;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -39,6 +41,27 @@ class StorefrontProductListingService
         $this->applySorting($query, $filters['sort'] ?? 'newest');
 
         return $query->paginate(self::PAGE_SIZE)->withQueryString();
+    }
+
+    /** @return Collection<int, Product> */
+    public function topSellingPreview(
+        string $locale,
+        int $limit = 8,
+        ?CarbonInterface $at = null
+    ): Collection {
+        return $this->topSellingQuery([], $locale, $at ?? now())
+            ->limit($limit)
+            ->get();
+    }
+
+    public function paginateTopSelling(
+        array $filters,
+        string $locale,
+        ?CarbonInterface $at = null
+    ): LengthAwarePaginator {
+        return $this->topSellingQuery($filters, $locale, $at ?? now())
+            ->paginate(self::PAGE_SIZE)
+            ->withQueryString();
     }
 
     public function eligibleProductIdByUrlKey(
@@ -85,6 +108,49 @@ class StorefrontProductListingService
         $this->applyRootEligibility($query, $at);
 
         return $query;
+    }
+
+    private function topSellingQuery(array $filters, string $locale, CarbonInterface $at): Builder
+    {
+        $commercialPaymentStatuses = [
+            PaymentStatus::Paid->value,
+            PaymentStatus::PartiallyRefunded->value,
+            PaymentStatus::Refunded->value,
+        ];
+        $sales = OrderItem::query()
+            ->financiallyRefundable()
+            ->join('orders as top_selling_orders', 'top_selling_orders.id', '=', 'order_items.order_id')
+            ->join('products as top_selling_sold_products', 'top_selling_sold_products.id', '=', 'order_items.product_id')
+            ->whereIn('top_selling_orders.payment_status', $commercialPaymentStatuses)
+            ->selectRaw('COALESCE(top_selling_sold_products.configurable_id, top_selling_sold_products.id) as public_product_id')
+            ->selectRaw('SUM(order_items.quantity) as sold_quantity')
+            ->groupByRaw('COALESCE(top_selling_sold_products.configurable_id, top_selling_sold_products.id)');
+        $refunds = OrderItem::query()
+            ->financiallyRefundable()
+            ->join('orders as top_selling_refund_orders', 'top_selling_refund_orders.id', '=', 'order_items.order_id')
+            ->join('products as top_selling_refunded_products', 'top_selling_refunded_products.id', '=', 'order_items.product_id')
+            ->join('refund_items as top_selling_refund_items', 'top_selling_refund_items.order_item_id', '=', 'order_items.id')
+            ->whereIn('top_selling_refund_orders.payment_status', $commercialPaymentStatuses)
+            ->selectRaw('COALESCE(top_selling_refunded_products.configurable_id, top_selling_refunded_products.id) as public_product_id')
+            ->selectRaw('SUM(top_selling_refund_items.quantity) as refunded_quantity')
+            ->groupByRaw('COALESCE(top_selling_refunded_products.configurable_id, top_selling_refunded_products.id)');
+        $netQuantityExpression = 'top_selling_sales.sold_quantity - COALESCE(top_selling_refunds.refunded_quantity, 0)';
+        $query = $this->eligibleRootQuery($locale, $at)
+            ->select('products.*')
+            ->joinSub($sales, 'top_selling_sales', fn ($join) => $join
+                ->on('top_selling_sales.public_product_id', '=', 'products.id'))
+            ->leftJoinSub($refunds, 'top_selling_refunds', fn ($join) => $join
+                ->on('top_selling_refunds.public_product_id', '=', 'products.id'))
+            ->selectRaw("{$netQuantityExpression} as net_units_sold")
+            ->whereRaw("{$netQuantityExpression} > 0");
+
+        $query->withStorefrontCardData($locale, Auth::guard('customer')->id());
+        $this->applyFilters($query, $filters, $at);
+        $this->applyPriceProjection($query, $at);
+
+        return $query
+            ->orderByDesc('net_units_sold')
+            ->orderBy('products.id');
     }
 
     public function categoryBySlug(string $slug): ?Category

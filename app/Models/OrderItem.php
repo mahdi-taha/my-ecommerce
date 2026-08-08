@@ -80,8 +80,8 @@ class OrderItem extends Model
     public function scopeFinanciallyRefundable(Builder $query): Builder
     {
         return $query
-            ->where('quantity', '>', 0)
-            ->where('row_total', '>', 0);
+            ->where('order_items.quantity', '>', 0)
+            ->where('order_items.row_total', '>', 0);
     }
 
     public function isFinanciallyRefundable(): bool

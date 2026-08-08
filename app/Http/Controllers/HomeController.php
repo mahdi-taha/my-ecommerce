@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\HomepageBannerPlacement;
-use App\Enums\OrderStatus;
 use App\Enums\ProductType;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Tax;
 use App\Services\StorefrontContentService;
+use App\Services\StorefrontProductListingService;
 use App\Services\StorefrontSeoService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,7 +22,7 @@ class HomeController extends Controller
         private StorefrontSeoService $seo,
     ) {}
 
-    public function index(): View
+    public function index(StorefrontProductListingService $listingService): View
     {
         $timestamp = now();
         $homepageCategories = Category::query()
@@ -102,16 +102,11 @@ class HomeController extends Controller
             ->take(8)
             ->values();
 
-        $topSellingProducts = (clone $baseQuery)
-            ->withSum([
-                'orderItems as sold_quantity' => fn (Builder $query) => $query
-                    ->whereHas('order', fn (Builder $query) => $query
-                        ->where('status', OrderStatus::Completed->value)),
-            ], 'quantity')
-            ->orderByDesc('sold_quantity')
-            ->latest('products.created_at')
-            ->limit(8)
-            ->get();
+        $topSellingProducts = $listingService->topSellingPreview(
+            app()->getLocale(),
+            8,
+            $timestamp,
+        );
 
         $currencyCode = setting('currency.default_currency', 'USD');
         $taxMode = setting('tax.tax_mode', 'b2c');
