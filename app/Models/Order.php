@@ -128,4 +128,9 @@ class Order extends Model
     {
         return $this->hasMany(OrderCancellationRequest::class);
     }
+
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class);
+    }
 }

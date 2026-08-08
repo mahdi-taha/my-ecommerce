@@ -112,6 +112,11 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
+    public function createdRefunds(): HasMany
+    {
+        return $this->hasMany(Refund::class, 'created_by');
+    }
+
     public function productReviews(): HasMany
     {
         return $this->hasMany(ProductReview::class);

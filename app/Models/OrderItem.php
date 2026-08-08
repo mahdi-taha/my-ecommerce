@@ -105,4 +105,9 @@ class OrderItem extends Model
     {
         return $this->hasOne(ProductReview::class);
     }
+
+    public function refundItems(): HasMany
+    {
+        return $this->hasMany(RefundItem::class);
+    }
 }
