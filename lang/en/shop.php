@@ -394,6 +394,10 @@ return [
             'timeline' => 'Order Timeline',
             'no_history' => 'No Order history is available.',
             'totals' => 'Order Totals',
+            'refunds' => 'Refund History',
+            'refund_amount' => 'Refund Amount',
+            'shipping_deduction' => 'Return Shipping Deduction',
+            'refund_note' => 'Note',
             'cancellation' => [
                 'title' => 'Cancellation Requests',
                 'request_button' => 'Request Cancellation',

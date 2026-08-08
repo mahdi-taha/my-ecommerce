@@ -394,6 +394,10 @@ return [
             'timeline' => 'سجل الطلب',
             'no_history' => 'لا يتوفر سجل لهذا الطلب.',
             'totals' => 'إجماليات الطلب',
+            'refunds' => 'سجل المبالغ المستردة',
+            'refund_amount' => 'المبلغ المسترد',
+            'shipping_deduction' => 'خصم شحن الإرجاع',
+            'refund_note' => 'ملاحظة',
             'cancellation' => [
                 'title' => 'طلبات الإلغاء',
                 'request_button' => 'طلب إلغاء',

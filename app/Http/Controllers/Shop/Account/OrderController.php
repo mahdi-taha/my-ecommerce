@@ -46,6 +46,10 @@ class OrderController extends Controller
                 ->with('reviewer:id,name')
                 ->latest('created_at')
                 ->latest('id'),
+            'refunds' => fn ($query) => $query
+                ->with(['items.orderItem:id,name,sku'])
+                ->latest('refunded_at')
+                ->latest('id'),
         ]);
 
         $manualPayment = $this->paymentInstructions->present($order);

@@ -106,6 +106,23 @@
 
     @include('shop.orders.partials.manual-payment-instructions')
 
+    @if ($order->refunds->isNotEmpty())
+        <div class="card shadow-sm border-0 mb-4"><div class="card-body p-4">
+            <h2 class="h5 mb-3">{{ __('shop.account.orders.refunds') }}</h2>
+            @foreach ($order->refunds as $refund)
+                <div class="border rounded p-3 mb-3">
+                    <div class="d-flex justify-content-between"><strong>{{ $refund->refund_number }}</strong><small class="text-muted">{{ $refund->refunded_at->format('Y-m-d H:i') }}</small></div>
+                    <ul class="mt-2 mb-2">@foreach ($refund->items as $item)<li>{{ $item->orderItem->name }} — {{ (float) $item->quantity }}</li>@endforeach</ul>
+                    <p class="mb-1"><strong>{{ __('shop.account.orders.refund_amount') }}:</strong> {{ format_store_price($refund->customer_refund_amount, $refund->currency_code) }}</p>
+                    @if ((float) $refund->shipping_deduction > 0)
+                        <p class="mb-1"><strong>{{ __('shop.account.orders.shipping_deduction') }}:</strong> {{ format_store_price($refund->shipping_deduction, $refund->currency_code) }}</p>
+                    @endif
+                    @if ($refund->customer_note)<p class="mb-0"><strong>{{ __('shop.account.orders.refund_note') }}:</strong> {{ $refund->customer_note }}</p>@endif
+                </div>
+            @endforeach
+        </div></div>
+    @endif
+
     <div class="card shadow-sm border-0 mb-4"><div class="card-body p-4">
         <h2 class="h5 mb-3">{{ __('shop.checkout.confirmation.items') }}</h2>
         <div class="table-responsive"><table class="table align-middle mb-0">
