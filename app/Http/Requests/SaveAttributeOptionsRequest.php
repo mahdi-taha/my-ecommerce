@@ -25,7 +25,12 @@ class SaveAttributeOptionsRequest extends FormRequest
             'options.*.label_en' => ['required', 'string', 'max:255'],
             'options.*.label_ar' => ['required', 'string', 'max:255'],
             'options.*.sort_order' => ['nullable', 'integer', 'min:0'],
-            'options.*.swatch_value' => ['nullable', 'string', 'max:20'],
+            'options.*.swatch_value' => [
+                Rule::requiredIf(fn (): bool => $this->input('swatch_type') === AttributeSwatchType::Color->value),
+                'nullable',
+                'string',
+                'regex:/^#[0-9A-Fa-f]{6}$/',
+            ],
             'deleted_options' => ['nullable', 'array'],
             'deleted_options.*' => ['integer', 'distinct'],
         ];

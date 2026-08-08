@@ -125,8 +125,13 @@ class AttributeService
 
             foreach ($preparedRows as [$option, $row, $code]) {
                 $option ??= new AttributeOption(['attribute_id' => $attribute->id]);
-                $option->fill(['code' => $code, 'sort_order' => $row['sort_order'] ?? 0,
-                    'swatch_value' => $data['swatch_type'] === 'color' ? ($row['swatch_value'] ?? null) : null]);
+                $option->fill([
+                    'code' => $code,
+                    'sort_order' => $row['sort_order'] ?? 0,
+                    'swatch_value' => $data['swatch_type'] === 'color'
+                        ? strtoupper($row['swatch_value'])
+                        : null,
+                ]);
                 $option->save();
 
                 foreach (['en', 'ar'] as $locale) {
