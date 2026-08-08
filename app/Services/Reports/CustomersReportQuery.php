@@ -52,6 +52,6 @@ class CustomersReportQuery extends AbstractReportQuery implements ReportQuery
     private function registered(ReportFilters $filters): Builder
     {
         return DB::table('users')->where('account_type', 'customer')->where('has_account', true)
-            ->when($filters->start, fn (Builder $q, $v) => $q->where('created_at', '>=', $v))->when($filters->endExclusive,fn (Builder $q,$v) => $q->where('created_at','<',$v));
+            ->when($filters->start, fn (Builder $q, $v) => $q->where('created_at', '>=', $v))->when($filters->endExclusive, fn (Builder $q, $v) => $q->where('created_at', '<', $v));
     }
 }

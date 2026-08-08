@@ -45,6 +45,6 @@ class ReviewsReportQuery extends AbstractReportQuery implements ReportQuery
 
     private function base(ReportFilters $filters): Builder
     {
-        return DB::table('product_reviews')->when($filters->start, fn (Builder $q, $v) => $q->where('product_reviews.created_at', '>=', $v))->when($filters->endExclusive, fn (Builder $q, $v) => $q->where('product_reviews.created_at', '<', $v))->when($filters->productId, fn (Builder $q, $v) => $q->where('product_reviews.product_id',$v));
+        return DB::table('product_reviews')->when($filters->start, fn (Builder $q, $v) => $q->where('product_reviews.created_at', '>=', $v))->when($filters->endExclusive, fn (Builder $q, $v) => $q->where('product_reviews.created_at', '<', $v))->when($filters->productId, fn (Builder $q, $v) => $q->where('product_reviews.product_id', $v));
     }
 }

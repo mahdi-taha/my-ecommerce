@@ -4,6 +4,7 @@ namespace App\Services\Reports;
 
 use App\DTOs\Reports\ReportFilters;
 use App\Enums\PaymentStatus;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Query\Builder;
 use Traversable;
 
@@ -43,7 +44,7 @@ abstract class AbstractReportQuery
             ->when($filters->shippingTreatment, fn (Builder $query, $value) => $query->where('refunds.shipping_treatment', $value));
     }
 
-    /** @param callable(int): \Illuminate\Contracts\Pagination\LengthAwarePaginator $page */
+    /** @param callable(int): LengthAwarePaginator $page */
     protected function paginatedExport(callable $page): Traversable
     {
         $number = 1;

@@ -35,7 +35,9 @@ class ProductCategoryReportTest extends TestCase
         $product->categories()->attach($child);
         $filters = $this->filters();
         $filters = new ReportFilters($filters->start, $filters->endExclusive, null, null, $parent->id, null, null, null, null, null, null, null, 25);
-        $this->assertSame(1, app(CategoriesReportQuery::class)->rows($filters)->total());
+        $rows = app(CategoriesReportQuery::class)->rows($filters);
+        $this->assertSame(1, $rows->total());
+        $this->assertSame($parent->id, $rows->items()[0]->id);
     }
 
     private function filters(): ReportFilters

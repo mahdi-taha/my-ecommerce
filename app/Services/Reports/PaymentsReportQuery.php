@@ -48,6 +48,6 @@ class PaymentsReportQuery extends AbstractReportQuery implements ReportQuery
     private function base(ReportFilters $filters): Builder
     {
         return $this->applyOrderFilters(DB::table('order_payments')->join('orders', 'orders.id', '=', 'order_payments.order_id'), $filters)
-            ->when($filters->paymentMethod, fn (Builder $q, $v) => $q->where('order_payments.method_code',$v));
+            ->when($filters->paymentMethod, fn (Builder $q, $v) => $q->where('order_payments.method_code', $v));
     }
 }
