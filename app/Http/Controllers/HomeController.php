@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Tax;
 use App\Services\StorefrontContentService;
+use App\Services\StorefrontSeoService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +17,10 @@ use Illuminate\Support\Facades\Storage;
 
 class HomeController extends Controller
 {
-    public function __construct(private StorefrontContentService $content) {}
+    public function __construct(
+        private StorefrontContentService $content,
+        private StorefrontSeoService $seo,
+    ) {}
 
     public function index(): View
     {
@@ -120,6 +124,7 @@ class HomeController extends Controller
         $heroSideBanners = $homepageContent->where('placement', HomepageBannerPlacement::HeroSide);
         $offerBanners = $homepageContent->where('placement', HomepageBannerPlacement::Offer);
         $homepageServices = $this->content->homepageServices(app()->getLocale());
+        $alternateLinks = $this->seo->routeAlternates('shop.home');
 
         return view('shop.pages.home', compact(
             'allProducts',
@@ -135,6 +140,7 @@ class HomeController extends Controller
             'heroSideBanners',
             'offerBanners',
             'homepageServices',
+            'alternateLinks',
         ));
     }
 }

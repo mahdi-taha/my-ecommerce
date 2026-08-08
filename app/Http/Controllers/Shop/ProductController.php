@@ -10,6 +10,7 @@ use App\Models\ProductReview;
 use App\Models\Tax;
 use App\Services\ProductReviewService;
 use App\Services\StorefrontProductListingService;
+use App\Services\StorefrontSeoService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -21,6 +22,7 @@ class ProductController extends Controller
     public function __construct(
         private ProductReviewService $reviewService,
         private StorefrontProductListingService $listingService,
+        private StorefrontSeoService $seo,
     ) {}
 
     public function show(string $url_key): View
@@ -206,6 +208,7 @@ class ProductController extends Controller
             $variantPresentation,
             $configurablePriceRange,
         );
+        $alternateLinks = $this->seo->productAlternates((int) $product->getKey());
 
         return view('shop.pages.product-details', compact(
             'product',
@@ -228,6 +231,7 @@ class ProductController extends Controller
             'hasPositiveEffectivePrice',
             'approvedReviews',
             'ratingBreakdown',
+            'alternateLinks',
             'customerReview',
             'canReview',
             'productCanonicalUrl',

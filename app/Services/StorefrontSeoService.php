@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Category;
+use App\Models\CmsPage;
+use App\Models\ProductTranslation;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 use LogicException;
@@ -13,6 +15,80 @@ class StorefrontSeoService
         private StorefrontProductListingService $products,
         private StorefrontContentService $content,
     ) {}
+
+    /** @return array<int, array{hreflang: string, href: string}> */
+    public function routeAlternates(string $routeName, array $parameters = []): array
+    {
+        return $this->withDefault(collect(StorefrontLocaleUrlService::LOCALES)
+            ->mapWithKeys(fn (string $locale): array => [
+                $locale => route($routeName, ['locale' => $locale, ...$parameters]),
+            ]));
+    }
+
+    /** @return array<int, array{hreflang: string, href: string}> */
+    public function productAlternates(int $productId): array
+    {
+        $translations = ProductTranslation::query()
+            ->where('product_id', $productId)
+            ->whereIn('locale', StorefrontLocaleUrlService::LOCALES)
+            ->get()
+            ->keyBy('locale');
+        $urls = collect();
+        foreach (StorefrontLocaleUrlService::LOCALES as $locale) {
+            $translation = $translations->get($locale);
+            if ($translation && $this->products->productIsEligible($productId, $locale)) {
+                $urls->put($locale, route('shop.products.show', [
+                    'locale' => $locale,
+                    'url_key' => $translation->url_key,
+                ]));
+            }
+        }
+
+        return $this->withDefault($urls);
+    }
+
+    /** @return array<int, array{hreflang: string, href: string}> */
+    public function categoryAlternates(int $categoryId, array $parameters = []): array
+    {
+        $categories = Category::query()
+            ->with(['translations' => fn ($query) => $query
+                ->whereIn('locale', StorefrontLocaleUrlService::LOCALES)])
+            ->get()
+            ->keyBy('id');
+        $urls = collect();
+        foreach (StorefrontLocaleUrlService::LOCALES as $locale) {
+            $category = $this->reachableCategories($categories, $locale)->firstWhere('id', $categoryId);
+            $translation = $category?->translations->firstWhere('locale', $locale);
+            if ($translation) {
+                $urls->put($locale, route('shop.categories.show', [
+                    'locale' => $locale,
+                    'slug' => $translation->slug,
+                    ...$parameters,
+                ]));
+            }
+        }
+
+        return $this->withDefault($urls);
+    }
+
+    /** @return array<int, array{hreflang: string, href: string}> */
+    public function cmsAlternates(int $pageId): array
+    {
+        $page = CmsPage::query()->active()->with(['translations' => fn ($query) => $query
+            ->whereIn('locale', StorefrontLocaleUrlService::LOCALES)])->find($pageId);
+        $urls = collect();
+        foreach (StorefrontLocaleUrlService::LOCALES as $locale) {
+            $translation = $page?->translations->firstWhere('locale', $locale);
+            if ($translation) {
+                $urls->put($locale, route('shop.pages.show', [
+                    'locale' => $locale,
+                    'slug' => $translation->slug,
+                ]));
+            }
+        }
+
+        return $this->withDefault($urls);
+    }
 
     /** @return Collection<int, string> */
     public function sitemapUrls(?CarbonInterface $at = null): Collection
@@ -89,5 +165,23 @@ class StorefrontSeoService
             ->filter(fn (Category $category): bool => $reachable($category))
             ->sortBy('id')
             ->values();
+    }
+
+    /**
+     * @param  Collection<string, string>  $urls
+     * @return array<int, array{hreflang: string, href: string}>
+     */
+    private function withDefault(Collection $urls): array
+    {
+        $links = $urls->map(fn (string $href, string $locale): array => [
+            'hreflang' => $locale,
+            'href' => $href,
+        ])->values();
+        $defaultHref = $urls->get((string) setting('localization.default_locale')) ?? $urls->first();
+        if ($defaultHref) {
+            $links->push(['hreflang' => 'x-default', 'href' => $defaultHref]);
+        }
+
+        return $links->all();
     }
 }

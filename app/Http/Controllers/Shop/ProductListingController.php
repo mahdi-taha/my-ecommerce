@@ -7,6 +7,7 @@ use App\Http\Requests\Shop\ProductListingRequest;
 use App\Models\Category;
 use App\Models\Tax;
 use App\Services\StorefrontProductListingService;
+use App\Services\StorefrontSeoService;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +18,8 @@ use Illuminate\Validation\ValidationException;
 
 class ProductListingController extends Controller
 {
+    public function __construct(private StorefrontSeoService $seo) {}
+
     public function index(
         ProductListingRequest $request,
         StorefrontProductListingService $listingService
@@ -87,6 +90,13 @@ class ProductListingController extends Controller
         if (empty(array_diff_key($publicFilters, array_flip(['page']))) && ($filters['page'] ?? 1) > 1) {
             $canonicalUrl = $listingAction.'?'.http_build_query(['page' => $filters['page']]);
         }
+        $alternateParameters = empty(array_diff_key($publicFilters, array_flip(['page'])))
+            && ($filters['page'] ?? 1) > 1
+                ? ['page' => $filters['page']]
+                : [];
+        $alternateLinks = $category
+            ? $this->seo->categoryAlternates((int) $category->getKey(), $alternateParameters)
+            : $this->seo->routeAlternates('shop.products.index', $alternateParameters);
 
         return view('shop.pages.products', compact(
             'products',
@@ -101,6 +111,7 @@ class ProductListingController extends Controller
             'listingAction',
             'canonicalUrl',
             'attributeFacets',
+            'alternateLinks',
         ));
     }
 }

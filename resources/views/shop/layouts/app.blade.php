@@ -20,6 +20,7 @@
     @if ($pageCanonical !== '')
         <link rel="canonical" href="{{ $pageCanonical }}">
     @endif
+    @include('shop.partials.alternate-links', ['links' => $alternateLinks ?? []])
     @hasSection('open_graph')
         <meta property="og:type" content="{{ $openGraphType }}">
         <meta property="og:title" content="{{ $pageTitle }}">
