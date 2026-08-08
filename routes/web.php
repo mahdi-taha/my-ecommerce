@@ -158,6 +158,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('refunds', [AdminRefundController::class, 'store'])->name('refunds.store');
         Route::get('refunds/{refund}', [AdminRefundController::class, 'show'])->name('refunds.show');
         Route::get('reports', [AdminReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/{report}/export', [AdminReportController::class, 'export'])->name('reports.export');
         Route::get('reports/{report}', [AdminReportController::class, 'show'])->name('reports.show');
 
         Route::get('customers', [CustomerController::class, 'index'])
