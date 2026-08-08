@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -74,6 +75,18 @@ class OrderItem extends Model
             'row_total' => 'decimal:4',
             'unit_cost' => 'decimal:4',
         ];
+    }
+
+    public function scopeFinanciallyRefundable(Builder $query): Builder
+    {
+        return $query
+            ->where('quantity', '>', 0)
+            ->where('row_total', '>', 0);
+    }
+
+    public function isFinanciallyRefundable(): bool
+    {
+        return (float) $this->quantity > 0 && (float) $this->row_total > 0;
     }
 
     public function order(): BelongsTo
