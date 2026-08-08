@@ -11,6 +11,7 @@ use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Presenters\ManualPaymentInstructionsPresenter;
+use App\Presenters\OrderPrintPresenter;
 use App\Services\CartService;
 use App\Services\CheckoutOrderPlacementService;
 use App\Services\CheckoutService;
@@ -38,6 +39,7 @@ class CheckoutController extends Controller
         private CheckoutService $checkoutService,
         private CheckoutOrderPlacementService $placementService,
         private ManualPaymentInstructionsPresenter $paymentInstructions,
+        private OrderPrintPresenter $orderPrint,
     ) {}
 
     public function show(Request $request): View|RedirectResponse
@@ -198,6 +200,13 @@ class CheckoutController extends Controller
         $manualPayment = $this->paymentInstructions->present($order);
 
         return view('shop.pages.checkout-success', compact('order', 'manualPayment'));
+    }
+
+    public function printOrder(Request $request, Order $order): View
+    {
+        $this->authorizeConfirmation($request, $order);
+
+        return view('orders.print', $this->orderPrint->present($order));
     }
 
     private function resolveCart(Request $request, ?User $customer): ?Cart

@@ -89,6 +89,8 @@ Route::prefix('{locale}')->whereIn('locale', ['en', 'ar'])->group(function () {
             ->name('shop.checkout.coupon.destroy');
         Route::get('/checkout/success/{order}', [ShopCheckoutController::class, 'success'])
             ->name('shop.checkout.success');
+        Route::get('/checkout/success/{order}/print', [ShopCheckoutController::class, 'printOrder'])
+            ->name('shop.checkout.success.print');
     });
 
     Route::middleware([

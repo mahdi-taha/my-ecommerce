@@ -9,6 +9,11 @@
                 <i class="bi bi-check-circle-fill text-success display-3"></i>
                 <h1 class="h2 fw-bold mt-3">{{ __('shop.checkout.confirmation.title') }}</h1>
                 <p class="text-muted">{{ __('shop.checkout.confirmation.message', ['number' => $order->order_number]) }}</p>
+                <a class="btn btn-outline-secondary mt-2"
+                    href="{{ route('shop.checkout.success.print', ['order' => $order]) }}"
+                    target="_blank" rel="noopener">
+                    {{ __('shop.order_print.print_order') }}
+                </a>
             </div>
 
             <div class="row g-4">
