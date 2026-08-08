@@ -33,6 +33,7 @@ class LocalizedStorefrontRouteTest extends TestCase
     {
         $this->get('/ar')->assertOk();
         $this->assertSame(url('/ar/shop'), route('shop.products.index'));
+        $this->assertSame(url('/ar/top-selling'), route('shop.products.top-selling'));
 
         URL::defaults(['locale' => null]);
         $this->assertSame(url('/admin/login'), route('admin.login'));

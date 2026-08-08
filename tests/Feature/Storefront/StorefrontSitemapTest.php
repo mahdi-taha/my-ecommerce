@@ -55,11 +55,13 @@ class StorefrontSitemapTest extends TestCase
         $expected = [
             route('shop.home', ['locale' => 'en']),
             route('shop.products.index', ['locale' => 'en']),
+            route('shop.products.top-selling', ['locale' => 'en']),
             route('shop.categories.show', ['locale' => 'en', 'slug' => 'cameras']),
             route('shop.products.show', ['locale' => 'en', 'url_key' => 'camera-en']),
             route('shop.pages.show', ['locale' => 'en', 'slug' => 'about']),
             route('shop.home', ['locale' => 'ar']),
             route('shop.products.index', ['locale' => 'ar']),
+            route('shop.products.top-selling', ['locale' => 'ar']),
             route('shop.categories.show', ['locale' => 'ar', 'slug' => 'cameras-ar']),
             route('shop.products.show', ['locale' => 'ar', 'url_key' => 'camera-ar']),
         ];

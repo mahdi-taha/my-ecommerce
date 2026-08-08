@@ -38,6 +38,8 @@ class StorefrontIndexingPolicyTest extends TestCase
             route('shop.home', ['locale' => 'en']),
             route('shop.products.index', ['locale' => 'en']),
             route('shop.products.index', ['locale' => 'en', 'page' => 2]),
+            route('shop.products.top-selling', ['locale' => 'en']),
+            route('shop.products.top-selling', ['locale' => 'en', 'page' => 2]),
             route('shop.products.show', ['locale' => 'en', 'url_key' => 'camera']),
             route('shop.pages.show', ['locale' => 'en', 'slug' => 'about']),
         ] as $url) {
@@ -48,6 +50,8 @@ class StorefrontIndexingPolicyTest extends TestCase
     public function test_filtered_listings_and_private_storefront_pages_are_not_indexable(): void
     {
         $this->get(route('shop.products.index', ['locale' => 'en', 'q' => 'camera']))->assertOk()
+            ->assertSee($this->robots('noindex,nofollow'), false);
+        $this->get(route('shop.products.top-selling', ['locale' => 'en', 'q' => 'camera']))->assertOk()
             ->assertSee($this->robots('noindex,nofollow'), false);
         $this->get(route('shop.cart.index', ['locale' => 'en']))->assertOk()
             ->assertSee($this->robots('noindex,nofollow'), false);

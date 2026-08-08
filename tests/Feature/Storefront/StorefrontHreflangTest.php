@@ -78,6 +78,25 @@ class StorefrontHreflangTest extends TestCase
             ->assertDontSee('hreflang="ar" href="'.route('shop.products.index', ['locale' => 'ar']).'?', false);
     }
 
+    public function test_top_selling_alternates_preserve_clean_pagination_only(): void
+    {
+        $response = $this->get(route('shop.products.top-selling', [
+            'locale' => 'en',
+            'page' => 2,
+        ]))->assertOk();
+        $response->assertSee($this->alternate('en', route('shop.products.top-selling', ['locale' => 'en', 'page' => 2])), false)
+            ->assertSee($this->alternate('ar', route('shop.products.top-selling', ['locale' => 'ar', 'page' => 2])), false)
+            ->assertSee($this->alternate('x-default', route('shop.products.top-selling', ['locale' => 'en', 'page' => 2])), false);
+
+        $filtered = $this->get(route('shop.products.top-selling', [
+            'locale' => 'en',
+            'q' => 'camera',
+            'page' => 2,
+        ]))->assertOk();
+        $filtered->assertSee($this->alternate('ar', route('shop.products.top-selling', ['locale' => 'ar'])), false)
+            ->assertDontSee('hreflang="ar" href="'.route('shop.products.top-selling', ['locale' => 'ar']).'?', false);
+    }
+
     private function product(string $key, bool $withArabic): Product
     {
         $product = Product::factory()->create([

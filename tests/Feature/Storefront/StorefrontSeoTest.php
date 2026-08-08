@@ -68,6 +68,22 @@ class StorefrontSeoTest extends TestCase
             ->assertSee('<link rel="canonical" href="'.$base.'">', false);
     }
 
+    public function test_top_selling_has_localized_metadata_and_clean_canonicals(): void
+    {
+        $base = route('shop.products.top-selling', ['locale' => 'en']);
+        $this->get($base)->assertOk()
+            ->assertSee('<title>'.__('shop.listing.top_selling.title').'</title>', false)
+            ->assertSee('<meta name="description" content="'.__('shop.listing.top_selling.meta_description').'">', false)
+            ->assertSee('<link rel="canonical" href="'.$base.'">', false);
+        $this->get($base.'?page=2')->assertOk()
+            ->assertSee('<link rel="canonical" href="'.$base.'?page=2">', false);
+        $this->get($base.'?q=camera&page=2')->assertOk()
+            ->assertSee('<link rel="canonical" href="'.$base.'">', false);
+
+        $this->get(route('shop.products.top-selling', ['locale' => 'ar']))->assertOk()
+            ->assertSee('<title>'.__('shop.listing.top_selling.title', [], 'ar').'</title>', false);
+    }
+
     public function test_product_locale_switch_uses_translated_key_and_missing_translation_returns_home(): void
     {
         $this->product('camera', 'Camera', 'Summary', withArabic: true);
