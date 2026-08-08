@@ -2,18 +2,142 @@
 
 namespace App\Services;
 
+use App\Enums\PaymentStatus;
 use App\Enums\ShippingTreatment;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\OrderPayment;
+use App\Models\Refund;
 use App\Models\RefundItem;
+use App\Models\User;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class RefundService
 {
     private const MAX_DECIMAL = '99999999999.9999';
+
+    public function __construct(
+        private RefundNumberGenerator $numbers,
+        private PaymentStatusService $payments,
+    ) {}
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function create(Order $order, User $administrator, array $data, string $idempotencyKey): Refund
+    {
+        if (! preg_match('/^[a-f0-9]{64}$/', $idempotencyKey)) {
+            throw ValidationException::withMessages([
+                'idempotency_key' => 'The Refund submission token is invalid.',
+            ]);
+        }
+        if ($existing = Refund::query()->where('idempotency_key', $idempotencyKey)->first()) {
+            return $existing;
+        }
+
+        try {
+            return DB::transaction(function () use ($order, $administrator, $data, $idempotencyKey): Refund {
+                $lockedOrder = Order::query()->whereKey($order->getKey())->lockForUpdate()->first();
+                if (! $lockedOrder) {
+                    throw ValidationException::withMessages(['order' => 'The Order no longer exists.']);
+                }
+                $lockedAdmin = User::query()->admins()->active()
+                    ->whereKey($administrator->getKey())->lockForUpdate()->first();
+                if (! $lockedAdmin) {
+                    throw ValidationException::withMessages(['administrator' => 'An active Administrator is required.']);
+                }
+                if ($existing = Refund::query()->where('idempotency_key', $idempotencyKey)->first()) {
+                    return $existing;
+                }
+
+                $payment = OrderPayment::query()
+                    ->where('order_id', $lockedOrder->getKey())
+                    ->lockForUpdate()
+                    ->first();
+                if (! $payment) {
+                    throw ValidationException::withMessages(['payment' => 'The Order has no Payment obligation.']);
+                }
+                if ($payment->currency_code !== $lockedOrder->currency_code
+                    || $payment->status->value !== $lockedOrder->payment_status
+                    || ! in_array($payment->status, [PaymentStatus::Paid, PaymentStatus::PartiallyRefunded], true)) {
+                    throw ValidationException::withMessages([
+                        'payment_status' => 'The Order Payment is not eligible for a Refund.',
+                    ]);
+                }
+
+                $selectedIds = collect($data['items'] ?? [])
+                    ->pluck('order_item_id')->map(fn ($id): int => (int) $id)->sort()->values();
+                OrderItem::query()->where('order_id', $lockedOrder->getKey())
+                    ->whereIn('id', $selectedIds)->orderBy('id')->lockForUpdate()->get();
+                Refund::query()->where('order_id', $lockedOrder->getKey())
+                    ->orderBy('id')->lockForUpdate()->get(['id']);
+                RefundItem::query()->whereHas('refund', fn ($query) => $query
+                    ->where('order_id', $lockedOrder->getKey()))
+                    ->orderBy('order_item_id')->orderBy('id')->lockForUpdate()->get(['id']);
+
+                $quote = $this->quote($lockedOrder, $data);
+                $previousCustomerAmount = Refund::query()
+                    ->where('order_id', $lockedOrder->getKey())
+                    ->sum('customer_refund_amount');
+                if ($this->compare(
+                    $this->add($previousCustomerAmount, $quote['customer_refund_amount']),
+                    $payment->paid_amount
+                ) > 0) {
+                    throw ValidationException::withMessages([
+                        'refund' => 'The cumulative Customer Refund exceeds the original paid amount.',
+                    ]);
+                }
+
+                $timestamp = now();
+                $refund = Refund::query()->create([
+                    'refund_number' => $this->numbers->generate(),
+                    'idempotency_key' => $idempotencyKey,
+                    'order_id' => $lockedOrder->getKey(),
+                    'order_payment_id' => $payment->getKey(),
+                    'currency_code' => $lockedOrder->currency_code,
+                    'merchandise_subtotal' => $quote['merchandise_subtotal'],
+                    'discount_amount' => $quote['discount_amount'],
+                    'tax_amount' => $quote['tax_amount'],
+                    'merchandise_amount' => $quote['merchandise_amount'],
+                    'return_shipping_cost' => $quote['return_shipping_cost'],
+                    'shipping_treatment' => $quote['shipping_treatment'],
+                    'shipping_deduction' => $quote['shipping_deduction'],
+                    'company_shipping_loss' => $quote['company_shipping_loss'],
+                    'customer_refund_amount' => $quote['customer_refund_amount'],
+                    'reason' => $this->nullableText($data['reason'] ?? null),
+                    'customer_note' => $this->nullableText($data['customer_note'] ?? null),
+                    'internal_note' => $this->nullableText($data['internal_note'] ?? null),
+                    'created_by' => $lockedAdmin->getKey(),
+                    'refunded_at' => $timestamp,
+                ]);
+                $refund->items()->createMany($quote['items']);
+
+                $target = $this->refundableItems($lockedOrder)->isEmpty()
+                    ? PaymentStatus::Refunded
+                    : PaymentStatus::PartiallyRefunded;
+                $this->payments->recordRefund(
+                    $lockedOrder,
+                    $payment,
+                    $refund,
+                    $target,
+                    (int) $lockedAdmin->getKey(),
+                );
+
+                return $refund->fresh(['items', 'order', 'payment', 'creator']);
+            });
+        } catch (QueryException $exception) {
+            if (! $this->isIdempotencyViolation($exception)) {
+                throw $exception;
+            }
+
+            return Refund::query()->where('idempotency_key', $idempotencyKey)->firstOrFail();
+        }
+    }
 
     /**
      * @return Collection<int, array{
@@ -261,5 +385,21 @@ class RefundService
     private function decimal(mixed $value): string
     {
         return BigDecimal::of((string) $value)->toScale(4, RoundingMode::HalfUp)->__toString();
+    }
+
+    private function nullableText(mixed $value): ?string
+    {
+        $value = trim((string) $value);
+
+        return $value !== '' ? $value : null;
+    }
+
+    private function isIdempotencyViolation(QueryException $exception): bool
+    {
+        $message = $exception->getMessage();
+
+        return in_array((string) $exception->getCode(), ['23000', '23505'], true)
+            && (str_contains($message, 'refunds_idempotency_key_unique')
+                || str_contains($message, 'refunds.idempotency_key'));
     }
 }

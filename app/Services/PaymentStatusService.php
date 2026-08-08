@@ -12,8 +12,10 @@ use App\Models\Order;
 use App\Models\OrderPayment;
 use App\Models\OrderStatusHistory;
 use App\Models\PaymentAttempt;
+use App\Models\Refund;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use LogicException;
 use RuntimeException;
 
 class PaymentStatusService
@@ -94,6 +96,45 @@ class PaymentStatusService
 
             return $lockedOrder->fresh();
         });
+    }
+
+    public function recordRefund(
+        Order $order,
+        OrderPayment $payment,
+        Refund $refund,
+        PaymentStatus $targetStatus,
+        int $userId,
+    ): void {
+        if (DB::transactionLevel() < 1) {
+            throw new LogicException('Refund payment transitions require an active database transaction.');
+        }
+        if ((int) $payment->order_id !== (int) $order->getKey()
+            || (int) $refund->order_id !== (int) $order->getKey()
+            || (int) $refund->order_payment_id !== (int) $payment->getKey()) {
+            throw new RuntimeException('The Refund payment aggregate is inconsistent.');
+        }
+
+        $fromStatus = PaymentStatus::tryFrom($order->payment_status);
+        if (! in_array($fromStatus, [PaymentStatus::Paid, PaymentStatus::PartiallyRefunded], true)
+            || $payment->status !== $fromStatus) {
+            throw ValidationException::withMessages([
+                'payment_status' => 'Only paid or partially refunded Payments can be refunded.',
+            ]);
+        }
+        if (! in_array($targetStatus, [PaymentStatus::PartiallyRefunded, PaymentStatus::Refunded], true)) {
+            throw new LogicException('Invalid Refund payment target status.');
+        }
+
+        if (! $payment->update(['status' => $targetStatus])) {
+            throw new RuntimeException('The Payment Refund status could not be updated.');
+        }
+        if (! $order->update(['payment_status' => $targetStatus->value])) {
+            throw new RuntimeException('The Order Payment Refund status could not be updated.');
+        }
+
+        if ($fromStatus !== $targetStatus) {
+            $this->createHistory($order, $fromStatus, $targetStatus, $userId, $refund->refund_number);
+        }
     }
 
     private function transitionPendingPayment(
@@ -256,7 +297,8 @@ class PaymentStatusService
         Order $order,
         PaymentStatus $fromStatus,
         PaymentStatus $toStatus,
-        ?int $userId
+        ?int $userId,
+        ?string $comment = null,
     ): void {
         OrderStatusHistory::create([
             'order_id' => $order->getKey(),
@@ -264,7 +306,7 @@ class PaymentStatusService
             'from_status' => $fromStatus->value,
             'to_status' => $toStatus->value,
             'created_by' => $userId,
-            'comment' => null,
+            'comment' => $comment,
         ]);
     }
 }
