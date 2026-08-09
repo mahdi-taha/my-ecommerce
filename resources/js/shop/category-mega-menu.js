@@ -18,7 +18,36 @@ export function initializeCategoryMegaMenu() {
     const triggers = Array.from(panel.querySelectorAll('[data-category-flyout-trigger]'));
     const flyouts = Array.from(panel.querySelectorAll('[data-category-flyout]'));
     const viewportSafetyMargin = 16;
+    const closeDelay = 150;
     let positioningFrame = null;
+    let closeTimer = null;
+
+    function cancelPendingClose() {
+        if (closeTimer !== null) {
+            window.clearTimeout(closeTimer);
+            closeTimer = null;
+        }
+    }
+
+    function closeMenu() {
+        cancelPendingClose();
+        closeFlyouts();
+        hideMenu(toggle);
+    }
+
+    function scheduleMenuClose() {
+        cancelPendingClose();
+        closeTimer = window.setTimeout(() => {
+            closeTimer = null;
+
+            if (menu.matches(':hover') || menu.contains(document.activeElement)) {
+                return;
+            }
+
+            closeFlyouts();
+            hideMenu(toggle);
+        }, closeDelay);
+    }
 
     function positionFlyout(trigger, flyout) {
         const layer = flyout.parentElement;
@@ -131,25 +160,26 @@ export function initializeCategoryMegaMenu() {
         });
 
     menu.addEventListener('mouseenter', () => {
+        cancelPendingClose();
         showMenu(toggle);
         window.requestAnimationFrame(updateAvailableHeight);
     });
-    menu.addEventListener('mouseleave', () => {
-        closeFlyouts();
-        hideMenu(toggle);
-    });
+    menu.addEventListener('mouseleave', scheduleMenuClose);
     menu.addEventListener('focusin', () => {
+        cancelPendingClose();
         showMenu(toggle);
         window.requestAnimationFrame(updateAvailableHeight);
     });
     menu.addEventListener('focusout', (event) => {
-        if (!menu.contains(event.relatedTarget)) {
-            closeFlyouts();
-            hideMenu(toggle);
+        if (!menu.contains(event.relatedTarget) && !menu.matches(':hover')) {
+            closeMenu();
         }
     });
 
     toggle.addEventListener('shown.bs.dropdown', updateAvailableHeight);
-    toggle.addEventListener('hidden.bs.dropdown', () => closeFlyouts());
+    toggle.addEventListener('hidden.bs.dropdown', () => {
+        cancelPendingClose();
+        closeFlyouts();
+    });
     window.addEventListener('resize', updateAvailableHeight);
 }
