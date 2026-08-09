@@ -331,12 +331,21 @@
     inset: 100% auto auto 0 !important;
     width: 280px;
     min-width: 250px;
-    max-height: min(65vh, 560px);
     overflow: visible;
     border: 0;
     border-radius: 0 0 .625rem .625rem;
     background: var(--bs-light);
     box-shadow: 0 .75rem 2rem rgba(0, 0, 0, .12);
+}
+
+.storefront-category-root-scrollport,
+.storefront-category-level-2-scrollport,
+.storefront-category-flyout--level-3 {
+    max-block-size: var(--storefront-category-available-height, min(65vh, 560px));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
 }
 
 .storefront-category-desktop-list {
@@ -356,22 +365,31 @@
     overflow-wrap: anywhere;
 }
 
-.storefront-category-submenu {
-    top: -.5rem;
+.storefront-category-flyout-layer {
+    position: absolute;
+    top: 0;
     left: 100%;
+}
+
+.storefront-category-flyout {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none;
     width: 280px;
-    border: 0;
+    min-width: 250px;
+    overflow: visible;
+    background: var(--bs-light);
     box-shadow: 0 .75rem 2rem rgba(0, 0, 0, .12);
 }
 
-[dir="rtl"] .storefront-category-submenu {
-    right: 100%;
-    left: auto;
+.storefront-category-flyout.is-open {
+    display: block;
 }
 
-.storefront-category-menu-item:hover > .storefront-category-submenu,
-.storefront-category-menu-item:focus-within > .storefront-category-submenu {
-    display: block;
+.storefront-category-flyout-layer--level-3 {
+    top: 0;
+    left: 100%;
 }
 
 .storefront-category-menu-item.has-children > .storefront-category-link:focus-visible {
@@ -500,6 +518,7 @@
 }
 
 @media (min-width: 992px) {
+
     [dir="rtl"] .storefront-topbar .text-lg-start,
     [dir="rtl"] .storefront-header-main .text-lg-start {
         text-align: right !important;
