@@ -324,6 +324,8 @@ return [
             'label' => 'Customer account navigation',
             'profile' => 'Profile',
             'address_book' => 'Address Book',
+            'previous' => 'Previous account navigation items',
+            'next' => 'Next account navigation items',
         ],
         'profile' => [
             'title' => 'My Profile',

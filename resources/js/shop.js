@@ -2,6 +2,7 @@ import './app.js';
 import { initializeConfigurableProducts } from './shop/configurable-product.js';
 import { initializeCheckoutSummary } from './shop/checkout-summary.js';
 import { initializeCategoryMegaMenu } from './shop/category-mega-menu.js';
+import { initializeCustomerAccountCarousel } from './shop/customer-account-carousel.js';
 import { initializeHomepageCategoryCarousel } from './shop/homepage-category-carousel.js';
 import { initializeProductCardActions } from './shop/product-card-actions.js';
 
@@ -30,6 +31,7 @@ async function initializeStorefront() {
 
     await import('../../public/storefront-assets/js/main.js');
     initializeHomepageCategoryCarousel();
+    initializeCustomerAccountCarousel();
     initializeConfigurableProducts();
     initializeCheckoutSummary();
 }
