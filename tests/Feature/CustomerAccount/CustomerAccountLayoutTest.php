@@ -20,15 +20,19 @@ class CustomerAccountLayoutTest extends TestCase
         $response->assertOk()
             ->assertSee('storefront-topbar', false)
             ->assertSee('storefront-navbar', false)
-            ->assertSee('nav nav-pills flex-column', false)
+            ->assertSee('data-customer-account-carousel', false)
+            ->assertSee('data-item-count="8"', false)
             ->assertSee(route('customer.account.edit'), false)
             ->assertSee(route('customer.addresses.index'), false)
             ->assertSee(route('shop.account.orders.index'), false)
+            ->assertSee(route('shop.account.reviews.index'), false)
             ->assertSee(route('shop.wishlist.index'), false)
             ->assertSee(route('shop.account.notifications.index'), false)
             ->assertSee(route('customer.account.password.edit'), false)
             ->assertSee(route('customer.logout'), false)
             ->assertSee('method="POST"', false)
+            ->assertSee('bi bi-person', false)
+            ->assertSee('bi bi-box-arrow-right', false)
             ->assertSee('aria-current="page"', false);
 
         $this->assertSame(1, substr_count($response->getContent(), 'aria-current="page"'));
@@ -92,6 +96,38 @@ class CustomerAccountLayoutTest extends TestCase
             ->get(route('customer.account.edit', ['locale' => 'ar']))
             ->assertOk()
             ->assertSee('<html lang="ar" dir="rtl">', false)
-            ->assertSee(__('shop.account.navigation.profile'));
+            ->assertSee(__('shop.account.navigation.profile'))
+            ->assertSee(__('shop.account.navigation.previous'))
+            ->assertSee(__('shop.account.navigation.next'));
+    }
+
+    public function test_account_navigation_uses_progressive_owl_enhancement(): void
+    {
+        $navigation = file_get_contents(resource_path('views/customer/account/_navigation.blade.php'));
+        $script = file_get_contents(resource_path('js/shop/customer-account-carousel.js'));
+        $entry = file_get_contents(resource_path('js/shop.js'));
+        $css = file_get_contents(resource_path('css/shop.css'));
+
+        $this->assertIsString($navigation);
+        $this->assertIsString($script);
+        $this->assertIsString($entry);
+        $this->assertIsString($css);
+        $this->assertStringContainsString('data-customer-account-carousel', $navigation);
+        $this->assertStringNotContainsString('class="nav nav-pills storefront-account-nav-carousel owl-carousel"', $navigation);
+        $this->assertSame(8, substr_count($navigation, 'storefront-account-nav-slide'));
+        $this->assertStringContainsString("classList.add('owl-carousel')", $script);
+        $this->assertStringContainsString('loop: false', $script);
+        $this->assertStringContainsString('rewind: false', $script);
+        $this->assertStringContainsString('autoplay: false', $script);
+        $this->assertStringContainsString('dots: false', $script);
+        $this->assertStringContainsString('mouseDrag: true', $script);
+        $this->assertStringContainsString('touchDrag: true', $script);
+        $this->assertStringContainsString('startPosition: activeIndex', $script);
+        $this->assertStringContainsString("document.documentElement.dir === 'rtl'", $script);
+        $this->assertStringContainsString('nav: itemCount > capacity', $script);
+        $this->assertStringContainsString('initializeCustomerAccountCarousel();', $entry);
+        $this->assertStringContainsString('overflow-x: auto', $css);
+        $this->assertStringContainsString('.storefront-account-nav-carousel.owl-loaded', $css);
+        $this->assertStringContainsString('[dir="rtl"] .storefront-account-nav-carousel', $css);
     }
 }
