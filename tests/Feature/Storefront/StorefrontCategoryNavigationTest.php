@@ -88,12 +88,21 @@ class StorefrontCategoryNavigationTest extends TestCase
         $this->assertStringContainsString("addEventListener('mouseenter'", $script);
         $this->assertStringContainsString("addEventListener('focusin'", $script);
         $this->assertStringContainsString("addEventListener('resize'", $script);
+        $this->assertStringContainsString("addEventListener('scroll'", $script);
+        $this->assertStringContainsString('trigger.getBoundingClientRect()', $script);
+        $this->assertStringContainsString('flyout.getBoundingClientRect()', $script);
+        $this->assertStringContainsString('Math.min(Math.max(triggerRect.top, safeTop), maximumTop)', $script);
         $this->assertStringContainsString('viewportSafetyMargin = 16', $script);
+        $this->assertStringContainsString('closeDelay = 150', $script);
+        $this->assertStringContainsString('window.setTimeout', $script);
+        $this->assertStringContainsString('cancelPendingClose()', $script);
         $this->assertStringContainsString('--storefront-category-available-height', $script);
+        $this->assertStringContainsString('--storefront-category-flyout-top', $script);
         $this->assertStringContainsString('.storefront-category-root-scrollport,', $css);
         $this->assertStringContainsString('overflow-y: auto', $css);
         $this->assertStringContainsString('.storefront-category-menu .storefront-category-panel-menu', $css);
         $this->assertStringContainsString('overflow: visible', $css);
+        $this->assertStringContainsString('top: var(--storefront-category-flyout-top, 0)', $css);
         $this->assertStringContainsString('[dir="rtl"] .storefront-category-flyout-layer', $css);
     }
 
