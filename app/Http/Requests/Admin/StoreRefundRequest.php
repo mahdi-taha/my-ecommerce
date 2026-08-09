@@ -45,4 +45,43 @@ class StoreRefundRequest extends FormRequest
             'internal_note' => ['nullable', 'string', 'max:2000'],
         ];
     }
+
+    public function attributes(): array
+    {
+        return [
+            'order_id' => 'order',
+            'items' => 'refund items',
+            'items.*.order_item_id' => 'selected refund item',
+            'items.*.quantity' => 'refund quantity',
+            'return_shipping_cost' => 'return shipping cost',
+            'shipping_treatment' => 'shipping treatment',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'order_id.required' => 'Please select an order.',
+            'order_id.integer' => 'Please select a valid order.',
+            'order_id.exists' => 'Please select a valid order.',
+            'items.required' => 'Please select at least one item to refund.',
+            'items.array' => 'Please select at least one item to refund.',
+            'items.min' => 'Please select at least one item to refund.',
+            'items.max' => 'You may refund up to 100 items at a time.',
+            'items.*.order_item_id.required' => 'A selected refund item is invalid.',
+            'items.*.order_item_id.integer' => 'A selected refund item is invalid.',
+            'items.*.order_item_id.distinct' => 'Each refund item may only be selected once.',
+            'items.*.order_item_id.exists' => 'A selected refund item is invalid.',
+            'items.*.quantity.required' => 'Please enter a refund quantity.',
+            'items.*.quantity.regex' => 'Please enter a valid refund quantity with up to 4 decimal places.',
+            'items.*.quantity.decimal' => 'Please enter a valid refund quantity with up to 4 decimal places.',
+            'items.*.quantity.max' => 'The refund quantity is too large.',
+            'return_shipping_cost.required' => 'Please enter the return shipping cost.',
+            'return_shipping_cost.regex' => 'Please enter a valid return shipping cost with up to 4 decimal places.',
+            'return_shipping_cost.decimal' => 'Please enter a valid return shipping cost with up to 4 decimal places.',
+            'return_shipping_cost.max' => 'The return shipping cost is too large.',
+            'shipping_treatment.required' => 'Please choose how return shipping should be handled.',
+            'shipping_treatment.enum' => 'Please choose a valid return shipping treatment.',
+        ];
+    }
 }
