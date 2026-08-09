@@ -34,7 +34,7 @@ class ProductCategoryReportTest extends TestCase
         $child = Category::factory()->create(['parent_id' => $parent->id, 'level' => 1]);
         $product->categories()->attach($child);
         $filters = $this->filters();
-        $filters = new ReportFilters($filters->start, $filters->endExclusive, null, null, $parent->id, null, null, null, null, null, null, null, 25);
+        $filters = new ReportFilters($filters->start, $filters->endExclusive, null, $parent->id, null, null, null, null, null, null, null, 25);
         $rows = app(CategoriesReportQuery::class)->rows($filters);
         $this->assertSame(1, $rows->total());
         $this->assertSame($parent->id, $rows->items()[0]->id);
@@ -42,6 +42,6 @@ class ProductCategoryReportTest extends TestCase
 
     private function filters(): ReportFilters
     {
-        return new ReportFilters(null, null, null, null, null, null, null, null, null, null, null, null, 25);
+        return new ReportFilters(null, null, null, null, null, null, null, null, null, null, null, 25);
     }
 }

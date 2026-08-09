@@ -27,7 +27,6 @@ abstract class AbstractReportQuery
         return $query
             ->when($filters->start, fn (Builder $query, $date) => $query->where('orders.placed_at', '>=', $date))
             ->when($filters->endExclusive, fn (Builder $query, $date) => $query->where('orders.placed_at', '<', $date))
-            ->when($filters->currency, fn (Builder $query, $value) => $query->where('orders.currency_code', $value))
             ->when($filters->customerId, fn (Builder $query, $value) => $query->where('orders.user_id', $value))
             ->when($filters->orderStatus, fn (Builder $query, $value) => $query->where('orders.status', $value))
             ->when($filters->paymentStatus, fn (Builder $query, $value) => $query->where('orders.payment_status', $value))
@@ -39,7 +38,6 @@ abstract class AbstractReportQuery
         return $query
             ->when($filters->start, fn (Builder $query, $date) => $query->where('refunds.refunded_at', '>=', $date))
             ->when($filters->endExclusive, fn (Builder $query, $date) => $query->where('refunds.refunded_at', '<', $date))
-            ->when($filters->currency, fn (Builder $query, $value) => $query->where('refunds.currency_code', $value))
             ->when($filters->administratorId, fn (Builder $query, $value) => $query->where('refunds.created_by', $value))
             ->when($filters->shippingTreatment, fn (Builder $query, $value) => $query->where('refunds.shipping_treatment', $value));
     }

@@ -21,7 +21,6 @@ class ReportRequest extends FormRequest
         return [
             'date_from' => ['nullable', 'date_format:Y-m-d'],
             'date_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:date_from'],
-            'currency' => ['nullable', 'string', 'size:3', 'regex:/^[A-Za-z]{3}$/'],
             'customer_id' => ['nullable', 'integer', 'exists:users,id'],
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
             'product_id' => ['nullable', 'integer', 'exists:products,id'],

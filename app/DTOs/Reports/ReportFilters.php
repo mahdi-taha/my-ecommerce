@@ -9,7 +9,6 @@ final readonly class ReportFilters
     public function __construct(
         public ?CarbonImmutable $start,
         public ?CarbonImmutable $endExclusive,
-        public ?string $currency,
         public ?int $customerId,
         public ?int $categoryId,
         public ?int $productId,
@@ -28,7 +27,6 @@ final readonly class ReportFilters
         return array_filter([
             'date_from' => $this->start?->setTimezone($this->storeTimezone())->toDateString(),
             'date_to' => $this->endExclusive?->subDay()->setTimezone($this->storeTimezone())->toDateString(),
-            'currency' => $this->currency,
             'customer_id' => $this->customerId,
             'category_id' => $this->categoryId,
             'product_id' => $this->productId,

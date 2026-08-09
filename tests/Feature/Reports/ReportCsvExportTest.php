@@ -17,7 +17,7 @@ class ReportCsvExportTest extends TestCase
     {
         $admin = User::factory()->create(['account_type' => AccountType::Admin, 'has_account' => true, 'is_active' => true]);
         [$order] = $this->paidRefundOrder();
-        $response = $this->actingAs($admin, 'admin')->get(route('admin.reports.export', ['report' => 'orders', 'currency' => 'USD']));
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.reports.export', ['report' => 'orders']));
         $response->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
         $content = $response->streamedContent();
         $this->assertStringStartsWith("\xEF\xBB\xBF", $content);

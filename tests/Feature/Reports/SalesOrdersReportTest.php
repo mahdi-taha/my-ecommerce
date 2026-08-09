@@ -53,6 +53,6 @@ class SalesOrdersReportTest extends TestCase
 
     private function filters(string $start, string $end, ?string $orderStatus = null): ReportFilters
     {
-        return new ReportFilters(CarbonImmutable::parse($start), CarbonImmutable::parse($end), null, null, null, null, null, null, $orderStatus, null, null, null, 25);
+        return new ReportFilters(CarbonImmutable::parse($start), CarbonImmutable::parse($end), null, null, null, null, null, $orderStatus, null, null, null, 25);
     }
 }

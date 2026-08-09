@@ -16,7 +16,6 @@ class ReportFilterFactory
         return new ReportFilters(
             start: isset($data['date_from']) ? CarbonImmutable::parse($data['date_from'], $storeTimezone)->startOfDay()->setTimezone($databaseTimezone) : null,
             endExclusive: isset($data['date_to']) ? CarbonImmutable::parse($data['date_to'], $storeTimezone)->addDay()->startOfDay()->setTimezone($databaseTimezone) : null,
-            currency: isset($data['currency']) ? strtoupper((string) $data['currency']) : null,
             customerId: isset($data['customer_id']) ? (int) $data['customer_id'] : null,
             categoryId: isset($data['category_id']) ? (int) $data['category_id'] : null,
             productId: isset($data['product_id']) ? (int) $data['product_id'] : null,

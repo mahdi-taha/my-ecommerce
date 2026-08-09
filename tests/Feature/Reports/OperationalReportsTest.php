@@ -39,6 +39,6 @@ class OperationalReportsTest extends TestCase
 
     private function filters(): ReportFilters
     {
-        return new ReportFilters(null, null, null, null, null, null, null, null, null, null, null, null, 25);
+        return new ReportFilters(null, null, null, null, null, null, null, null, null, null, null, 25);
     }
 }
