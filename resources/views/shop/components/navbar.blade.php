@@ -41,7 +41,7 @@
                         @endif
 
                         <div class="nav-item d-block d-lg-none" data-category-navigation-mobile>
-                            <button class="nav-link border-0 bg-transparent w-100 text-start"
+                            <button class="nav-link border-0 bg-transparent w-100 text-start storefront-mobile-categories-toggle"
                                 id="mobileCategoriesToggle" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#mobileCategoriesMenu" aria-expanded="false"
                                 aria-controls="mobileCategoriesMenu">

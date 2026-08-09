@@ -545,6 +545,12 @@
     overflow-wrap: anywhere;
 }
 
+@media (max-width: 991.98px) {
+    .storefront-mobile-categories-toggle {
+        text-align: start !important;
+    }
+}
+
 .storefront-mobile-category-toggle {
     flex: 0 0 2.5rem;
     color: var(--bs-dark);

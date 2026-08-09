@@ -65,6 +65,30 @@ class StorefrontCategoryNavigationTest extends TestCase
         $this->assertTrue($grandchild->exists);
     }
 
+    public function test_arabic_mobile_categories_toggle_uses_logical_alignment_without_changing_desktop_toggle(): void
+    {
+        $response = $this->get(route('shop.home', ['locale' => 'ar']));
+
+        $response->assertOk()
+            ->assertSee('<html lang="ar" dir="rtl">', false)
+            ->assertSee('id="mobileCategoriesToggle" type="button" data-bs-toggle="collapse"', false)
+            ->assertSee('data-bs-target="#mobileCategoriesMenu"', false)
+            ->assertSee('aria-controls="mobileCategoriesMenu"', false)
+            ->assertSee('storefront-mobile-categories-toggle', false)
+            ->assertSee(__('shop.navigation.all_categories'));
+
+        $css = file_get_contents(resource_path('css/shop.css'));
+        $desktopMenu = file_get_contents(resource_path('views/shop/components/category-menu.blade.php'));
+
+        $this->assertIsString($css);
+        $this->assertIsString($desktopMenu);
+        $this->assertStringContainsString('@media (max-width: 991.98px)', $css);
+        $this->assertStringContainsString('.storefront-mobile-categories-toggle', $css);
+        $this->assertStringContainsString('text-align: start !important', $css);
+        $this->assertStringNotContainsString('storefront-mobile-categories-toggle', $desktopMenu);
+        $this->assertStringContainsString('id="categoryMegaMenuToggle"', $desktopMenu);
+    }
+
     public function test_desktop_hover_focus_and_mobile_collapse_hooks_preserve_link_navigation(): void
     {
         $root = $this->category('Root', 'الجذر');
