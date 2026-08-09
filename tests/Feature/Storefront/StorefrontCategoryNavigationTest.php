@@ -30,7 +30,10 @@ class StorefrontCategoryNavigationTest extends TestCase
 
         $response->assertOk()
             ->assertSee('data-category-navigation-desktop', false)
-            ->assertSee('class="dropdown-menu storefront-category-submenu', false)
+            ->assertSee('class="storefront-category-root-scrollport"', false)
+            ->assertSee('class="storefront-category-flyout-layer"', false)
+            ->assertSee('class="storefront-category-flyout storefront-category-flyout--level-2"', false)
+            ->assertSee('class="storefront-category-flyout storefront-category-flyout--level-3"', false)
             ->assertSee('data-category-navigation-mobile', false)
             ->assertSee('class="btn storefront-mobile-category-toggle"', false)
             ->assertSee('href="'.route('shop.categories.show', ['slug' => 'root']).'"', false)
@@ -72,6 +75,9 @@ class StorefrontCategoryNavigationTest extends TestCase
         $response->assertOk()
             ->assertSee('data-bs-toggle="collapse"', false)
             ->assertSee('aria-controls="mobile-category-'.$root->id.'"', false)
+            ->assertSee('data-category-flyout-trigger="root-'.$root->id.'"', false)
+            ->assertSee('aria-controls="category-flyout-root-'.$root->id.'"', false)
+            ->assertSee('data-category-flyout="root-'.$root->id.'"', false)
             ->assertSee('href="'.route('shop.categories.show', ['slug' => 'root']).'"', false);
 
         $script = file_get_contents(resource_path('js/shop/category-mega-menu.js'));
@@ -81,9 +87,14 @@ class StorefrontCategoryNavigationTest extends TestCase
         $this->assertIsString($css);
         $this->assertStringContainsString("addEventListener('mouseenter'", $script);
         $this->assertStringContainsString("addEventListener('focusin'", $script);
-        $this->assertStringContainsString('.storefront-category-menu-item:hover > .storefront-category-submenu', $css);
-        $this->assertStringContainsString('.storefront-category-menu-item:focus-within > .storefront-category-submenu', $css);
-        $this->assertStringContainsString('[dir="rtl"] .storefront-category-submenu', $css);
+        $this->assertStringContainsString("addEventListener('resize'", $script);
+        $this->assertStringContainsString('viewportSafetyMargin = 16', $script);
+        $this->assertStringContainsString('--storefront-category-available-height', $script);
+        $this->assertStringContainsString('.storefront-category-root-scrollport,', $css);
+        $this->assertStringContainsString('overflow-y: auto', $css);
+        $this->assertStringContainsString('.storefront-category-menu .storefront-category-panel-menu', $css);
+        $this->assertStringContainsString('overflow: visible', $css);
+        $this->assertStringContainsString('[dir="rtl"] .storefront-category-flyout-layer', $css);
     }
 
     private function category(
