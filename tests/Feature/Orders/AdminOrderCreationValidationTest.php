@@ -102,6 +102,65 @@ class AdminOrderCreationValidationTest extends TestCase
         $this->assertDatabaseCount('orders', 1);
     }
 
+    public function test_manual_address_required_fields_use_human_friendly_messages(): void
+    {
+        [$admin, $customer, $product, $shipping, $payment] = $this->scenario();
+        $this->actingAs($admin, 'admin');
+        $data = $this->data($customer, $product, $shipping, $payment, $this->newToken());
+        $data['manual_address'] = [];
+
+        $this->post(route('admin.orders.store'), $data)
+            ->assertSessionHasErrors([
+                'manual_address.first_name' => 'Please enter the first name.',
+                'manual_address.last_name' => 'Please enter the last name.',
+                'manual_address.address_line_1' => 'Please enter the address.',
+                'manual_address.city' => 'Please enter the city.',
+                'manual_address.country_code' => 'Please enter the country code.',
+            ]);
+
+        $messages = implode(' ', session('errors')->all());
+        $this->assertStringNotContainsString('manual_address.', $messages);
+        $this->assertStringNotContainsString('manual address.', $messages);
+    }
+
+    public function test_country_code_validation_never_exposes_the_nested_field_path(): void
+    {
+        $this->withoutVite();
+        [$admin, $customer, $product, $shipping, $payment] = $this->scenario();
+        $this->actingAs($admin, 'admin');
+
+        foreach (['L', '1!'] as $countryCode) {
+            $data = $this->data($customer, $product, $shipping, $payment, $this->newToken());
+            $data['manual_address']['country_code'] = $countryCode;
+
+            $this->post(route('admin.orders.store'), $data)
+                ->assertSessionHasErrors([
+                    'manual_address.country_code' => 'Country code must be exactly 2 letters.',
+                ]);
+
+            $messages = implode(' ', session('errors')->all());
+            $this->assertStringNotContainsString('manual_address.country_code', $messages);
+            $this->assertStringNotContainsString('manual address.country code', $messages);
+        }
+    }
+
+    public function test_manual_address_error_is_human_friendly_in_the_rendered_admin_form(): void
+    {
+        $this->withoutVite();
+        [$admin, $customer, $product, $shipping, $payment] = $this->scenario();
+        $this->actingAs($admin, 'admin');
+        $data = $this->data($customer, $product, $shipping, $payment, $this->newToken());
+        $data['manual_address']['country_code'] = '1!';
+
+        $this->from(route('admin.orders.create'))
+            ->followingRedirects()
+            ->post(route('admin.orders.store'), $data)
+            ->assertOk()
+            ->assertSee('Country code must be exactly 2 letters.')
+            ->assertDontSee('manual_address.country_code')
+            ->assertDontSee('manual address.country code');
+    }
+
     private function scenario(): array
     {
         foreach ([

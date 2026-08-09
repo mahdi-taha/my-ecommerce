@@ -119,6 +119,36 @@ class AdminOrderRequest extends FormRequest
         ];
     }
 
+    public function attributes(): array
+    {
+        return [
+            'manual_address.first_name' => 'first name',
+            'manual_address.last_name' => 'last name',
+            'manual_address.company' => 'company',
+            'manual_address.email' => 'email',
+            'manual_address.phone' => 'phone',
+            'manual_address.address_line_1' => 'address',
+            'manual_address.address_line_2' => 'address line 2',
+            'manual_address.city' => 'city',
+            'manual_address.state' => 'state',
+            'manual_address.postal_code' => 'postal code',
+            'manual_address.country_code' => 'country code',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'manual_address.first_name.required' => 'Please enter the first name.',
+            'manual_address.last_name.required' => 'Please enter the last name.',
+            'manual_address.address_line_1.required' => 'Please enter the address.',
+            'manual_address.city.required' => 'Please enter the city.',
+            'manual_address.country_code.required' => 'Please enter the country code.',
+            'manual_address.country_code.size' => 'Country code must be exactly 2 letters.',
+            'manual_address.country_code.alpha' => 'Country code must be exactly 2 letters.',
+        ];
+    }
+
     private function trimmed(string $key): mixed
     {
         $value = $this->input($key);
