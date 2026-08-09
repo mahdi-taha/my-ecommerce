@@ -23,12 +23,14 @@ class ProductsReportQuery extends AbstractReportQuery implements ReportQuery
 
     public function summary(ReportFilters $filters): array
     {
-        return ['products' => $this->query($filters)->count()];
+        return ['products' => $this->countReportRows($this->query($filters))];
     }
 
     public function rows(ReportFilters $filters): LengthAwarePaginator
     {
-        return $this->query($filters)->paginate($filters->perPage);
+        $query = $this->query($filters);
+
+        return $query->paginate($filters->perPage, total: $this->countReportRows($query));
     }
 
     public function exportRows(ReportFilters $filters): Traversable

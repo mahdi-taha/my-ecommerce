@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Services\Reports\CategoriesReportQuery;
 use App\Services\Reports\ProductsReportQuery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Pagination\Paginator;
 use Tests\Support\CreatesRefundOrders;
 use Tests\TestCase;
 
@@ -38,6 +39,33 @@ class ProductCategoryReportTest extends TestCase
         $rows = app(CategoriesReportQuery::class)->rows($filters);
         $this->assertSame(1, $rows->total());
         $this->assertSame($parent->id, $rows->items()[0]->id);
+    }
+
+    public function test_product_report_paginates_calculated_units_with_deterministic_ordering(): void
+    {
+        [$order] = $this->paidRefundOrder();
+        foreach (range(1, 27) as $index) {
+            $product = Product::factory()->create(['sku' => sprintf('PAGED-%02d', $index)]);
+            $this->refundOrderItem($order, [
+                'product_id' => $product->id,
+                'sku' => $product->sku,
+                'name' => "Paged Product {$index}",
+                'quantity' => $index <= 2 ? '50.0000' : sprintf('%d.0000', 30 - $index),
+            ]);
+        }
+
+        $firstPage = app(ProductsReportQuery::class)->rows($this->filters());
+        $this->assertSame(27, $firstPage->total());
+        $this->assertSame(2, $firstPage->lastPage());
+        $this->assertSame(['PAGED-01', 'PAGED-02'], collect($firstPage->items())->take(2)->pluck('sku')->all());
+
+        Paginator::currentPageResolver(fn () => 2);
+        try {
+            $secondPage = app(ProductsReportQuery::class)->rows($this->filters());
+            $this->assertCount(2, $secondPage->items());
+        } finally {
+            Paginator::currentPageResolver(fn () => 1);
+        }
     }
 
     private function filters(): ReportFilters

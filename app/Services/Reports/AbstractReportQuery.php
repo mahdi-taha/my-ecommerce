@@ -42,6 +42,11 @@ abstract class AbstractReportQuery
             ->when($filters->shippingTreatment, fn (Builder $query, $value) => $query->where('refunds.shipping_treatment', $value));
     }
 
+    protected function countReportRows(Builder $query): int
+    {
+        return $query->getCountForPagination();
+    }
+
     /** @param callable(int): LengthAwarePaginator $page */
     protected function paginatedExport(callable $page): Traversable
     {
