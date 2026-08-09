@@ -106,25 +106,44 @@ class AppServiceProvider extends ServiceProvider
             return $count;
         };
 
-        View::composer('shop.components.navbar', function (IlluminateView $view): void {
+        $storefrontIdentity = function (): array {
+            $request = request();
+            $attribute = 'storefront.store_identity';
+
+            if ($request->attributes->has($attribute)) {
+                return $request->attributes->get($attribute);
+            }
+
+            $logoPath = trim((string) setting('store.store_logo_path', ''));
+            $identity = [
+                'name' => (string) setting('store.store_name', config('app.name')),
+                'logo_url' => $logoPath !== '' && Storage::disk('public')->exists($logoPath)
+                    ? Storage::disk('public')->url($logoPath)
+                    : null,
+            ];
+            $request->attributes->set($attribute, $identity);
+
+            return $identity;
+        };
+
+        View::composer('shop.components.navbar', function (IlluminateView $view) use ($storefrontIdentity): void {
             $hierarchy = app('storefront.category_hierarchy');
+            $identity = $storefrontIdentity();
 
             $view->with([
-                'navbarStoreName' => setting('store.store_name', config('app.name')),
+                'navbarStoreName' => $identity['name'],
+                'navbarLogoUrl' => $identity['logo_url'],
                 'storefrontCategoryTree' => $hierarchy['tree'],
                 'storefrontCategoryNavigation' => $hierarchy['navigation'],
             ]);
         });
 
-        View::composer('shop.components.topbar', function (IlluminateView $view) use ($customerNotificationCount): void {
+        View::composer('shop.components.topbar', function (IlluminateView $view) use ($customerNotificationCount, $storefrontIdentity): void {
             $customer = auth('customer')->user();
-            $logoPath = (string) setting('store.store_logo_path', '');
-            $logoUrl = filled($logoPath) && Storage::disk('public')->exists($logoPath)
-                ? Storage::disk('public')->url($logoPath)
-                : null;
+            $identity = $storefrontIdentity();
             $view->with([
-                'topbarStoreName' => setting('store.store_name', config('app.name')),
-                'topbarLogoUrl' => $logoUrl,
+                'topbarStoreName' => $identity['name'],
+                'topbarLogoUrl' => $identity['logo_url'],
                 'topbarPhone' => setting('store.store_phone', ''),
                 'topbarFacebookUrl' => setting('store.facebook_url', ''),
                 'topbarWhatsAppUrl' => setting('store.whatsapp_url', ''),

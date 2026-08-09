@@ -6,12 +6,15 @@ use App\Enums\CartItemType;
 use App\Models\Cart;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\User;
 use App\Models\Wishlist;
 use Database\Seeders\SettingSeeder;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class StorefrontNavbarTest extends TestCase
@@ -134,6 +137,62 @@ class StorefrontNavbarTest extends TestCase
             ->assertDontSee('<span class="badge bg-secondary rounded-pill">0</span>', false);
     }
 
+    public function test_mobile_brand_uses_the_configured_store_logo(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('store/logo.png', 'logo');
+        $this->setSetting('store_name', 'Configured Store');
+        $this->setSetting('store_logo_path', 'store/logo.png');
+
+        $content = $this->get(route('shop.home'))->assertOk()->getContent();
+        $brand = $this->mobileBrand($content);
+
+        $this->assertStringContainsString('src="'.Storage::disk('public')->url('store/logo.png').'"', $brand);
+        $this->assertStringContainsString(__('shop.topbar.store_logo', ['store' => 'Configured Store']), $brand);
+        $this->assertStringNotContainsString('fa-shopping-bag', $brand);
+    }
+
+    public function test_mobile_brand_falls_back_to_the_configured_store_name_when_logo_is_missing(): void
+    {
+        Storage::fake('public');
+        $this->setSetting('store_name', 'Fallback Store');
+
+        foreach (['', 'store/missing-logo.png'] as $logoPath) {
+            $this->setSetting('store_logo_path', $logoPath);
+
+            $content = $this->get(route('shop.home', ['locale' => 'ar']))->assertOk()->getContent();
+            $brand = $this->mobileBrand($content);
+
+            $this->assertStringContainsString('<bdi>Fallback Store</bdi>', $brand);
+            $this->assertStringNotContainsString('<img', $brand);
+            $this->assertStringNotContainsString('fa-shopping-bag', $brand);
+            $this->assertStringContainsString('data-bs-target="#navbarCollapse"', $content);
+        }
+    }
+
+    public function test_topbar_and_navbar_share_store_identity_queries(): void
+    {
+        Cache::forget('setting.store.store_name');
+        Cache::forget('setting.store.store_logo_path');
+        $identityQueries = ['store_name' => 0, 'store_logo_path' => 0];
+
+        DB::listen(function (QueryExecuted $query) use (&$identityQueries): void {
+            if (! str_contains(strtolower($query->sql), 'from "settings"')) {
+                return;
+            }
+
+            foreach (array_keys($identityQueries) as $key) {
+                if (in_array($key, $query->bindings, true)) {
+                    $identityQueries[$key]++;
+                }
+            }
+        });
+
+        $this->get(route('shop.home'))->assertOk();
+
+        $this->assertSame(['store_name' => 1, 'store_logo_path' => 1], $identityQueries);
+    }
+
     public function test_category_hierarchy_uses_a_fixed_number_of_queries(): void
     {
         $root = $this->category('Root');
@@ -175,5 +234,20 @@ class StorefrontNavbarTest extends TestCase
         ]);
 
         return $category;
+    }
+
+    private function setSetting(string $key, ?string $value): void
+    {
+        Setting::query()->where('group', 'store')->where('key', $key)->update(['value' => $value]);
+        Cache::forget("setting.store.{$key}");
+    }
+
+    private function mobileBrand(string $content): string
+    {
+        preg_match('/<a[^>]+class="navbar-brand d-block d-lg-none"[^>]*>(.*?)<\/a>/s', $content, $matches);
+
+        $this->assertArrayHasKey(1, $matches);
+
+        return $matches[1];
     }
 }

@@ -5,10 +5,15 @@
         <div class="col-12 col-lg-9">
             <nav class="navbar navbar-expand-lg navbar-light bg-primary">
                 <a href="{{ route('shop.home') }}" class="navbar-brand d-block d-lg-none">
-                    <h1 class="display-5 text-secondary m-0">
-                        <i class="fas fa-shopping-bag text-white me-2" aria-hidden="true"></i>
-                        <bdi>{{ $navbarStoreName }}</bdi>
-                    </h1>
+                    @if ($navbarLogoUrl)
+                        <img src="{{ $navbarLogoUrl }}"
+                            alt="{{ __('shop.topbar.store_logo', ['store' => $navbarStoreName]) }}" class="img-fluid"
+                            style="max-height: 70px;">
+                    @else
+                        <h1 class="display-5 text-secondary m-0">
+                            <bdi>{{ $navbarStoreName }}</bdi>
+                        </h1>
+                    @endif
                 </a>
 
                 <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse"
