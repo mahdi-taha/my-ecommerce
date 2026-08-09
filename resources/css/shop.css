@@ -551,6 +551,18 @@
     }
 }
 
+    .storefront-mobile-preferences {
+        padding-block: .75rem;
+        padding-inline: 1rem;
+        border-block: 1px solid rgba(255, 255, 255, .2);
+    }
+
+    .storefront-mobile-preferences .dropdown-toggle,
+    .storefront-mobile-currency {
+        color: inherit !important;
+        white-space: nowrap;
+    }
+
 .storefront-mobile-category-toggle {
     flex: 0 0 2.5rem;
     color: var(--bs-dark);

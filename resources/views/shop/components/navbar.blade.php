@@ -40,6 +40,14 @@
                             <a href="{{ route('shop.pages.show',['slug' => $storefrontContactPage->translations->first()->slug]) }}" class="nav-item nav-link me-lg-2 {{ request()->routeIs('shop.pages.show') && request()->route('slug') === $storefrontContactPage->translations->first()->slug ? 'active' : '' }}">{{ __('shop.navigation.contact') }}</a>
                         @endif
 
+                        <div class="nav-item d-flex d-lg-none align-items-center justify-content-between gap-3 storefront-mobile-preferences">
+                            <span class="storefront-mobile-currency">
+                                {{ __('shop.topbar.currency_label') }}
+                                <bdi dir="ltr">{{ $navbarCurrencyCode }}</bdi>
+                            </span>
+                            @include('shop.components.language-switcher')
+                        </div>
+
                         <div class="nav-item d-block d-lg-none" data-category-navigation-mobile>
                             <button class="nav-link border-0 bg-transparent w-100 text-start storefront-mobile-categories-toggle"
                                 id="mobileCategoriesToggle" type="button" data-bs-toggle="collapse"

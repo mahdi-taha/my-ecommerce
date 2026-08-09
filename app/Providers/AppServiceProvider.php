@@ -120,6 +120,7 @@ class AppServiceProvider extends ServiceProvider
                 'logo_url' => $logoPath !== '' && Storage::disk('public')->exists($logoPath)
                     ? Storage::disk('public')->url($logoPath)
                     : null,
+                'currency_code' => (string) setting('currency.default_currency', 'USD'),
             ];
             $request->attributes->set($attribute, $identity);
 
@@ -133,6 +134,7 @@ class AppServiceProvider extends ServiceProvider
             $view->with([
                 'navbarStoreName' => $identity['name'],
                 'navbarLogoUrl' => $identity['logo_url'],
+                'navbarCurrencyCode' => $identity['currency_code'],
                 'storefrontCategoryTree' => $hierarchy['tree'],
                 'storefrontCategoryNavigation' => $hierarchy['navigation'],
             ]);
@@ -148,7 +150,7 @@ class AppServiceProvider extends ServiceProvider
                 'topbarFacebookUrl' => setting('store.facebook_url', ''),
                 'topbarWhatsAppUrl' => setting('store.whatsapp_url', ''),
                 'topbarInstagramUrl' => setting('store.instagram_url', ''),
-                'topbarCurrencyCode' => setting('currency.default_currency', 'USD'),
+                'topbarCurrencyCode' => $identity['currency_code'],
                 'topbarCustomer' => $customer,
                 'topbarNotificationCount' => $customerNotificationCount(),
             ]);
