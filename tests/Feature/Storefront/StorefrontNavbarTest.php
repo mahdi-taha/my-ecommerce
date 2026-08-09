@@ -174,7 +174,8 @@ class StorefrontNavbarTest extends TestCase
     {
         Cache::forget('setting.store.store_name');
         Cache::forget('setting.store.store_logo_path');
-        $identityQueries = ['store_name' => 0, 'store_logo_path' => 0];
+        Cache::forget('setting.currency.default_currency');
+        $identityQueries = ['store_name' => 0, 'store_logo_path' => 0, 'default_currency' => 0];
 
         DB::listen(function (QueryExecuted $query) use (&$identityQueries): void {
             if (! str_contains(strtolower($query->sql), 'from "settings"')) {
@@ -190,7 +191,23 @@ class StorefrontNavbarTest extends TestCase
 
         $this->get(route('shop.home'))->assertOk();
 
-        $this->assertSame(['store_name' => 1, 'store_logo_path' => 1], $identityQueries);
+        $this->assertSame(['store_name' => 1, 'store_logo_path' => 1, 'default_currency' => 1], $identityQueries);
+    }
+
+    public function test_mobile_preferences_show_the_shared_language_switcher_and_read_only_currency(): void
+    {
+        $this->setSetting('default_currency', 'LBP', 'currency');
+
+        $response = $this->get(route('shop.home'));
+
+        $response->assertOk()
+            ->assertSee('d-lg-none align-items-center justify-content-between gap-3 storefront-mobile-preferences', false)
+            ->assertSee('storefront-mobile-currency', false)
+            ->assertSee('<bdi dir="ltr">LBP</bdi>', false)
+            ->assertSee('data-bs-toggle="dropdown"', false)
+            ->assertDontSee('<select', false)
+            ->assertDontSee('name="currency"', false)
+            ->assertSee('storefront-mobile-categories-toggle', false);
     }
 
     public function test_category_hierarchy_uses_a_fixed_number_of_queries(): void
@@ -236,10 +253,10 @@ class StorefrontNavbarTest extends TestCase
         return $category;
     }
 
-    private function setSetting(string $key, ?string $value): void
+    private function setSetting(string $key, ?string $value, string $group = 'store'): void
     {
-        Setting::query()->where('group', 'store')->where('key', $key)->update(['value' => $value]);
-        Cache::forget("setting.store.{$key}");
+        Setting::query()->where('group', $group)->where('key', $key)->update(['value' => $value]);
+        Cache::forget("setting.{$group}.{$key}");
     }
 
     private function mobileBrand(string $content): string

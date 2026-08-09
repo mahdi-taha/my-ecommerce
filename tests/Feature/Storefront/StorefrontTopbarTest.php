@@ -57,6 +57,25 @@ class StorefrontTopbarTest extends TestCase
             ->assertSee('name="q"', false);
     }
 
+    public function test_desktop_and_mobile_headers_reuse_the_same_language_switcher_without_ids(): void
+    {
+        $response = $this->get(route('shop.home'));
+
+        $response->assertOk();
+        $html = $response->getContent();
+        $switcher = file_get_contents(resource_path('views/shop/components/language-switcher.blade.php'));
+        $topbar = file_get_contents(resource_path('views/shop/components/topbar.blade.php'));
+
+        $this->assertIsString($switcher);
+        $this->assertIsString($topbar);
+        $this->assertSame(2, substr_count($html, 'action="'.route('shop.locale.update', ['locale' => 'en', 'targetLocale' => 'en']).'"'));
+        $this->assertSame(2, substr_count($html, 'action="'.route('shop.locale.update', ['locale' => 'en', 'targetLocale' => 'ar']).'"'));
+        $this->assertStringContainsString('aria-current="true"', $html);
+        $this->assertStringContainsString("@include('shop.components.language-switcher')", $topbar);
+        $this->assertStringNotContainsString(' id=', $switcher);
+        $this->assertStringNotContainsString(' id="', $switcher);
+    }
+
     public function test_authenticated_topbar_uses_customer_routes_and_scoped_notification_count(): void
     {
         $customer = User::factory()->customer()->create(['name' => 'Topbar Customer']);
