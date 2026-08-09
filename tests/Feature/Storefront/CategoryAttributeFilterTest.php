@@ -77,6 +77,51 @@ class CategoryAttributeFilterTest extends TestCase
             ->assertDontSee('value="green"', false);
     }
 
+    public function test_color_facets_render_safe_swatches_with_visible_labels_and_neutral_fallbacks(): void
+    {
+        $category = $this->category('Phones', 'phones');
+        [$color, $red, $legacy, $missing] = $this->attribute(
+            'color',
+            AttributeType::Select,
+            ['red', 'legacy', 'missing']
+        );
+        [$storage, $large] = $this->attribute('storage', AttributeType::Multiselect, ['large']);
+        $color->update(['swatch_type' => 'color']);
+        $storage->update(['swatch_type' => 'text']);
+        $red->update(['swatch_value' => '#aa0000']);
+        $legacy->update(['swatch_value' => '#000000;background:url(evil)']);
+        $category->filterableAttributes()->attach([$color->id, $storage->id]);
+
+        foreach ([[$color, $red], [$color, $legacy], [$color, $missing], [$storage, $large]] as [$attribute, $option]) {
+            $product = $this->simple('Phone '.$attribute->code.' '.$option->code, $category);
+            $this->value($product, $attribute, $option);
+        }
+
+        $response = $this->get(route('shop.categories.show', [
+            'slug' => 'phones',
+            'attributes' => ['color' => ['red']],
+        ]))->assertOk()
+            ->assertSee('name="attributes[color][]" value="red"', false)
+            ->assertSee('style="--storefront-swatch-color: #AA0000"', false)
+            ->assertSee('storefront-attribute-filter-swatch--missing', false)
+            ->assertSee('Red')
+            ->assertSee('Legacy')
+            ->assertSee('Missing')
+            ->assertSee('Large')
+            ->assertDontSee('background:url(evil)', false);
+
+        $facets = collect($response->viewData('attributeFacets'))->keyBy('code');
+        $colorOptions = collect($facets->get('color')['options'])->keyBy('code');
+
+        $this->assertSame('color', $facets->get('color')['swatch_type']);
+        $this->assertSame('#AA0000', $colorOptions->get('red')['swatch_value']);
+        $this->assertNull($colorOptions->get('legacy')['swatch_value']);
+        $this->assertNull($colorOptions->get('missing')['swatch_value']);
+        $this->assertSame('text', $facets->get('storage')['swatch_type']);
+        $this->assertNull($facets->get('storage')['options'][0]['swatch_value']);
+        $this->assertSame(3, substr_count($response->getContent(), 'storefront-attribute-filter-swatch '));
+    }
+
     public function test_simple_filters_use_or_within_an_attribute_and_and_across_attributes(): void
     {
         $category = $this->category('Phones', 'phones');

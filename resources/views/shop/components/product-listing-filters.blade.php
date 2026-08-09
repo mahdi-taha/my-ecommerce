@@ -76,7 +76,14 @@
                         <input id="{{ $inputId }}" class="form-check-input" type="checkbox"
                             name="attributes[{{ $facet['code'] }}][]" value="{{ $option['code'] }}"
                             @checked(in_array($option['code'], $filters['attributes'][$facet['code']] ?? [], true))>
-                        <label class="form-check-label" for="{{ $inputId }}">{{ $option['label'] }}</label>
+                        <label class="form-check-label" for="{{ $inputId }}">
+                            @if ($facet['swatch_type'] === 'color')
+                                <span class="storefront-attribute-filter-swatch {{ $option['swatch_value'] === null ? 'storefront-attribute-filter-swatch--missing' : '' }}"
+                                    @if ($option['swatch_value'] !== null) style="--storefront-swatch-color: {{ $option['swatch_value'] }}" @endif
+                                    aria-hidden="true"></span>
+                            @endif
+                            {{ $option['label'] }}
+                        </label>
                     </div>
                 @endforeach
             </fieldset>

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\AttributeSwatchType;
 use App\Enums\AttributeType;
 use App\Enums\PaymentStatus;
 use App\Enums\ProductType;
@@ -179,7 +180,7 @@ class StorefrontProductListingService
             ->whereIn('attributes.type', [AttributeType::Select->value, AttributeType::Multiselect->value])
             ->orderBy('attributes.sort_order')
             ->orderBy('attributes.id')
-            ->get(['attributes.id', 'attributes.code', 'attributes.type', 'translation.admin_name']);
+            ->get(['attributes.id', 'attributes.code', 'attributes.type', 'attributes.swatch_type', 'translation.admin_name']);
 
         if ($attributes->isEmpty()) {
             return [];
@@ -196,7 +197,7 @@ class StorefrontProductListingService
             ->whereIn('attribute_options.attribute_id', $attributeIds)
             ->orderBy('attribute_options.sort_order')
             ->orderBy('attribute_options.id')
-            ->get(['attribute_options.id', 'attribute_options.attribute_id', 'attribute_options.code', 'translation.label'])
+            ->get(['attribute_options.id', 'attribute_options.attribute_id', 'attribute_options.code', 'attribute_options.swatch_value', 'translation.label'])
             ->groupBy('attribute_id');
 
         return $attributes->map(function ($attribute) use ($options): ?array {
@@ -205,15 +206,22 @@ class StorefrontProductListingService
                 return null;
             }
 
+            $swatchType = AttributeSwatchType::tryFrom((string) $attribute->swatch_type)?->value
+                ?? AttributeSwatchType::Dropdown->value;
+
             return [
                 'id' => (int) $attribute->id,
                 'code' => $attribute->code,
                 'type' => $attribute->type,
                 'label' => $attribute->admin_name,
+                'swatch_type' => $swatchType,
                 'options' => $attributeOptions->map(fn ($option): array => [
                     'id' => (int) $option->id,
                     'code' => $option->code,
                     'label' => $option->label,
+                    'swatch_value' => $swatchType === AttributeSwatchType::Color->value
+                        ? $this->safeColorSwatch($option->swatch_value)
+                        : null,
                 ])->values()->all(),
             ];
         })->filter()->values()->all();
@@ -531,6 +539,13 @@ class StorefrontProductListingService
             ->pluck('attribute_option_id')
             ->map(fn ($id): int => (int) $id)
             ->all();
+    }
+
+    private function safeColorSwatch(?string $value): ?string
+    {
+        return is_string($value) && preg_match('/^#[0-9A-Fa-f]{6}$/', $value) === 1
+            ? strtoupper($value)
+            : null;
     }
 
     private function applyCategoryConstraint(Builder $query, int $categoryId): void
