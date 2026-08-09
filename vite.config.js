@@ -22,6 +22,7 @@ export default defineConfig({
                 'resources/js/admin/cms-pages.js',
                 'resources/js/admin/homepage-banners.js',
                 'resources/js/admin/homepage-services.js',
+                'resources/js/admin/refunds.js',
             ],
             refresh: true,
         }),
