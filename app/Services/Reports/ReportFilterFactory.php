@@ -8,8 +8,16 @@ use Carbon\CarbonImmutable;
 class ReportFilterFactory
 {
     /** @param array<string, mixed> $data */
-    public function make(array $data): ReportFilters
+    public function make(array $data, ?array $enabled = null): ReportFilters
     {
+        if ($enabled !== null) {
+            $keys = collect($enabled)->flatMap(fn (string $filter) => match ($filter) {
+                'date' => ['date_from', 'date_to'],
+                default => [$filter],
+            })->push('per_page')->all();
+            $data = array_intersect_key($data, array_flip($keys));
+        }
+
         $storeTimezone = (string) setting('localization.timezone', config('app.timezone'));
         $databaseTimezone = (string) config('app.timezone');
 
