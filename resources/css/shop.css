@@ -1,4 +1,15 @@
-﻿.storefront-category-carousel {
+/* Horizontal Owl instances retain vertical page scrolling and browser zoom. */
+.header-carousel,
+.productList-carousel,
+.productImg-carousel,
+.single-carousel,
+.related-carousel,
+.storefront-category-carousel,
+.storefront-account-nav-carousel {
+    touch-action: pan-y pinch-zoom;
+}
+
+.storefront-category-carousel {
     --storefront-category-circle-size: 104px;
     display: flex;
     gap: 1.25rem;
