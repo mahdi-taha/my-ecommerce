@@ -15,8 +15,55 @@ export function initializeCategoryMegaMenu() {
         return;
     }
 
+    const triggers = Array.from(panel.querySelectorAll('[data-category-flyout-trigger]'));
     const flyouts = Array.from(panel.querySelectorAll('[data-category-flyout]'));
     const viewportSafetyMargin = 16;
+    let positioningFrame = null;
+
+    function positionFlyout(trigger, flyout) {
+        const layer = flyout.parentElement;
+
+        if (!layer) {
+            return;
+        }
+
+        const triggerRect = trigger.getBoundingClientRect();
+        const panelRect = panel.getBoundingClientRect();
+        const layerRect = layer.getBoundingClientRect();
+        const flyoutRect = flyout.getBoundingClientRect();
+        const safeTop = Math.max(panelRect.top, viewportSafetyMargin);
+        const safeBottom = window.innerHeight - viewportSafetyMargin;
+        const maximumTop = Math.max(safeTop, safeBottom - flyoutRect.height);
+        const viewportTop = Math.min(Math.max(triggerRect.top, safeTop), maximumTop);
+
+        flyout.style.setProperty(
+            '--storefront-category-flyout-top',
+            `${viewportTop - layerRect.top}px`,
+        );
+    }
+
+    function positionOpenFlyouts() {
+        flyouts.filter((flyout) => flyout.classList.contains('is-open')).forEach((flyout) => {
+            const trigger = triggers.find(
+                (candidate) => candidate.dataset.categoryFlyoutTrigger === flyout.dataset.categoryFlyout,
+            );
+
+            if (trigger) {
+                positionFlyout(trigger, flyout);
+            }
+        });
+    }
+
+    function scheduleFlyoutPositioning() {
+        if (positioningFrame !== null) {
+            window.cancelAnimationFrame(positioningFrame);
+        }
+
+        positioningFrame = window.requestAnimationFrame(() => {
+            positioningFrame = null;
+            positionOpenFlyouts();
+        });
+    }
 
     function updateAvailableHeight() {
         if (!panel.classList.contains('show')) {
@@ -29,6 +76,7 @@ export function initializeCategoryMegaMenu() {
         );
 
         panel.style.setProperty('--storefront-category-available-height', `${availableHeight}px`);
+        scheduleFlyoutPositioning();
     }
 
     function closeFlyouts(scope = panel) {
@@ -57,6 +105,7 @@ export function initializeCategoryMegaMenu() {
         if (flyout) {
             flyout.classList.add('is-open');
             trigger.setAttribute('aria-expanded', 'true');
+            positionFlyout(trigger, flyout);
         }
     }
 
@@ -75,6 +124,11 @@ export function initializeCategoryMegaMenu() {
         link.addEventListener('mouseenter', () => activateLink(link));
         link.addEventListener('focusin', () => activateLink(link));
     });
+
+    panel.querySelectorAll('.storefront-category-root-scrollport, .storefront-category-level-2-scrollport')
+        .forEach((scrollport) => {
+            scrollport.addEventListener('scroll', scheduleFlyoutPositioning, { passive: true });
+        });
 
     menu.addEventListener('mouseenter', () => {
         showMenu(toggle);
