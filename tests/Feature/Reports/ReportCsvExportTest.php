@@ -3,6 +3,8 @@
 namespace Tests\Feature\Reports;
 
 use App\Enums\AccountType;
+use App\Enums\PaymentStatus;
+use App\Models\Order;
 use App\Models\User;
 use App\Services\Reports\ReportExportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,5 +32,41 @@ class ReportCsvExportTest extends TestCase
         $service = new ReportExportService;
         $method = new \ReflectionMethod($service, 'safe');
         $this->assertSame("'=danger", $method->invoke($service, '=danger'));
+    }
+
+    public function test_csv_exports_every_filtered_row_beyond_the_interactive_page_size(): void
+    {
+        $admin = User::factory()->create(['account_type' => AccountType::Admin, 'is_active' => true]);
+        for ($index = 1; $index <= 105; $index++) {
+            Order::query()->create([
+                'order_number' => sprintf('ORD-EXPORT-%04d', $index),
+                'customer_email' => 'export@example.test',
+                'customer_first_name' => 'Export',
+                'customer_last_name' => 'Customer',
+                'locale' => 'en',
+                'currency_code' => 'USD',
+                'status' => 'completed',
+                'payment_status' => PaymentStatus::Paid->value,
+                'fulfillment_status' => 'fulfilled',
+                'payment_method' => 'cash_on_delivery',
+                'subtotal' => '10.0000',
+                'discount_total' => '0.0000',
+                'shipping_total' => '0.0000',
+                'tax_total' => '0.0000',
+                'grand_total' => '10.0000',
+                'placed_at' => now(),
+                'paid_at' => now(),
+            ]);
+        }
+
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.reports.export', [
+            'report' => 'orders',
+            'per_page' => 25,
+        ]));
+
+        $content = $response->streamedContent();
+        $this->assertStringContainsString('ORD-EXPORT-0001', $content);
+        $this->assertStringContainsString('ORD-EXPORT-0105', $content);
+        $this->assertSame(106, substr_count(trim($content), "\n") + 1);
     }
 }

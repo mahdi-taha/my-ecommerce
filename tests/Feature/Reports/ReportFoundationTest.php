@@ -26,4 +26,17 @@ class ReportFoundationTest extends TestCase
         $this->actingAs($admin, 'admin')->get(route('admin.reports.show', ['report' => 'sales', 'date_from' => '2026-08-10', 'date_to' => '2026-08-01', 'per_page' => 1000]))
             ->assertSessionHasErrors(['date_to', 'per_page']);
     }
+
+    public function test_report_filter_validation_rejects_forged_customer_and_administrator_types(): void
+    {
+        $admin = User::factory()->create(['account_type' => AccountType::Admin, 'is_active' => true]);
+        $customer = User::factory()->create(['account_type' => AccountType::Customer, 'is_active' => true]);
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.reports.show', ['report' => 'orders', 'customer_id' => $admin->id]))
+            ->assertSessionHasErrors('customer_id');
+
+        $this->get(route('admin.reports.show', ['report' => 'refunds', 'administrator_id' => $customer->id]))
+            ->assertSessionHasErrors('administrator_id');
+    }
 }

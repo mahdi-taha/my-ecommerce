@@ -14,11 +14,16 @@ class ReportCoverageTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_every_report_renders_empty_state_and_exposes_shared_filters(): void
+    public function test_every_report_renders_empty_state_and_shared_filter_actions(): void
     {
         $admin = User::factory()->create(['account_type' => AccountType::Admin, 'has_account' => true, 'is_active' => true]);
         foreach (app(ReportRegistry::class)->names() as $report) {
-            $this->actingAs($admin, 'admin')->get(route('admin.reports.show', $report))->assertOk()->assertSee('No results.')->assertSee('Export CSV')->assertSee('Payment Status');
+            $this->actingAs($admin, 'admin')->get(route('admin.reports.show', $report))
+                ->assertOk()
+                ->assertSee('No results.')
+                ->assertSee('Export CSV')
+                ->assertSee('Rows per page')
+                ->assertSee('Clear Filters');
         }
     }
 
