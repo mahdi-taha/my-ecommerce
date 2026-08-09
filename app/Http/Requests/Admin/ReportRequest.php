@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\AccountType;
 use App\Enums\FulfillmentStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
@@ -21,10 +22,10 @@ class ReportRequest extends FormRequest
         return [
             'date_from' => ['nullable', 'date_format:Y-m-d'],
             'date_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:date_from'],
-            'customer_id' => ['nullable', 'integer', 'exists:users,id'],
+            'customer_id' => ['nullable', 'integer', Rule::exists('users', 'id')->where('account_type', AccountType::Customer->value)],
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
             'product_id' => ['nullable', 'integer', 'exists:products,id'],
-            'administrator_id' => ['nullable', 'integer', 'exists:users,id'],
+            'administrator_id' => ['nullable', 'integer', Rule::exists('users', 'id')->where('account_type', AccountType::Admin->value)],
             'payment_method' => ['nullable', 'string', 'max:100'],
             'order_status' => ['nullable', Rule::enum(OrderStatus::class)],
             'payment_status' => ['nullable', Rule::enum(PaymentStatus::class)],

@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\OrderCreationController as AdminOrderCreationCont
 use App\Http\Controllers\Admin\ProductReviewController as AdminProductReviewController;
 use App\Http\Controllers\Admin\RefundController as AdminRefundController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\ReportLookupController as AdminReportLookupController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\AttributeOptionController;
@@ -162,6 +163,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('refunds', [AdminRefundController::class, 'store'])->name('refunds.store');
         Route::get('refunds/{refund}', [AdminRefundController::class, 'show'])->name('refunds.show');
         Route::get('reports', [AdminReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/lookups/customers', [AdminReportLookupController::class, 'customers'])->name('reports.lookups.customers');
+        Route::get('reports/lookups/products', [AdminReportLookupController::class, 'products'])->name('reports.lookups.products');
+        Route::get('reports/lookups/categories', [AdminReportLookupController::class, 'categories'])->name('reports.lookups.categories');
+        Route::get('reports/lookups/administrators', [AdminReportLookupController::class, 'administrators'])->name('reports.lookups.administrators');
         Route::get('reports/{report}/export', [AdminReportController::class, 'export'])->name('reports.export');
         Route::get('reports/{report}', [AdminReportController::class, 'show'])->name('reports.show');
 
