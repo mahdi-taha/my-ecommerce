@@ -22,6 +22,7 @@ class CmsPageController extends Controller
             return DataTables::eloquent(CmsPage::query()->with('translations')->orderBy('sort_order')->orderBy('id'))
                 ->addColumn('title', fn (CmsPage $page) => e($page->translations->firstWhere('locale', 'en')?->title))
                 ->editColumn('is_active', fn (CmsPage $page) => $page->is_active ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Inactive</span>')
+                ->editColumn('updated_at', fn (CmsPage $page) => $page->updated_at?->timezone(config('app.timezone'))->format('Y-m-d H:i'))
                 ->addColumn('action', fn (CmsPage $page) => '<a class="btn btn-sm btn-outline-primary" href="'.e(route('admin.cms-pages.edit', $page)).'">Edit</a>')
                 ->rawColumns(['is_active', 'action'])->toJson();
         }
