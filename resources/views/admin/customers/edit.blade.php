@@ -23,11 +23,10 @@
 
                     <div class="card shadow">
                         <div class="card-body">
-                            <form action="{{ route('admin.customers.update', $customer) }}" method="POST">
+                            <form action="{{ route('admin.customers.update', $customer) }}" method="POST" onsubmit="disableSubmitButton(this)">
                                 @csrf
                                 @method('PUT')
                                 @include('admin.customers._form')
-                                <button type="submit" class="btn btn-primary">Update Customer</button>
                             </form>
                         </div>
                     </div>

@@ -45,7 +45,7 @@
                         data-bs-toggle="dropdown" aria-expanded="false"
                         aria-label="{{ __('shop.topbar.customer_menu') }}">
                         <small>
-                            <i class="fa fa-user me-2" aria-hidden="true"></i>
+                            <i class="fa fa-user" aria-hidden="true"></i>
                             <bdi>{{ $topbarCustomer?->name ?: __('shop.topbar.guest') }}</bdi>
                         </small>
                     </button>
@@ -133,7 +133,7 @@
                 <a href="{{ $topbarCustomer
                     ? route('shop.wishlist.index')
                     : route('customer.login', ['return_to' => url()->full()]) }}"
-                    class="text-muted d-flex align-items-center justify-content-center me-3 position-relative"
+                    class="text-muted d-flex align-items-center justify-content-center mx-3 position-relative"
                     data-storefront-wishlist-link
                     aria-label="{{ __('shop.topbar.wishlist') }}">
                     <span class="rounded-circle btn-md-square border">

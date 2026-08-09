@@ -25,7 +25,7 @@ enum CouponPresentationStatus: string
     {
         return match ($this) {
             self::Active => 'bg-success',
-            self::Scheduled => 'bg-info text-dark',
+            self::Scheduled => 'bg-info',
             self::Expired => 'bg-secondary',
             self::UsageExhausted => 'bg-warning text-dark',
             self::Inactive => 'bg-danger',

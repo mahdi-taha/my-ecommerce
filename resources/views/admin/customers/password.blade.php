@@ -21,7 +21,7 @@
                     <div class="card shadow">
                         <div class="card-body">
                             <form action="{{ route('admin.customers.password.update', $customer) }}" method="POST"
-                                autocomplete="off">
+                                autocomplete="off" onsubmit="disableSubmitButton(this)">
                                 @csrf
                                 @method('PUT')
                                 <div class="row">
@@ -38,8 +38,18 @@
                                         <input type="password" id="password_confirmation" name="password_confirmation"
                                             class="form-control" required>
                                     </div>
+                                    <div class="col-12 text-end">
+                                        <button type="submit" class="btn btn-primary shadow">
+                                            <span class="btn-text">
+                                                <i class="bi bi-floppy me-2"></i>
+                                                Save
+                                            </span>
+                                            <span class="btn-loading d-none">
+                                                Saving...
+                                            </span>
+                                        </button>
+                                    </div>
                                 </div>
-                                <button type="submit" class="btn btn-primary">Update Password</button>
                             </form>
                         </div>
                     </div>

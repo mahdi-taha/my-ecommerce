@@ -161,6 +161,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('refunds', [AdminRefundController::class, 'index'])->name('refunds.index');
         Route::get('refunds/create', [AdminRefundController::class, 'create'])->name('refunds.create');
         Route::post('refunds', [AdminRefundController::class, 'store'])->name('refunds.store');
+        Route::get('refunds/{refund}/print', [AdminRefundController::class, 'printRefund'])->name('refunds.print');
         Route::get('refunds/{refund}', [AdminRefundController::class, 'show'])->name('refunds.show');
         Route::get('reports', [AdminReportController::class, 'index'])->name('reports.index');
         Route::get('reports/lookups/customers', [AdminReportLookupController::class, 'customers'])->name('reports.lookups.customers');

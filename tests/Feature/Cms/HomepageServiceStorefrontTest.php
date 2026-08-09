@@ -77,8 +77,8 @@ class HomepageServiceStorefrontTest extends TestCase
         $this->assertSame($firstQueryCount, count(DB::getQueryLog()));
 
         $css = file_get_contents(resource_path('css/shop.css'));
-        $this->assertStringContainsString('.services-count-5 > :nth-child(4)', $css);
-        $this->assertStringContainsString('.services-count-5 > :nth-child(5)', $css);
+        $this->assertMatchesRegularExpression('/\.services-count-5\s*>\s*:nth-child\(4\)/', $css);
+        $this->assertMatchesRegularExpression('/\.services-count-5\s*>\s*:nth-child\(5\)/', $css);
     }
 
     public function test_committed_changes_invalidate_both_locale_caches_and_failed_activation_preserves_them(): void

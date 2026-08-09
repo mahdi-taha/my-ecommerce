@@ -270,9 +270,8 @@
 
                         </div>
 
-                        <hr class="mt-4">
 
-                        <div class="text-end">
+                        <div class="text-end mt-3">
 
                             <button type="submit" class="btn btn-primary shadow" id="save-options">
 

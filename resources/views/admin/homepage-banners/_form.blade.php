@@ -1,9 +1,10 @@
 @php
     $isEdit = isset($homepageBanner);
     $translations = $isEdit ? $homepageBanner->translations->keyBy('locale') : collect();
-    $hasCurrentImage = $isEdit
-        && filled($homepageBanner->image_path)
-        && \Illuminate\Support\Facades\Storage::disk('public')->exists($homepageBanner->image_path);
+    $hasCurrentImage =
+        $isEdit &&
+        filled($homepageBanner->image_path) &&
+        \Illuminate\Support\Facades\Storage::disk('public')->exists($homepageBanner->image_path);
 @endphp
 
 <div class="card shadow-sm mb-4">
@@ -14,8 +15,8 @@
         <div class="row g-3">
             <div class="col-md-4">
                 <label for="placement" class="form-label">Placement</label>
-                <select id="placement" name="placement"
-                    class="form-select @error('placement') is-invalid @enderror" required>
+                <select id="placement" name="placement" class="form-select @error('placement') is-invalid @enderror"
+                    required>
                     @foreach (\App\Enums\HomepageBannerPlacement::cases() as $placement)
                         <option value="{{ $placement->value }}" @selected(old('placement', $homepageBanner->placement->value ?? '') === $placement->value)>
                             {{ str($placement->value)->replace('_', ' ')->title() }}
@@ -41,8 +42,7 @@
                 <input type="hidden" name="is_active" value="0">
                 <div class="form-check form-switch">
                     <input id="is_active" name="is_active" value="1" type="checkbox"
-                        class="form-check-input @error('is_active') is-invalid @enderror"
-                        @checked(old('is_active', $homepageBanner->is_active ?? false))>
+                        class="form-check-input @error('is_active') is-invalid @enderror" @checked(old('is_active', $homepageBanner->is_active ?? false))>
                     <label for="is_active" class="form-check-label">Active</label>
                     @error('is_active')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -63,11 +63,12 @@
             <div class="row g-3">
                 @foreach (['eyebrow' => 'Eyebrow', 'title' => 'Title', 'button_label' => 'Button Label', 'link_url' => 'Link URL', 'image_alt' => 'Image Alt Text'] as $field => $fieldLabel)
                     <div class="{{ in_array($field, ['title', 'link_url'], true) ? 'col-12' : 'col-md-6' }}">
-                        <label for="{{ $field }}_{{ $locale }}" class="form-label">{{ $fieldLabel }}</label>
-                        <input id="{{ $field }}_{{ $locale }}" name="{{ $field }}_{{ $locale }}" type="text"
+                        <label for="{{ $field }}_{{ $locale }}"
+                            class="form-label">{{ $fieldLabel }}</label>
+                        <input id="{{ $field }}_{{ $locale }}"
+                            name="{{ $field }}_{{ $locale }}" type="text"
                             class="form-control @error($field . '_' . $locale) is-invalid @enderror"
-                            value="{{ old($field . '_' . $locale, $translation?->{$field}) }}"
-                            @required($field === 'title')>
+                            value="{{ old($field . '_' . $locale, $translation?->{$field}) }}" @required($field === 'title')>
                         @error($field . '_' . $locale)
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -120,13 +121,15 @@
 </div>
 
 <div class="card shadow-sm">
-    <div class="card-header">
-        <h5 class="mb-0">Actions</h5>
-    </div>
     <div class="card-body text-end">
-        <a href="{{ route('admin.homepage-banners.index') }}" class="btn btn-light">Cancel</a>
-        <button type="submit" class="btn btn-primary">
-            {{ $isEdit ? 'Update Homepage Content' : 'Create Homepage Content' }}
+        <button type="submit" class="btn btn-primary shadow">
+            <span class="btn-text">
+                <i class="bi bi-floppy me-2"></i>
+                Save
+            </span>
+            <span class="btn-loading d-none">
+                Saving...
+            </span>
         </button>
     </div>
 </div>

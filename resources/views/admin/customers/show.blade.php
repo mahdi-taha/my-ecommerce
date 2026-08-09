@@ -34,7 +34,7 @@
                                 {{ $customer->is_active ? 'Deactivate' : 'Activate' }}
                             </button>
                             <a href="{{ route('admin.customers.edit', $customer) }}" class="btn btn-primary">Edit</a>
-                            <a href="{{ route('admin.customers.index') }}" class="btn btn-transparent">Back to Customers</a>
+                            <a href="{{ route('admin.customers.index') }}" class="btn btn-transparent">Back</a>
                         </div>
                     </div>
 

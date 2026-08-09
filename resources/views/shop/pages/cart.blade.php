@@ -26,7 +26,7 @@
             @endif
 
             @if ($items->isEmpty())
-                <div class="card border-0 shadow-sm">
+                <div class="card shadow-sm">
                     <div class="card-body text-center py-5">
                         <i class="bi bi-cart-x display-4 text-muted"></i>
                         <h2 class="h4 mt-3">{{ __('shop.cart.empty') }}</h2>

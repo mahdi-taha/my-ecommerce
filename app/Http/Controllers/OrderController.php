@@ -34,8 +34,8 @@ class OrderController extends Controller
     {
         if ($request->ajax()) {
             $orders = Order::query()
-                ->withCount('items')
-                ->latest('placed_at');
+                ->withCount('items');
+            // ->latest('placed_at');
 
             if ($request->filled('order_status')) {
                 $orders->where('status', (string) $request->string('order_status'));

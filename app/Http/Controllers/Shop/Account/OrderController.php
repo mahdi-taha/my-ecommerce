@@ -22,7 +22,6 @@ class OrderController extends Controller
     {
         $orders = $request->user('customer')
             ->orders()
-            ->orderByDesc('placed_at')
             ->orderByDesc('id')
             ->paginate(10);
 

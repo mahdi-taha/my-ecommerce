@@ -4,10 +4,10 @@
     <div class="container-fluid py-5">
         <div class="container py-4">
             <div class="row g-4">
-                <aside class="col-12 col-lg-3">
+                <aside class="col-12">
                     @include('customer.account._navigation')
                 </aside>
-                <div class="col-12 col-lg-9">
+                <div class="col-12">
                     @yield('account-content')
                 </div>
             </div>

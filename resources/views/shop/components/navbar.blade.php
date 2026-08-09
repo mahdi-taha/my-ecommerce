@@ -135,7 +135,7 @@
                         <div class="nav-item dropdown d-block d-lg-none">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
                                 aria-expanded="false">
-                                <i class="fa fa-user me-2" aria-hidden="true"></i>
+                                <i class="fa fa-user" aria-hidden="true"></i>
                                 <bdi>{{ auth('customer')->user()?->name ?: __('shop.topbar.guest') }}</bdi>
                             </a>
                             <div class="dropdown-menu dropdown-menu-end rounded">

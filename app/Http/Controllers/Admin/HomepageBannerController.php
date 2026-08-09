@@ -20,7 +20,13 @@ class HomepageBannerController extends Controller
     public function index(Request $request): JsonResponse|View
     {
         if ($request->ajax()) {
-            return DataTables::eloquent(HomepageBanner::query()->with('translations')->orderBy('placement')->orderBy('sort_order'))->addColumn('title', fn ($banner) => e($banner->translations->firstWhere('locale', 'en')?->title))->editColumn('placement', fn ($banner) => $banner->placement->value)->editColumn('is_active', fn ($banner) => $banner->is_active ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Inactive</span>')->addColumn('action', fn ($banner) => '<a class="btn btn-sm btn-outline-primary" href="'.e(route('admin.homepage-banners.edit', $banner)).'">Edit</a>')->rawColumns(['is_active', 'action'])->toJson();
+            return DataTables::eloquent(HomepageBanner::query()->with('translations'))
+                ->addColumn('title', fn ($banner) => e($banner->translations->firstWhere('locale', 'en')?->title))
+                ->editColumn('placement', fn ($banner) => $banner->placement->value)
+                ->editColumn('is_active', fn ($banner) => $banner->is_active ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>')
+                ->addColumn('action', fn ($banner) => '<a class="btn text-primary" href="'.e(route('admin.homepage-banners.edit', $banner)).'"><i class="ti ti-edit fs-6"></i></a>')
+                ->rawColumns(['is_active', 'action'])
+                ->toJson();
         }
 
         return view('admin.homepage-banners.index');

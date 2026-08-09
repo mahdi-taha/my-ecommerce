@@ -41,7 +41,7 @@
                                 </div>
                                 <div class="col-lg-2 col-md-6 mb-2 d-flex align-items-end">
                                     <button type="button" id="clear-customer-filters"
-                                        class="btn btn-outline-secondary w-100">Clear</button>
+                                        class="btn btn-danger w-100">Clear</button>
                                 </div>
                             </div>
                         </div>

@@ -5,10 +5,11 @@ namespace App\Presenters;
 use App\Models\Order;
 use App\Models\OrderAddress;
 use App\Models\OrderItem;
-use Illuminate\Support\Facades\Storage;
 
 class OrderPrintPresenter
 {
+    public function __construct(private StorePrintIdentityPresenter $storeIdentity) {}
+
     private const ADDRESS_FIELDS = [
         'first_name',
         'last_name',
@@ -58,7 +59,7 @@ class OrderPrintPresenter
                 $order->billingAddress,
                 $order->shippingAddress
             ),
-            'store' => $this->storeIdentity(),
+            'store' => $this->storeIdentity->present(),
         ];
     }
 
@@ -75,21 +76,5 @@ class OrderPrintPresenter
         }
 
         return true;
-    }
-
-    /** @return array{name: string, email: string, phone: string, address: string, logo_url: ?string} */
-    private function storeIdentity(): array
-    {
-        $logoPath = trim((string) setting('store.store_logo_path', ''));
-
-        return [
-            'name' => (string) setting('store.store_name', config('app.name')),
-            'email' => trim((string) setting('store.store_email', '')),
-            'phone' => trim((string) setting('store.store_phone', '')),
-            'address' => trim((string) setting('store.store_address', '')),
-            'logo_url' => $logoPath !== '' && Storage::disk('public')->exists($logoPath)
-                ? Storage::disk('public')->url($logoPath)
-                : null,
-        ];
     }
 }

@@ -418,9 +418,8 @@
                                 </div>
                             </div>
 
-                            <hr class="mt-4">
 
-                            <div class="col-12 text-end">
+                            <div class="col-12 text-end mt-3">
                                 <button type="submit" class="btn btn-primary shadow">
                                     <span class="btn-text">{{ $isEdit ? 'Update Category' : 'Save' }}</span>
                                     <span class="btn-loading d-none">Saving...</span>

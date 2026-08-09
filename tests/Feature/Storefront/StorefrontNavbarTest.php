@@ -50,7 +50,14 @@ class StorefrontNavbarTest extends TestCase
             ->assertSeeInOrder(['First Root', 'Child', 'Grandchild', 'Second Root'])
             ->assertDontSee('Great Grandchild')
             ->assertSee('data-category-navigation-desktop', false)
-            ->assertSee('storefront-category-submenu', false)
+            ->assertSee('storefront-category-root-scrollport', false)
+            ->assertSee('storefront-category-level-2-scrollport', false)
+            ->assertSee('storefront-category-flyout-layer', false)
+            ->assertSee('storefront-category-flyout', false)
+            ->assertSee('data-category-flyout-trigger="root-'.$first->id.'"', false)
+            ->assertSee('data-category-flyout="root-'.$first->id.'"', false)
+            ->assertSee('data-category-flyout-trigger="child-'.$child->id.'"', false)
+            ->assertSee('data-category-flyout="child-'.$child->id.'"', false)
             ->assertSee('data-category-navigation-mobile', false)
             ->assertSee('storefront-mobile-category-toggle', false)
             ->assertDontSee('Inactive')
@@ -76,7 +83,12 @@ class StorefrontNavbarTest extends TestCase
             ->assertSee('aria-controls="categoryMegaMenu"', false)
             ->assertSee('data-bs-auto-close="outside"', false)
             ->assertSee('storefront-category-desktop-list', false)
-            ->assertSee('storefront-category-submenu', false)
+            ->assertSee('storefront-category-root-scrollport', false)
+            ->assertSee('storefront-category-flyout-layer', false)
+            ->assertSee('storefront-category-flyout storefront-category-flyout--level-2', false)
+            ->assertSee('data-category-flyout-trigger="root-'.$root->id.'"', false)
+            ->assertSee('aria-controls="category-flyout-root-'.$root->id.'"', false)
+            ->assertSee('data-category-flyout="root-'.$root->id.'"', false)
             ->assertSee('id="mobileCategoriesMenu"', false)
             ->assertSee('data-bs-toggle="collapse"', false)
             ->assertSee('storefront-mobile-category-toggle', false);
@@ -174,8 +186,18 @@ class StorefrontNavbarTest extends TestCase
     {
         Cache::forget('setting.store.store_name');
         Cache::forget('setting.store.store_logo_path');
+        Cache::forget('setting.store.facebook_url');
+        Cache::forget('setting.store.instagram_url');
+        Cache::forget('setting.store.whatsapp_url');
         Cache::forget('setting.currency.default_currency');
-        $identityQueries = ['store_name' => 0, 'store_logo_path' => 0, 'default_currency' => 0];
+        $identityQueries = [
+            'store_name' => 0,
+            'store_logo_path' => 0,
+            'facebook_url' => 0,
+            'instagram_url' => 0,
+            'whatsapp_url' => 0,
+            'default_currency' => 0,
+        ];
 
         DB::listen(function (QueryExecuted $query) use (&$identityQueries): void {
             if (! str_contains(strtolower($query->sql), 'from "settings"')) {
@@ -191,7 +213,14 @@ class StorefrontNavbarTest extends TestCase
 
         $this->get(route('shop.home'))->assertOk();
 
-        $this->assertSame(['store_name' => 1, 'store_logo_path' => 1, 'default_currency' => 1], $identityQueries);
+        $this->assertSame([
+            'store_name' => 1,
+            'store_logo_path' => 1,
+            'facebook_url' => 1,
+            'instagram_url' => 1,
+            'whatsapp_url' => 1,
+            'default_currency' => 1,
+        ], $identityQueries);
     }
 
     public function test_mobile_preferences_show_the_shared_language_switcher_and_read_only_currency(): void

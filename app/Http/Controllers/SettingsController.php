@@ -26,8 +26,6 @@ class SettingsController extends Controller
         'whatsapp_url' => ['store', 'whatsapp_url'],
         'instagram_url' => ['store', 'instagram_url'],
         'default_locale' => ['localization', 'default_locale'],
-        'timezone' => ['localization', 'timezone'],
-        'default_currency' => ['currency', 'default_currency'],
         'tax_mode' => ['tax', 'tax_mode'],
         'default_tax_id' => ['tax', 'default_tax_id'],
         'allow_guest_checkout' => ['checkout', 'allow_guest_checkout'],
@@ -45,6 +43,11 @@ class SettingsController extends Controller
         'manual_bank_instructions' => ['payments', 'manual_bank_instructions'],
     ];
 
+    private const SETUP_SETTING_FIELDS = [
+        'timezone' => ['localization', 'timezone'],
+        'default_currency' => ['currency', 'default_currency'],
+    ];
+
     public function __construct(
         private NotificationConfigurationService $notifications,
         private DatabaseManager $database,
@@ -52,9 +55,10 @@ class SettingsController extends Controller
 
     public function index(): View
     {
+        $displayFields = self::SETTING_FIELDS + self::SETUP_SETTING_FIELDS;
         $settingsByIdentity = Setting::query()
-            ->where(function (Builder $query): void {
-                foreach (self::SETTING_FIELDS as [$group, $key]) {
+            ->where(function (Builder $query) use ($displayFields): void {
+                foreach ($displayFields as [$group, $key]) {
                     $query->orWhere(fn (Builder $pair): Builder => $pair
                         ->where('group', $group)
                         ->where('key', $key));
@@ -62,7 +66,7 @@ class SettingsController extends Controller
             })
             ->get(['group', 'key', 'value'])
             ->keyBy(fn (Setting $setting): string => "{$setting->group}.{$setting->key}");
-        $settings = collect(self::SETTING_FIELDS)->mapWithKeys(
+        $settings = collect($displayFields)->mapWithKeys(
             fn (array $identity, string $field): array => [
                 $field => $settingsByIdentity->get(implode('.', $identity))?->value,
             ]

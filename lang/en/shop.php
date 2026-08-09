@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 return [
     'auth' => [
@@ -65,6 +65,7 @@ return [
         'top_selling' => 'Top Selling',
         'view_all_products' => 'View All Products',
         'no_products_found' => 'No products are available in this section.',
+        'view_all' => 'View All',
     ],
 
     'product' => [
@@ -89,7 +90,7 @@ return [
     'wishlist' => [
         'title' => 'Wishlist',
         'add' => 'Add to Wishlist',
-        'remove' => 'Remove from Wishlist',
+        'remove' => 'Remove',
         'empty' => 'Your Wishlist is empty.',
         'added' => 'The Product was added to your Wishlist.',
         'removed' => 'The Product was removed from your Wishlist.',
@@ -594,7 +595,7 @@ return [
         ],
     ],
 
-    'cms' => ['quick_links' => 'Quick Links', 'footer_navigation' => 'Footer navigation'],
+    'cms' => ['quick_links' => 'Quick Links', 'footer_navigation' => 'Footer navigation', 'follow_us' => 'Follow Us'],
 
     'reviews' => [
         'title' => 'Customer Reviews', 'my_reviews' => 'My Reviews', 'rating' => 'Rating',
@@ -625,6 +626,20 @@ return [
         'date' => 'Date', 'merchandise_refund' => 'Merchandise Refund',
         'shipping_deduction' => 'Shipping Deduction', 'customer_refund' => 'Customer Refund',
         'totals' => 'Order Totals', 'grand_total' => 'Grand Total',
+    ],
+
+    'refund_print' => [
+        'title' => 'Refund', 'print_refund' => 'Print Refund', 'print' => 'Print',
+        'refund_summary' => 'Refund Summary', 'refund_details' => 'Refund Details',
+        'refund_number' => 'Refund Number', 'refunded_at' => 'Refunded Date',
+        'status' => 'Status', 'currency' => 'Currency', 'completed' => 'Completed',
+        'original_order' => 'Original Order', 'order_number' => 'Order Number',
+        'order_date' => 'Order Date', 'customer' => 'Customer',
+        'refunded_items' => 'Refunded Items', 'product' => 'Product', 'sku' => 'SKU',
+        'quantity' => 'Refunded Quantity', 'unit_price' => 'Unit Price',
+        'refunded_amount' => 'Refunded Amount', 'no_items' => 'No Refunded Items.',
+        'refund_totals' => 'Refund Totals', 'merchandise_refund' => 'Merchandise Refund',
+        'shipping_deduction' => 'Shipping Deduction', 'customer_refund' => 'Customer Refund Amount',
     ],
 
     'payment_instructions' => [

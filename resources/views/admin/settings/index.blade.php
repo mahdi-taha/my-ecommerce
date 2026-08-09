@@ -16,7 +16,8 @@
             <div class="body-wrapper-inner">
                 <div class="container-fluid">
 
-                    <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data"
+                        onsubmit="disableSubmitButton(this)">
                         @csrf
                         @method('PUT')
 
@@ -39,38 +40,48 @@
 
                                         <div class="mb-3">
                                             <label class="form-label" for="store_email">Store Email</label>
-                                            <input type="email" class="form-control" id="store_email" name="store_email"
+                                            <input type="email" class="form-control" id="store_email"
+                                                name="store_email"
                                                 value="{{ old('store_email', $settings['store_email'] ?? '') }}">
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label" for="store_phone">Store Phone</label>
-                                            <input type="text" class="form-control" id="store_phone" name="store_phone"
+                                            <input type="text" class="form-control" id="store_phone"
+                                                name="store_phone"
                                                 value="{{ old('store_phone', $settings['store_phone'] ?? '') }}">
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label" for="store_logo">Store Logo</label>
-                                            <input type="file" class="form-control @error('store_logo') is-invalid @enderror"
-                                                id="store_logo" name="store_logo" accept="image/jpeg,image/png,image/webp">
-                                            @if (filled($settings['store_logo_path'] ?? null))
+                                            <input type="file"
+                                                class="form-control @error('store_logo') is-invalid @enderror"
+                                                id="store_logo" name="store_logo"
+                                                accept="image/jpeg,image/png,image/webp">
                                             <div class="form-text text-muted">Recommended: 800 × 400 px (2:1), preferably with a transparent background. Displayed with contain.</div>
+                                            @if (filled($settings['store_logo_path'] ?? null))
                                                 <div class="form-text">Current: {{ $settings['store_logo_path'] }}</div>
                                             @endif
-                                            @error('store_logo')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                            @error('store_logo')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </div>
 
                                         @foreach ([
-                                            'facebook_url' => 'Facebook URL',
-                                            'whatsapp_url' => 'WhatsApp URL',
-                                            'instagram_url' => 'Instagram URL',
-                                        ] as $field => $label)
+        'facebook_url' => 'Facebook URL',
+        'whatsapp_url' => 'WhatsApp URL',
+        'instagram_url' => 'Instagram URL',
+    ] as $field => $label)
                                             <div class="mb-3">
-                                                <label class="form-label" for="{{ $field }}">{{ $label }}</label>
-                                                <input type="url" class="form-control @error($field) is-invalid @enderror"
+                                                <label class="form-label"
+                                                    for="{{ $field }}">{{ $label }}</label>
+                                                <input type="url"
+                                                    class="form-control @error($field) is-invalid @enderror"
                                                     id="{{ $field }}" name="{{ $field }}"
                                                     value="{{ old($field, $settings[$field] ?? '') }}">
-                                                @error($field)<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                                @error($field)
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                         @endforeach
 
@@ -102,8 +113,9 @@
 
                                         <div>
                                             <label class="form-label" for="timezone">Timezone</label>
-                                            <input type="text" class="form-control" id="timezone" name="timezone"
-                                                value="{{ old('timezone', $settings['timezone'] ?? '') }}">
+                                            <input type="text" class="form-control" id="timezone"
+                                                value="{{ $settings['timezone'] ?? '' }}" readonly>
+                                            <div class="form-text text-muted">Setup-level setting. It cannot be changed here.</div>
                                         </div>
 
                                     </div>
@@ -119,12 +131,12 @@
 
                                     <div class="card-body">
 
-                                            <label class="form-label" for="default_currency">Default Currency</label>
+                                        <label class="form-label" for="default_currency">Default Currency</label>
 
-                                            <select class="form-select" id="default_currency" name="default_currency">
-                                            <option value="USD" @selected(($settings['default_currency'] ?? '') == 'USD')>USD ($)</option>
-                                            <option value="LBP" @selected(($settings['default_currency'] ?? '') == 'LBP')>L.L.</option>
-                                        </select>
+                                        @php($currencyCode = (string) ($settings['default_currency'] ?? ''))
+                                        <input type="text" class="form-control" id="default_currency"
+                                            value="{{ $currencyCode }} ({{ store_currency_symbol($currencyCode) }})" readonly>
+                                        <div class="form-text text-muted">Setup-level setting. Existing prices are not converted.</div>
 
                                     </div>
                                 </div>
@@ -139,9 +151,9 @@
 
                                     <div class="card-body">
 
-                                            <label class="form-label" for="tax_mode">Tax Mode</label>
+                                        <label class="form-label" for="tax_mode">Tax Mode</label>
 
-                                            <select class="form-select" id="tax_mode" name="tax_mode">
+                                        <select class="form-select" id="tax_mode" name="tax_mode">
                                             <option value="b2c" @selected(($settings['tax_mode'] ?? '') == 'b2c')>B2C</option>
                                             <option value="b2b" @selected(($settings['tax_mode'] ?? '') == 'b2b')>B2B</option>
                                         </select>
@@ -152,7 +164,8 @@
                                             <option value="">No Default Tax</option>
                                             @foreach ($taxes as $tax)
                                                 <option value="{{ $tax->id }}" @selected((string) old('default_tax_id', $settings['default_tax_id'] ?? '') === (string) $tax->id)>
-                                                    {{ $tax->name }} ({{ rtrim(rtrim(number_format((float) $tax->rate, 4, '.', ''), '0'), '.') }}%)
+                                                    {{ $tax->name }}
+                                                    ({{ rtrim(rtrim(number_format((float) $tax->rate, 4, '.', ''), '0'), '.') }}%)
                                                 </option>
                                             @endforeach
                                         </select>
@@ -174,7 +187,8 @@
                                     <div class="card-body">
                                         <input type="hidden" name="allow_guest_checkout" value="0">
                                         <div class="form-check form-switch">
-                                            <input class="form-check-input @error('allow_guest_checkout') is-invalid @enderror"
+                                            <input
+                                                class="form-check-input @error('allow_guest_checkout') is-invalid @enderror"
                                                 type="checkbox" id="allow_guest_checkout" name="allow_guest_checkout"
                                                 value="1" @checked(old('allow_guest_checkout', $settings['allow_guest_checkout'] ?? 1))>
                                             <label class="form-check-label" for="allow_guest_checkout">
@@ -196,58 +210,77 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="mb-4">
-                                            <label class="form-label" for="manual_whatsapp_number">WhatsApp Number</label>
-                                            <input class="form-control @error('manual_whatsapp_number') is-invalid @enderror"
-                                                id="manual_whatsapp_number" name="manual_whatsapp_number" type="text"
+                                            <label class="form-label" for="manual_whatsapp_number">WhatsApp
+                                                Number</label>
+                                            <input
+                                                class="form-control @error('manual_whatsapp_number') is-invalid @enderror"
+                                                id="manual_whatsapp_number" name="manual_whatsapp_number"
+                                                type="text"
                                                 value="{{ old('manual_whatsapp_number', $settings['manual_whatsapp_number'] ?? '') }}"
                                                 placeholder="Country code and number">
-                                            @error('manual_whatsapp_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                            @error('manual_whatsapp_number')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </div>
 
                                         <div class="row g-4">
                                             <div class="col-lg-6">
                                                 <h6>Manual Wallet Transfer</h6>
                                                 @foreach ([
-                                                    'manual_wallet_title' => 'Title',
-                                                    'manual_wallet_name' => 'Wallet Name',
-                                                    'manual_wallet_number' => 'Wallet Number',
-                                                ] as $key => $label)
+        'manual_wallet_title' => 'Title',
+        'manual_wallet_name' => 'Wallet Name',
+        'manual_wallet_number' => 'Wallet Number',
+    ] as $key => $label)
                                                     <div class="mb-3">
-                                                        <label class="form-label" for="{{ $key }}">{{ $label }}</label>
+                                                        <label class="form-label"
+                                                            for="{{ $key }}">{{ $label }}</label>
                                                         <input class="form-control @error($key) is-invalid @enderror"
-                                                            id="{{ $key }}" name="{{ $key }}" type="text"
+                                                            id="{{ $key }}" name="{{ $key }}"
+                                                            type="text"
                                                             value="{{ old($key, $settings[$key] ?? '') }}">
-                                                        @error($key)<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                                        @error($key)
+                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
                                                     </div>
                                                 @endforeach
-                                                <label class="form-label" for="manual_wallet_instructions">Additional Instructions</label>
+                                                <label class="form-label" for="manual_wallet_instructions">Additional
+                                                    Instructions</label>
                                                 <textarea class="form-control @error('manual_wallet_instructions') is-invalid @enderror"
                                                     id="manual_wallet_instructions" name="manual_wallet_instructions" rows="4">{{ old('manual_wallet_instructions', $settings['manual_wallet_instructions'] ?? '') }}</textarea>
-                                                @error('manual_wallet_instructions')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                                @error('manual_wallet_instructions')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
                                             </div>
 
                                             <div class="col-lg-6">
                                                 <h6>Manual Bank Transfer</h6>
                                                 @foreach ([
-                                                    'manual_bank_title' => 'Title',
-                                                    'manual_bank_name' => 'Bank Name',
-                                                    'manual_bank_account_name' => 'Account Name',
-                                                    'manual_bank_account_number' => 'Account Number',
-                                                    'manual_bank_iban' => 'IBAN',
-                                                    'manual_bank_swift' => 'SWIFT',
-                                                ] as $key => $label)
+        'manual_bank_title' => 'Title',
+        'manual_bank_name' => 'Bank Name',
+        'manual_bank_account_name' => 'Account Name',
+        'manual_bank_account_number' => 'Account Number',
+        'manual_bank_iban' => 'IBAN',
+        'manual_bank_swift' => 'SWIFT',
+    ] as $key => $label)
                                                     <div class="mb-3">
-                                                        <label class="form-label" for="{{ $key }}">{{ $label }}</label>
+                                                        <label class="form-label"
+                                                            for="{{ $key }}">{{ $label }}</label>
                                                         <input class="form-control @error($key) is-invalid @enderror"
-                                                            id="{{ $key }}" name="{{ $key }}" type="text"
+                                                            id="{{ $key }}" name="{{ $key }}"
+                                                            type="text"
                                                             value="{{ old($key, $settings[$key] ?? '') }}">
-                                                        @error($key)<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                                        @error($key)
+                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
                                                     </div>
                                                 @endforeach
-                                                <label class="form-label" for="manual_bank_instructions">Additional Instructions</label>
-                                                <textarea class="form-control @error('manual_bank_instructions') is-invalid @enderror"
-                                                    id="manual_bank_instructions" name="manual_bank_instructions" rows="4">{{ old('manual_bank_instructions', $settings['manual_bank_instructions'] ?? '') }}</textarea>
-                                                @error('manual_bank_instructions')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                                <label class="form-label" for="manual_bank_instructions">Additional
+                                                    Instructions</label>
+                                                <textarea class="form-control @error('manual_bank_instructions') is-invalid @enderror" id="manual_bank_instructions"
+                                                    name="manual_bank_instructions" rows="4">{{ old('manual_bank_instructions', $settings['manual_bank_instructions'] ?? '') }}</textarea>
+                                                @error('manual_bank_instructions')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                         </div>
                                     </div>
@@ -262,11 +295,13 @@
                                     </div>
                                     <div class="card-body">
                                         <p class="text-muted">
-                                            These rules configure future delivery channels. No notifications are sent in this version.
+                                            These rules configure future delivery channels. No notifications are sent in
+                                            this version.
                                         </p>
 
                                         @foreach ($notificationEvents->groupBy('category') as $category => $events)
-                                            <h6 class="text-uppercase mt-4">{{ str_replace('_', ' ', $category) }}</h6>
+                                            <h6 class="text-uppercase mt-4">{{ str_replace('_', ' ', $category) }}
+                                            </h6>
                                             <div class="table-responsive mb-3">
                                                 <table class="table table-bordered align-middle mb-0">
                                                     <thead>
@@ -281,17 +316,22 @@
                                                             @foreach ($notificationEvent->rules->groupBy('notification_audience_id') as $audienceRules)
                                                                 <tr>
                                                                     <td>{{ $notificationEvent->name }}</td>
-                                                                    <td>{{ $audienceRules->first()->audience->name }}</td>
+                                                                    <td>{{ $audienceRules->first()->audience->name }}
+                                                                    </td>
                                                                     <td>
                                                                         <div class="d-flex flex-wrap gap-3">
                                                                             @foreach ($audienceRules as $notificationRule)
                                                                                 <div class="form-check form-switch">
-                                                                                    <input class="form-check-input" type="checkbox"
+                                                                                    <input class="form-check-input"
+                                                                                        type="checkbox"
                                                                                         id="notification-rule-{{ $notificationRule->id }}"
                                                                                         name="notification_rules[]"
                                                                                         value="{{ $notificationRule->id }}"
-                                                                                        @checked(in_array($notificationRule->id, old('notification_rules', $notificationEvent->rules->where('is_enabled', true)->pluck('id')->all())))>
-                                                                                    <label class="form-check-label" for="notification-rule-{{ $notificationRule->id }}">
+                                                                                        @checked(in_array(
+                                                                                                $notificationRule->id,
+                                                                                                old('notification_rules', $notificationEvent->rules->where('is_enabled', true)->pluck('id')->all())))>
+                                                                                    <label class="form-check-label"
+                                                                                        for="notification-rule-{{ $notificationRule->id }}">
                                                                                         {{ $notificationRule->channel->name }}
                                                                                     </label>
                                                                                 </div>
@@ -315,8 +355,14 @@
                         </div>
 
                         <div class="text-end">
-                            <button class="btn btn-primary">
-                                Save Settings
+                            <button type="submit" class="btn btn-primary shadow">
+                                <span class="btn-text">
+                                    <i class="bi bi-floppy me-2"></i>
+                                    Save
+                                </span>
+                                <span class="btn-loading d-none">
+                                    Saving...
+                                </span>
                             </button>
                         </div>
 

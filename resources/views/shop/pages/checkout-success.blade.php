@@ -18,7 +18,7 @@
 
             <div class="row g-4">
                 <div class="col-lg-8">
-                    <div class="card border-0 shadow-sm mb-4">
+                    <div class="card shadow-sm mb-4">
                         <div class="card-body p-4">
                             <div class="row g-3">
                                 <div class="col-md-3"><small class="text-muted d-block">{{ __('shop.checkout.confirmation.order_number') }}</small><strong>{{ $order->order_number }}</strong></div>
@@ -30,7 +30,7 @@
                         </div>
                     </div>
 
-                    <div class="card border-0 shadow-sm mb-4">
+                    <div class="card shadow-sm mb-4">
                         <div class="card-body p-4">
                             <h2 class="h5 mb-3">{{ __('shop.checkout.confirmation.items') }}</h2>
                             @foreach ($order->items as $item)
@@ -55,7 +55,7 @@
                                 $label = $addressBlock['label'];
                             @endphp
                             <div class="col-md-6">
-                                <div class="card border-0 shadow-sm h-100"><div class="card-body p-4">
+                                <div class="card shadow-sm h-100"><div class="card-body p-4">
                                     <h2 class="h5">{{ __('shop.checkout.'.$label) }}</h2>
                                     <address class="mb-0">
                                         {{ $address->first_name }} {{ $address->last_name }}<br>
@@ -72,15 +72,15 @@
 
                 <div class="col-lg-4">
                     @include('shop.orders.partials.manual-payment-instructions')
-                    <div class="card border-0 shadow-sm mb-4"><div class="card-body p-4">
+                    <div class="card shadow-sm mb-4"><div class="card-body p-4">
                         <h2 class="h5">{{ __('shop.checkout.shipping_method') }}</h2>
                         <p class="mb-0">{{ $order->shipping->shipping_method_name }}</p>
                     </div></div>
-                    <div class="card border-0 shadow-sm mb-4"><div class="card-body p-4">
+                    <div class="card shadow-sm mb-4"><div class="card-body p-4">
                         <h2 class="h5">{{ __('shop.checkout.payment_method') }}</h2>
                         <p class="mb-0">{{ $order->payment->method_name }}</p>
                     </div></div>
-                    <div class="card border-0 shadow-sm"><div class="card-body p-4">
+                    <div class="card shadow-sm"><div class="card-body p-4">
                         <dl class="row g-2 mb-0">
                             <dt class="col-7">{{ __('shop.checkout.subtotal') }}</dt><dd class="col-5 text-end">{{ format_store_price($order->subtotal, $order->currency_code) }}</dd>
                             <dt class="col-7">{{ __('shop.checkout.tax') }}</dt><dd class="col-5 text-end">{{ format_store_price($order->tax_total, $order->currency_code) }}</dd>

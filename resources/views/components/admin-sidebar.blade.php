@@ -12,7 +12,7 @@
   <!-- Sidebar scroll-->
   <div>
     <div class="brand-logo d-flex align-items-center justify-content-between">
-      <a href="{{ route('admin.products.index') }}" class="text-nowrap logo-img" aria-label="Admin home"></a>
+      <a href="{{ route('admin.products.index') }}" class="text-nowrap" aria-label="Admin home" style="font-size: 1.5em"><b>{{ $adminCompanyName }}</b></a>
       <button class="close-btn d-xl-none d-block sidebartoggler cursor-pointer border-0 bg-transparent" type="button"
         id="sidebarCollapse" aria-label="Close navigation" aria-controls="main-wrapper">
         <i class="ti ti-x fs-6"></i>
@@ -42,7 +42,7 @@
                 href="{{ route('admin.products.index') }}">
                 <div class="d-flex align-items-center gap-3">
                   <div class="round-16 d-flex align-items-center justify-content-center">
-                    <i class="ti ti-circle"></i>
+                    <i class="ti ti-box-seam"></i>
                   </div>
                   <span class="hide-menu">Products</span>
                 </div>
@@ -53,7 +53,7 @@
                 href="{{ route('admin.categories.index') }}">
                 <div class="d-flex align-items-center gap-3">
                   <div class="round-16 d-flex align-items-center justify-content-center">
-                    <i class="ti ti-circle"></i>
+                    <i class="ti ti-tags"></i>
                   </div>
                   <span class="hide-menu">Categories</span>
                 </div>
@@ -64,7 +64,7 @@
                 href="{{ route('admin.attributes.index') }}">
                 <div class="d-flex align-items-center gap-3">
                   <div class="round-16 d-flex align-items-center justify-content-center">
-                    <i class="ti ti-circle"></i>
+                    <i class="ti ti-filter"></i>
                   </div>
                   <span class="hide-menu">Attributes</span>
                 </div>
@@ -75,7 +75,7 @@
                 href="{{ route('admin.inventory.index') }}">
                 <div class="d-flex align-items-center gap-3">
                   <div class="round-16 d-flex align-items-center justify-content-center">
-                    <i class="ti ti-circle"></i>
+                    <i class="ti ti-archive"></i>
                   </div>
                   <span class="hide-menu">Inventory</span>
                 </div>
@@ -83,7 +83,10 @@
             </li>
             <li class="sidebar-item">
               <a class="sidebar-link justify-content-between {{ $reviewsActive ? 'active' : '' }}" href="{{ route('admin.reviews.index') }}">
-                <div class="d-flex align-items-center gap-3"><div class="round-16 d-flex align-items-center justify-content-center"><i class="ti ti-circle"></i></div><span class="hide-menu">Reviews</span></div>
+                <div class="d-flex align-items-center gap-3">
+                  <div class="round-16 d-flex align-items-center justify-content-center">
+                    <i class="ti ti-stars"></i>
+                  </div><span class="hide-menu">Reviews</span></div>
               </a>
             </li>
           </ul>
@@ -99,6 +102,15 @@
             <div class="d-flex align-items-center gap-3">
               <span class="d-flex"><i class="ti ti-receipt"></i></span>
               <span class="hide-menu">Orders</span>
+            </div>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link justify-content-between {{ request()->routeIs('admin.refunds.*') ? 'active' : '' }}"
+            href="{{ route('admin.refunds.index') }}" aria-expanded="false">
+            <div class="d-flex align-items-center gap-3">
+              <span class="d-flex"><i class="ti ti-receipt-refund"></i></span>
+              <span class="hide-menu">Refunds</span>
             </div>
           </a>
         </li>

@@ -3,8 +3,8 @@
         @vite(['resources/css/app.css', 'resources/css/styles.min.css', 'resources/css/myStyle.css', 'resources/js/app.js'])
     </x-slot>
 
-    <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
-        data-sidebartype="full" data-header-position="fixed">
+    <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
+        data-header-position="fixed">
         <x-admin-sidebar />
 
         <div class="body-wrapper">
@@ -20,9 +20,9 @@
                             <a href="{{ route('admin.homepage-banners.index') }}" class="btn btn-transparent">Back</a>
                         </div>
                     </div>
-
+                    <hr>
                     <form method="POST" enctype="multipart/form-data"
-                        action="{{ route('admin.homepage-banners.store') }}">
+                        action="{{ route('admin.homepage-banners.store') }}" onsubmit="disableSubmitButton(this)">
                         @csrf
                         @include('admin.homepage-banners._form')
                     </form>

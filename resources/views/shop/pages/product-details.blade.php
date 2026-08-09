@@ -1,4 +1,4 @@
-﻿@extends('shop.layouts.app')
+@extends('shop.layouts.app')
 
 @section('title', filled($translation->meta_title) ? $translation->meta_title : $translation->name)
 @section('meta_description', $productMetaDescription)
@@ -83,7 +83,7 @@
                                 <div class="mb-4" data-product-price>
                                     @if ($isConfigurable)
                                         @if ($configurablePriceRange)
-                                            <span class="h4 fw-bold text-primary mb-0" data-current-price>
+                                            <span class="h4 fw-bold mb-0" data-current-price>
                                                 {{ format_store_price_range(
                                                     $configurablePriceRange['minimum'],
                                                     $configurablePriceRange['maximum'],
@@ -112,7 +112,7 @@
                                             </span>
                                         @endif
                                     @else
-                                        <span class="h4 fw-bold text-primary mb-0" data-current-price>
+                                        <span class="h4 fw-bold mb-0" data-current-price>
                                             {{ format_store_price($product->displayPrice($taxMode, $defaultTax), $currencyCode) }}
                                         </span>
                                         @if ($product->hasActiveSpecialPrice())

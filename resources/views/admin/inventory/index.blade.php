@@ -10,21 +10,22 @@
             <x-admin-topbar />
             <div class="body-wrapper-inner">
                 <div class="container-fluid">
-                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4 mb-3">
+                    <div class="card shadow">
+                        <div class="card-head pt-4 px-4">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4 mb-3">
                         <h3 class="mb-0">Inventory</h3>
                         <div class="d-flex flex-wrap gap-2">
-                            <a href="{{ route('admin.inventory.opening') }}" class="btn btn-outline-primary">Opening Stock</a>
-                            <a href="{{ route('admin.inventory.receive') }}" class="btn btn-primary">Receive Stock</a>
-                            <a href="{{ route('admin.inventory.adjustment') }}" class="btn btn-outline-primary">Adjustment</a>
-                            <a href="{{ route('admin.inventory.stock-count') }}" class="btn btn-outline-primary">Stock Count</a>
-                            <a href="{{ route('admin.inventory.history') }}" class="btn btn-outline-secondary">History</a>
+                            <a href="{{ route('admin.inventory.opening') }}" class="btn btn-outline-primary">Opening
+                                Stock</a>
+                            <a href="{{ route('admin.inventory.receive') }}" class="btn btn-outline-primary">Receive
+                                Stock</a>
+                            <a href="{{ route('admin.inventory.adjustment') }}"
+                                class="btn btn-outline-primary">Adjustment</a>
+                            <a href="{{ route('admin.inventory.stock-count') }}" class="btn btn-outline-primary">Stock
+                                Count</a>
+                            <a href="{{ route('admin.inventory.history') }}" class="btn btn-primary">History</a>
                         </div>
                     </div>
-
-                    @if (session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
-
-                    <div class="card shadow">
-                        <div class="card-header">
                             <div class="row">
                                 <div class="col-md-3">
                                     <select id="inventory-stock-filter" class="form-select">
@@ -39,7 +40,18 @@
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table id="inventoryTable" class="display table data-table w-100">
-                                    <thead><tr><th>Name</th><th>SKU</th><th>Type</th><th>On Hand</th><th>Available</th><th>Average Cost</th><th>Low Stock Alert</th><th>Actions</th></tr></thead>
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>SKU</th>
+                                            <th>Type</th>
+                                            <th>On Hand</th>
+                                            <th>Available</th>
+                                            <th>Average Cost</th>
+                                            <th>Low Stock Alert</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
                                 </table>
                             </div>
                         </div>
@@ -48,5 +60,7 @@
             </div>
         </div>
     </div>
-    <script>window.inventoryDataTableRoute = @json(route('admin.inventory.index'));</script>
+    <script>
+        window.inventoryDataTableRoute = @json(route('admin.inventory.index'));
+    </script>
 </x-admin-main>

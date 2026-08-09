@@ -197,7 +197,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <hr class="mt-4" />
                             <div class="col-12 text-end">
                                 <button type="submit" class="btn btn-primary shadow">
 

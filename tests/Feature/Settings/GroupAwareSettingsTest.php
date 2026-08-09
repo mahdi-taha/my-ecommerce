@@ -78,6 +78,49 @@ class GroupAwareSettingsTest extends TestCase
         $this->assertSame('Unrelated Store', setting('other.store_name'));
     }
 
+    public function test_currency_and_timezone_are_displayed_but_cannot_be_changed_by_the_settings_form(): void
+    {
+        $admin = User::factory()->create();
+
+        $response = $this->actingAs($admin, 'admin')
+            ->get(route('admin.settings.index'));
+
+        $response->assertOk()
+            ->assertSee('value="Asia/Beirut" readonly', false)
+            ->assertSee('value="USD ($)" readonly', false)
+            ->assertDontSee('name="timezone"', false)
+            ->assertDontSee('name="default_currency"', false);
+
+        $this->assertSame('Asia/Beirut', setting('localization.timezone'));
+        $this->assertSame('USD', setting('currency.default_currency'));
+
+        $this->actingAs($admin, 'admin')
+            ->put(route('admin.settings.update'), $this->settingsPayload([
+                'store_name' => 'Updated Without Setup Changes',
+                'timezone' => 'Invalid/Timezone',
+                'default_currency' => 'LBP',
+            ]))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('settings', [
+            'group' => 'store',
+            'key' => 'store_name',
+            'value' => 'Updated Without Setup Changes',
+        ]);
+        $this->assertDatabaseHas('settings', [
+            'group' => 'localization',
+            'key' => 'timezone',
+            'value' => 'Asia/Beirut',
+        ]);
+        $this->assertDatabaseHas('settings', [
+            'group' => 'currency',
+            'key' => 'default_currency',
+            'value' => 'USD',
+        ]);
+        $this->assertTrue(Cache::has('setting.localization.timezone'));
+        $this->assertTrue(Cache::has('setting.currency.default_currency'));
+    }
+
     public function test_storefront_settings_are_idempotent_and_logo_replacement_is_safe(): void
     {
         Storage::fake('public');

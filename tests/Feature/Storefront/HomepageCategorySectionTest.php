@@ -4,6 +4,7 @@ namespace Tests\Feature\Storefront;
 
 use App\Http\Controllers\HomeController;
 use App\Models\Category;
+use App\Services\StorefrontProductListingService;
 use Database\Seeders\SettingSeeder;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -120,7 +121,7 @@ class HomepageCategorySectionTest extends TestCase
             }
         });
 
-        app(HomeController::class)->index();
+        app(HomeController::class)->index(app(StorefrontProductListingService::class));
 
         $this->assertSame(2, $categoryQueries);
     }

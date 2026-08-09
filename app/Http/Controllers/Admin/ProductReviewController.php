@@ -28,8 +28,7 @@ class ProductReviewController extends Controller
                 ->when(
                     $request->string('status')->isNotEmpty(),
                     fn ($query) => $query->where('status', $request->string('status'))
-                )
-                ->latest('created_at');
+                );
 
             return DataTables::eloquent($reviews)
                 ->filter(function ($query) use ($request): void {

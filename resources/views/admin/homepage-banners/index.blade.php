@@ -1,1 +1,35 @@
-<x-admin-main page="Homepage Content"><x-slot name="header">@vite(['resources/css/app.css','resources/css/styles.min.css','resources/css/myStyle.css','resources/js/app.js','resources/js/admin/homepage-banners.js'])</x-slot><div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full" data-header-position="fixed"><x-admin-sidebar/><div class="body-wrapper"><x-admin-topbar/><div class="body-wrapper-inner"><div class="container-fluid"><div class="card shadow mt-4"><div class="card-header d-flex justify-content-between"><h1 class="h4">Homepage Content</h1><a class="btn btn-primary" href="{{ route('admin.homepage-banners.create') }}">Add Content</a></div><div class="card-body"><table id="homepageBannersTable" class="display table data-table" style="width:100%"><thead><tr><th>Title</th><th>Placement</th><th>Status</th><th>Order</th><th>Action</th></tr></thead></table></div></div></div></div></div></div></div><script>window.homepageBannerDataTableRoute=@json(route('admin.homepage-banners.index'));</script></x-admin-main>
+<x-admin-main page="Homepage Content"><x-slot name="header">@vite(['resources/css/app.css', 'resources/css/styles.min.css', 'resources/css/myStyle.css', 'resources/js/app.js', 'resources/js/admin/homepage-banners.js'])</x-slot>
+    <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
+        data-header-position="fixed">
+        <x-admin-sidebar />
+        <div class="body-wrapper">
+            <x-admin-topbar />
+            <div class="body-wrapper-inner">
+                <div class="container-fluid">
+                    <div class="card shadow mt-4">
+                        <div class="card-header d-flex justify-content-between">
+                            <h1 class="h4">Homepage Content</h1><a class="btn btn-primary"
+                                href="{{ route('admin.homepage-banners.create') }}">Add Content</a>
+                        </div>
+                        <div class="card-body">
+                            <table id="homepageBannersTable" class="display table data-table" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Placement</th>
+                                        <th>Status</th>
+                                        <th>Order</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        window.homepageBannerDataTableRoute = @json(route('admin.homepage-banners.index'));
+    </script>
+</x-admin-main>

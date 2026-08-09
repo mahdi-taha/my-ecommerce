@@ -1,4 +1,4 @@
-﻿@extends('shop.layouts.app')
+@extends('shop.layouts.app')
 
 @section('title', __('shop.home.title'))
 @section('meta_description', __('shop.home.meta_description'))
@@ -13,15 +13,31 @@
 
     @php
         $productTabs = [
-            'all-products' => ['label' => __('shop.home.all_products'), 'products' => $allProducts],
-            'new-arrivals' => ['label' => __('shop.home.new_arrivals'), 'products' => $newProducts],
-            'featured-products' => ['label' => __('shop.home.featured'), 'products' => $featuredProducts],
+            'all-products' => [
+                'label' => __('shop.home.all_products'),
+                'products' => $allProducts,
+                'url' => route('shop.products.index'),
+            ],
+            'new-arrivals' => [
+                'label' => __('shop.home.new_arrivals'),
+                'products' => $newProducts,
+                'url' => route('shop.products.index', [
+                    'new' => 1,
+                    'sort' => 'newest',
+                ]),
+            ],
+            'featured-products' => [
+                'label' => __('shop.home.featured'),
+                'products' => $featuredProducts,
+                'url' => route('shop.products.index', ['featured' => 1, 'sort' => 'newest']),
+            ],
         ];
 
         if ($onSaleProducts->isNotEmpty()) {
             $productTabs['on-sale-products'] = [
                 'label' => __('shop.home.on_sale'),
                 'products' => $onSaleProducts,
+                'url' => route('shop.products.index', ['sale' => 1, 'sort' => 'newest']),
             ];
         }
 
@@ -43,12 +59,8 @@
                 @foreach ($productTabs as $tabId => $tab)
                     <li class="nav-item" role="presentation">
                         <button class="nav-link @if ($loop->first) active @endif"
-                            id="{{ $tabId }}-tab"
-                            data-bs-toggle="pill"
-                            data-bs-target="#{{ $tabId }}"
-                            type="button"
-                            role="tab"
-                            aria-controls="{{ $tabId }}"
+                            id="{{ $tabId }}-tab" data-bs-toggle="pill" data-bs-target="#{{ $tabId }}"
+                            type="button" role="tab" aria-controls="{{ $tabId }}"
                             aria-selected="{{ $loop->first ? 'true' : 'false' }}">
                             {{ $tab['label'] }}
                         </button>
@@ -58,26 +70,34 @@
 
             <div class="tab-content" id="homeProductTabsContent">
                 @foreach ($productTabs as $tabId => $tab)
-                    <div class="tab-pane fade @if ($loop->first) show active @endif"
-                        id="{{ $tabId }}"
-                        role="tabpanel"
-                        aria-labelledby="{{ $tabId }}-tab"
-                        tabindex="0">
+                    <div class="tab-pane fade @if ($loop->first) show active @endif" id="{{ $tabId }}"
+                        role="tabpanel" aria-labelledby="{{ $tabId }}-tab" tabindex="0">
                         @if ($tab['products']->isEmpty())
                             <div class="text-center text-muted py-5">
                                 {{ __('shop.home.no_products_found') }}
                             </div>
                         @else
+                            {{-- <div class="row g-4">
+                                @foreach ($tab['products'] as $product)
+                                    <x-shop.product-card :product="$product" :currency-code="$currencyCode" :tax-mode="$taxMode"
+                                        :default-tax="$defaultTax" />
+                                @endforeach
+                            </div> --}}
                             <div class="row g-4">
                                 @foreach ($tab['products'] as $product)
-                                    <x-shop.product-card
-                                        :product="$product"
-                                        :currency-code="$currencyCode"
-                                        :tax-mode="$taxMode"
-                                        :default-tax="$defaultTax"
-                                    />
+                                    <x-shop.product-card :product="$product" :currency-code="$currencyCode" :tax-mode="$taxMode"
+                                        :default-tax="$defaultTax" />
                                 @endforeach
                             </div>
+
+                            @if ($tab['url'])
+                                <div class="text-center mt-4">
+                                    <a href="{{ $tab['url'] }}" class="btn btn-outline-primary">
+                                        {{ __('shop.home.view_all') }}
+                                        <i class="bi bi-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            @endif
                         @endif
                     </div>
                 @endforeach

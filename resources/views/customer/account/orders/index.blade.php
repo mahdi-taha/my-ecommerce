@@ -5,16 +5,15 @@
 @section('account-content')
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <h1 class="h3 mb-0">{{ __('shop.account.orders.my_orders') }}</h1>
-        <a class="btn btn-outline-secondary" href="{{ route('customer.account.edit') }}">
+        <a class="btn btn-secondary" href="{{ route('customer.account.edit') }}">
             {{ __('shop.account.orders.back_to_account') }}
         </a>
     </div>
-
-    <div class="card shadow-sm border-0">
+    <div class="card shadow-sm">
         <div class="card-body p-0">
             @if ($orders->isEmpty())
                 <div class="text-center py-5 px-3">
-                    <i class="bi bi-box-seam display-5 text-muted"></i>
+                    <i class="bi bi-bag-check display-5 text-muted"></i>
                     <h2 class="h5 mt-3">{{ __('shop.account.orders.no_orders') }}</h2>
                 </div>
             @else
@@ -37,11 +36,11 @@
                                     <td class="fw-semibold">{{ $order->order_number }}</td>
                                     <td>{{ date('Y-m-d H:i', strtotime($order->placed_at)) }}</td>
                                     <td>{{ format_store_price($order->grand_total, $order->currency_code) }}</td>
-                                    <td><span class="badge bg-secondary">{{ __('shop.checkout.status.order.'.$order->status) }}</span></td>
-                                    <td><span class="badge bg-secondary">{{ __('shop.checkout.status.payment.'.$order->payment_status) }}</span></td>
-                                    <td><span class="badge bg-secondary">{{ __('shop.checkout.status.fulfillment.'.$order->fulfillment_status) }}</span></td>
+                                    <td><span class="badge bg-{{ $order->status }}">{{ __('shop.checkout.status.order.'.$order->status) }}</span></td>
+                                    <td><span class="badge bg-{{ $order->payment_status }}">{{ __('shop.checkout.status.payment.'.$order->payment_status) }}</span></td>
+                                    <td><span class="badge bg-{{ $order->fulfillment_status }}">{{ __('shop.checkout.status.fulfillment.'.$order->fulfillment_status) }}</span></td>
                                     <td class="text-end">
-                                        <a class="btn btn-sm btn-outline-primary" href="{{ route('shop.account.orders.show', ['order' => $order]) }}">
+                                        <a class="btn btn-sm btn-secondary" href="{{ route('shop.account.orders.show', ['order' => $order]) }}">
                                             {{ __('shop.account.orders.view_order') }}
                                         </a>
                                     </td>

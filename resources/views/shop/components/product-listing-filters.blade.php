@@ -1,4 +1,4 @@
-﻿<aside class="border rounded bg-white p-4" aria-label="{{ __('shop.listing.filters') }}">
+<aside class="border rounded bg-white p-4" aria-label="{{ __('shop.listing.filters') }}">
     <form method="GET" action="{{ $listingAction }}">
         <h2 class="h5 mb-4">{{ __('shop.listing.filters') }}</h2>
 
@@ -25,7 +25,8 @@
                     @foreach ($category->children as $childCategory)
                         @php($childTranslation = $childCategory->translations->first())
                         <li class="ms-3 mb-1">
-                            <a href="{{ route('shop.categories.show', ['slug' => $childTranslation->slug]) }}">{{ $childTranslation->name }}</a>
+                            <a
+                                href="{{ route('shop.categories.show', ['slug' => $childTranslation->slug]) }}">{{ $childTranslation->name }}</a>
                         </li>
                     @endforeach
                 </ul>
@@ -36,13 +37,15 @@
             <legend class="form-label fs-6">{{ __('shop.listing.price') }}</legend>
             <div class="row g-2">
                 <div class="col-6">
-                    <label for="shop-filter-min-price" class="visually-hidden">{{ __('shop.listing.minimum_price') }}</label>
+                    <label for="shop-filter-min-price"
+                        class="visually-hidden">{{ __('shop.listing.minimum_price') }}</label>
                     <input id="shop-filter-min-price" type="number" name="min_price" min="0" step="0.0001"
                         class="form-control" value="{{ $filters['min_price'] ?? '' }}"
                         placeholder="{{ __('shop.listing.minimum') }}">
                 </div>
                 <div class="col-6">
-                    <label for="shop-filter-max-price" class="visually-hidden">{{ __('shop.listing.maximum_price') }}</label>
+                    <label for="shop-filter-max-price"
+                        class="visually-hidden">{{ __('shop.listing.maximum_price') }}</label>
                     <input id="shop-filter-max-price" type="number" name="max_price" min="0" step="0.0001"
                         class="form-control" value="{{ $filters['max_price'] ?? '' }}"
                         placeholder="{{ __('shop.listing.maximum') }}">
@@ -51,20 +54,19 @@
         </fieldset>
 
         @foreach ([
-            'stock' => ['value' => 'in', 'label' => __('shop.listing.in_stock')],
-            'sale' => ['value' => '1', 'label' => __('shop.listing.on_sale')],
-            'featured' => ['value' => '1', 'label' => __('shop.listing.featured')],
-            'new' => ['value' => '1', 'label' => __('shop.listing.new')],
-        ] as $name => $option)
+        'stock' => ['value' => 'in', 'label' => __('shop.listing.in_stock')],
+        'sale' => ['value' => '1', 'label' => __('shop.listing.on_sale')],
+        'featured' => ['value' => '1', 'label' => __('shop.listing.featured')],
+        'new' => ['value' => '1', 'label' => __('shop.listing.new')],
+    ] as $name => $option)
             <div class="form-check mb-2">
                 <input id="shop-filter-{{ $name }}" class="form-check-input" type="checkbox"
-                    name="{{ $name }}" value="{{ $option['value'] }}"
-                    @checked(($filters[$name] ?? null) == $option['value'])>
+                    name="{{ $name }}" value="{{ $option['value'] }}" @checked(($filters[$name] ?? null) == $option['value'])>
                 <label class="form-check-label" for="shop-filter-{{ $name }}">{{ $option['label'] }}</label>
             </div>
         @endforeach
 
-        @if ($attributeFacets !== [])
+        {{-- @if ($attributeFacets !== [])
             <h3 class="h6 mt-3">{{ __('shop.listing.attribute_filters') }}</h3>
         @endif
         @foreach ($attributeFacets as $facet)
@@ -76,16 +78,56 @@
                         <input id="{{ $inputId }}" class="form-check-input" type="checkbox"
                             name="attributes[{{ $facet['code'] }}][]" value="{{ $option['code'] }}"
                             @checked(in_array($option['code'], $filters['attributes'][$facet['code']] ?? [], true))>
-                        <label class="form-check-label" for="{{ $inputId }}">
-                            @if ($facet['swatch_type'] === 'color')
-                                <span class="storefront-attribute-filter-swatch {{ $option['swatch_value'] === null ? 'storefront-attribute-filter-swatch--missing' : '' }}"
-                                    @if ($option['swatch_value'] !== null) style="--storefront-swatch-color: {{ $option['swatch_value'] }}" @endif
-                                    aria-hidden="true"></span>
-                            @endif
-                            {{ $option['label'] }}
-                        </label>
+                        <label class="form-check-label" for="{{ $inputId }}">{{ $option['label'] }}</label>
                     </div>
                 @endforeach
+            </fieldset>
+        @endforeach --}}
+
+        @if ($attributeFacets !== [])
+            <h3 class="h6 mt-3">{{ __('shop.listing.attribute_filters') }}</h3>
+        @endif
+
+        @foreach ($attributeFacets as $facet)
+            @php($collapseId = 'attribute-filter-' . $facet['code'])
+            @php($selectedOptions = $filters['attributes'][$facet['code']] ?? [])
+            @php($hasSelectedOptions = !empty($selectedOptions))
+
+            <fieldset class="mt-3" data-category-attribute="{{ $facet['code'] }}">
+                <legend class="mb-0">
+                    <button
+                        class="btn btn-link w-100 d-flex align-items-center justify-content-between p-0 text-decoration-none text-body"
+                        type="button" data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}"
+                        aria-expanded="{{ $hasSelectedOptions ? 'true' : 'false' }}"
+                        aria-controls="{{ $collapseId }}">
+                        <span class="form-label fs-6 mb-0">
+                            {{ $facet['label'] }}
+                        </span>
+
+                        <i class="bi bi-chevron-down filter-collapse-icon"></i>
+                    </button>
+                </legend>
+
+                <div id="{{ $collapseId }}" class="collapse {{ $hasSelectedOptions ? 'show' : '' }} mt-3">
+                    @foreach ($facet['options'] as $option)
+                        @php($inputId = 'shop-filter-attribute-' . $facet['code'] . '-' . $option['code'])
+
+                        <div class="form-check mb-2">
+                            <input id="{{ $inputId }}" class="form-check-input" type="checkbox"
+                                name="attributes[{{ $facet['code'] }}][]" value="{{ $option['code'] }}"
+                                @checked(in_array($option['code'], $selectedOptions, true))>
+
+                            <label class="form-check-label" for="{{ $inputId }}">
+                                @if ($facet['swatch_type'] === 'color')
+                                    <span class="storefront-attribute-filter-swatch {{ $option['swatch_value'] === null ? 'storefront-attribute-filter-swatch--missing' : '' }}"
+                                        @if ($option['swatch_value'] !== null) style="--storefront-swatch-color: {{ $option['swatch_value'] }}" @endif
+                                        aria-hidden="true"></span>
+                                @endif
+                                {{ $option['label'] }}
+                            </label>
+                        </div>
+                    @endforeach
+                </div>
             </fieldset>
         @endforeach
 

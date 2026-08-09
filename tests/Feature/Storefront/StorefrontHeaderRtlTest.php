@@ -75,7 +75,8 @@ class StorefrontHeaderRtlTest extends TestCase
         $this->assertStringContainsString('[dir="rtl"] .storefront-header-badge', $css);
         $this->assertStringContainsString('[dir="rtl"] .storefront-navbar', $css);
         $this->assertStringContainsString('[dir="rtl"] .storefront-category-menu .storefront-category-panel-menu', $css);
-        $this->assertStringContainsString('[dir="rtl"] .storefront-category-submenu', $css);
+        $this->assertStringContainsString('[dir="rtl"] .storefront-category-flyout-layer', $css);
+        $this->assertStringContainsString('[dir="rtl"] .storefront-category-flyout', $css);
         $this->assertStringContainsString('[dir="rtl"] .storefront-category-forward-icon', $css);
         $this->assertStringContainsString('[dir="rtl"] .storefront-category-carousel', $css);
         $this->assertStringContainsString('[dir="rtl"] .storefront-category-carousel.owl-carousel .owl-prev i', $css);

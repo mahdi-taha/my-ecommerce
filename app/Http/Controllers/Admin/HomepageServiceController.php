@@ -21,16 +21,14 @@ class HomepageServiceController extends Controller
     {
         if ($request->ajax()) {
             $query = HomepageService::query()
-                ->with('translations')
-                ->orderBy('sort_order')
-                ->orderBy('id');
+                ->with('translations');
 
             return DataTables::eloquent($query)
                 ->addColumn('title', fn (HomepageService $service) => e($service->translations->firstWhere('locale', 'en')?->title))
                 ->editColumn('icon', fn (HomepageService $service) => '<i class="'.e($service->icon->cssClass()).'" aria-hidden="true"></i> '.e($service->icon->label()))
                 ->editColumn('is_active', fn (HomepageService $service) => $service->is_active
                     ? '<span class="badge bg-success">Active</span>'
-                    : '<span class="badge bg-secondary">Inactive</span>')
+                    : '<span class="badge bg-danger">Inactive</span>')
                 ->addColumn('action', fn (HomepageService $service) => view('admin.homepage-services._actions', compact('service'))->render())
                 ->filterColumn('title', fn ($query, string $keyword) => $query->whereHas(
                     'translations',

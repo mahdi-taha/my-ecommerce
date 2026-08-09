@@ -40,7 +40,7 @@
 <div class="col-lg-3 col-md-4 col-sm-6">
     <article class="product-item bg-white border rounded shadow-sm position-relative overflow-hidden h-100 d-flex flex-column">
         @if ($product->is_new)
-            <span class="badge bg-primary position-absolute top-0 start-0 m-2 px-3 py-2">
+            <span class="badge bg-secondary position-absolute top-0 start-0 m-2 px-3 py-2">
                 {{ __('shop.product.new') }}
             </span>
         @endif
@@ -91,7 +91,7 @@
             @endif
 
             <div class="mb-3">
-                <span class="fw-bold fs-5 text-primary">
+                <span class="fw-bold fs-5 text-secondary">
                     {{ $configurablePriceRange
                         ? format_store_price_range(
                             $configurablePriceRange['minimum'],
@@ -102,7 +102,8 @@
                 </span>
 
                 @if ($configurablePriceRange && $configurablePriceRange['show_regular_range'])
-                    <span class="text-muted text-decoration-line-through ms-2">
+                <br>
+                    <span class="text-danger text-decoration-line-through ms-2">
                         {{ format_store_price_range(
                             $configurablePriceRange['regular_minimum'],
                             $configurablePriceRange['regular_maximum'],
@@ -110,7 +111,7 @@
                         ) }}
                     </span>
                 @elseif (! $isConfigurable && $product->hasActiveSpecialPrice())
-                    <span class="text-muted text-decoration-line-through ms-2">
+                    <span class="text-danger text-decoration-line-through ms-2">
                         {{ format_store_price($displayRegularPrice, $currencyCode) }}
                     </span>
                 @endif
@@ -123,13 +124,6 @@
                     </small>
                 @endif
             </div>
-
-            @if ($product->is_featured)
-                <small class="text-primary d-block mb-3">
-                    <i class="bi bi-star-fill me-1"></i>
-                    {{ __('shop.product.featured') }}
-                </small>
-            @endif
 
             <div class="d-flex gap-2 mt-auto">
                 @auth('customer')
@@ -144,13 +138,13 @@
                         @if ($isWishlisted)
                             @method('DELETE')
                         @endif
-                        <button type="submit" class="btn btn-outline-danger" data-product-card-wishlist-button
+                        <button type="submit" class="btn btn-secondary" data-product-card-wishlist-button
                             aria-label="{{ $isWishlisted ? __('shop.wishlist.remove') : __('shop.wishlist.add') }}">
                             <i class="bi {{ $isWishlisted ? 'bi-heart-fill' : 'bi-heart' }}"></i>
                         </button>
                     </form>
                 @else
-                    <a href="{{ route('customer.login', ['return_to' => url()->full()]) }}" class="btn btn-outline-danger"
+                    <a href="{{ route('customer.login', ['return_to' => url()->full()]) }}" class="btn  btn-secondary"
                         aria-label="{{ __('shop.wishlist.add') }}">
                         <i class="bi bi-heart"></i>
                     </a>
@@ -166,17 +160,17 @@
                         <input type="hidden" name="product_type" value="{{ \App\Enums\CartItemType::Simple->value }}">
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
                         <input type="hidden" name="quantity" value="1">
-                        <button type="submit" class="btn btn-primary w-100" data-product-card-cart-button>
+                        <button type="submit" class="btn btn-primary w-100" data-product-card-cart-button style="font-size: 0.9rem;">
                             <i class="bi bi-cart-plus me-2"></i>
                             {{ __('shop.product.add_to_cart') }}
                         </button>
                     </form>
                 @elseif ($isConfigurable && $hasPositiveVariant && $productUrl !== '#')
-                    <a href="{{ $productUrl }}" class="btn btn-primary flex-grow-1">
+                    <a href="{{ $productUrl }}" class="btn btn-primary flex-grow-1" style="font-size: 0.9rem;">
                         {{ __('shop.product.choose_options') }}
                     </a>
                 @else
-                    <button type="button" class="btn btn-primary flex-grow-1" disabled>
+                    <button type="button" class="btn btn-primary flex-grow-1" disabled style="font-size: 0.9rem;">
                         {{ $isStandaloneSimple && $product->hasPositiveEffectivePrice()
                             ? __('shop.product.out_of_stock')
                             : __('shop.product.unavailable') }}

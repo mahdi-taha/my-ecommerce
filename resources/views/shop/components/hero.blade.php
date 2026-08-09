@@ -20,7 +20,7 @@
                                         <p class="text-dark">{{ $translation->body }}</p>
                                     @endif
                                     @if ($translation->button_label && $translation->link_url)
-                                        <a class="btn btn-primary rounded-pill py-3 px-5"
+                                        <a class="btn btn-primary rounded-pill py-3 px-5" style="width: fit-content"
                                             href="{{ $translation->link_url }}"
                                             @if (str_starts_with($translation->link_url, 'https://')) target="_blank" rel="noopener noreferrer" @endif>
                                             {{ $translation->button_label }}
@@ -47,7 +47,7 @@
                                 @endif
                             </div>
                             @if ($translation->button_label && $translation->link_url)
-                                <a class="btn btn-primary rounded-pill py-2 px-4"
+                                <a class="btn btn-secondary rounded-pill py-2 px-4"
                                     href="{{ $translation->link_url }}"
                                     @if (str_starts_with($translation->link_url, 'https://')) target="_blank" rel="noopener noreferrer" @endif>
                                     {{ $translation->button_label }}

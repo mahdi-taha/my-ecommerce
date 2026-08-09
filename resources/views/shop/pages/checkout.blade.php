@@ -37,7 +37,7 @@
                 @csrf
                 <div class="row g-4">
                     <div class="col-lg-7">
-                        <div class="card border-0 shadow-sm mb-4">
+                        <div class="card shadow-sm mb-4">
                             <div class="card-body p-4">
                                 <h2 class="h5 mb-3">{{ __('shop.checkout.customer_information') }}</h2>
                                 <div class="row g-3">
@@ -78,7 +78,7 @@
                             $initialSavedAddress = old('saved_address_id', $defaultShippingAddress?->getKey());
                         @endphp
 
-                        <div class="card border-0 shadow-sm mb-4" data-checkout-addresses>
+                        <div class="card shadow-sm mb-4" data-checkout-addresses>
                             <div class="card-body p-4">
                                 <h2 class="h5 mb-3">{{ __('shop.checkout.addresses.title') }}</h2>
 
@@ -197,7 +197,7 @@
                             </div>
                         </div>
 
-                        <div class="card border-0 shadow-sm mb-4">
+                        <div class="card shadow-sm mb-4">
                             <div class="card-body p-4">
                                 <h2 class="h5 mb-3">{{ __('shop.checkout.shipping_method') }}</h2>
                                 @forelse ($shippingMethods as $method)
@@ -217,7 +217,7 @@
                             </div>
                         </div>
 
-                        <div class="card border-0 shadow-sm">
+                        <div class="card shadow-sm">
                             <div class="card-body p-4">
                                 <h2 class="h5 mb-3">{{ __('shop.checkout.payment_method') }}</h2>
                                 @forelse ($paymentMethods as $method)
@@ -236,7 +236,7 @@
                     </div>
 
                     <div class="col-lg-5">
-                        <div class="card border-0 shadow-sm position-sticky" style="top: 1rem;">
+                        <div class="card shadow-sm position-sticky" style="top: 1rem;">
                             <div class="card-body p-4">
                                 <h2 class="h5 mb-3">{{ __('shop.checkout.order_summary') }}</h2>
                                 @foreach ($summary->items as $item)
@@ -270,14 +270,14 @@
                                             {{ __('shop.checkout.coupon.apply') }}
                                         </button>
                                     </div>
-                                    <div class="d-flex justify-content-between align-items-center gap-2"
+                                    <div class="d-flex justify-content-between align-items-center pt-2 gap-2"
                                         data-checkout-coupon-applied @if(! $summary->coupon) hidden @endif>
                                         <span>
                                             {{ __('shop.checkout.coupon.applied_code') }}:
                                             <strong data-checkout-coupon-name>{{ $summary->coupon['code'] ?? '' }}</strong>
                                         </span>
-                                        <button type="submit" form="checkout-coupon-remove-form"
-                                            class="btn btn-sm btn-outline-danger"
+                                        <button type="submit" form="checkout-coupon-remove-form" style="width: fit-content;"
+                                            class="btn btn-sm btn-outline-danger text-nowrap"
                                             data-checkout-coupon-remove>
                                             {{ __('shop.checkout.coupon.remove') }}
                                         </button>

@@ -14,13 +14,13 @@
                         <h3 class="mb-0">Create Customer</h3>
                         <a href="{{ route('admin.customers.index') }}" class="btn btn-transparent">Back</a>
                     </div>
-
+                    <hr>
                     <div class="card shadow">
                         <div class="card-body">
-                            <form action="{{ route('admin.customers.store') }}" method="POST" autocomplete="off">
+                            <form action="{{ route('admin.customers.store') }}" method="POST" autocomplete="off"
+                                onsubmit="disableSubmitButton(this)">
                                 @csrf
                                 @include('admin.customers._form')
-                                <button type="submit" class="btn btn-primary">Save Customer</button>
                             </form>
                         </div>
                     </div>

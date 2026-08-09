@@ -31,8 +31,6 @@ class UpdateNotificationConfigurationRequest extends FormRequest
             'whatsapp_url' => ['nullable', 'url:http,https', 'max:2048'],
             'instagram_url' => ['nullable', 'url:http,https', 'max:2048'],
             'default_locale' => ['required', Rule::in(['en', 'ar'])],
-            'timezone' => ['required', 'string', 'max:100'],
-            'default_currency' => ['required', Rule::in(['USD', 'LBP'])],
             'tax_mode' => ['required', Rule::in(['b2b', 'b2c'])],
             'default_tax_id' => [
                 'nullable',

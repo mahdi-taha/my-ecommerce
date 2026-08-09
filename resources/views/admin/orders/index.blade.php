@@ -73,7 +73,7 @@
                                     <input type="date" id="date-to-filter" class="form-control">
                                 </div>
                                 <div class="col-lg-2 col-md-6 mb-2 d-flex align-items-end">
-                                    <button type="button" id="clear-order-filters" class="btn btn-outline-secondary w-100">
+                                    <button type="button" id="clear-order-filters" class="btn btn-danger w-100">
                                         Clear Filters
                                     </button>
                                 </div>

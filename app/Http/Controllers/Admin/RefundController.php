@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreRefundRequest;
 use App\Models\Order;
 use App\Models\Refund;
+use App\Presenters\RefundPrintPresenter;
 use App\Services\RefundService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -17,7 +18,10 @@ use Illuminate\View\View;
 
 class RefundController extends Controller
 {
-    public function __construct(private RefundService $refunds) {}
+    public function __construct(
+        private RefundService $refunds,
+        private RefundPrintPresenter $refundPrint,
+    ) {}
 
     public function index(): View
     {
@@ -61,6 +65,10 @@ class RefundController extends Controller
         return view('admin.refunds.show', compact('refund'));
     }
 
+    public function printRefund(Refund $refund): View
+    {
+        return view('refunds.print', $this->refundPrint->present($refund));
+    }
 
     public function orders(Request $request): JsonResponse
     {

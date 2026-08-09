@@ -29,10 +29,10 @@
             <span class="text-warning">{{ str_repeat('★', $review->rating) }}</span>
             @if ($review->title)<h3 class="h6 mt-2">{{ $review->title }}</h3>@endif
             <p class="mb-1">{{ $review->review }}</p>
-            <small class="text-muted">{{ $review->created_at->format('Y-m-d') }}</small>
+            <small class="text-muted">{{ $review->created_at->format('d-m-Y') }}</small>
         </article>
     @empty
         <p class="text-muted">{{ __('shop.reviews.empty') }}</p>
     @endforelse
-    {{ $approvedReviews->withQueryString()->links() }}
+    {{ $approvedReviews->withQueryString()->links('pagination::bootstrap-5') }}
 </section>

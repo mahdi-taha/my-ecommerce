@@ -15,6 +15,10 @@
 }
 /*** Spinner End ***/
 
+div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-confirm){
+    background-color: var(--bs-secondary) !important;
+}
+
 .back-to-top {
     position: fixed;
     right: 30px;
@@ -66,6 +70,10 @@
     border-radius: 50%;
 }
 
+.text-yellow {
+    color: var(--bs-yellow) !important;
+}
+
 .btn.btn-primary {
     background: var(--bs-primary) !important;
     color: var(--bs-white) !important;
@@ -90,7 +98,8 @@
 
 .btn.btn-secondary:hover {
     background: var(--bs-primary) !important;
-    color: var(--bs-secondary) !important;
+    color: var(--bs-white) !important;
+    border-color: #999999
 }
 
 /*** Topbar Start ***/
@@ -565,7 +574,7 @@
 /*** bestseller Products End ***/
 
 /*** Pagination Start ***/
-.pagination {
+/* .pagination {
     display: inline-block;
 }
   
@@ -588,7 +597,7 @@
 
 .nav.nav-tabs .nav-link.active {
     border-bottom: 2px solid var(--bs-secondary) !important;
-}
+} */
 /*** Pagination End ***/
 
 /*** Shop Page Start ***/

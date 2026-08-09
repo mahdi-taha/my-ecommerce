@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @if ($storefrontFaviconUrl)
+        <link rel="icon" href="{{ $storefrontFaviconUrl }}">
+    @endif
 
     @php
         $pageTitle = trim($__env->yieldContent('title', config('app.name')));

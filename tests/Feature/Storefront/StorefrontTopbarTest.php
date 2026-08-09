@@ -32,8 +32,8 @@ class StorefrontTopbarTest extends TestCase
     {
         $this->setSetting('store', 'store_name', 'Configured Store');
         $this->setSetting('store', 'store_phone', '+961 1 234 567');
-        $this->setSetting('store', 'facebook_url', 'https://facebook.com/configured-store');
-        $this->setSetting('store', 'whatsapp_url', '');
+        $this->setSetting('store', 'facebook_url', ' https://facebook.com/configured-store ');
+        $this->setSetting('store', 'whatsapp_url', 'javascript:alert(1)');
         $this->setSetting('store', 'instagram_url', 'https://instagram.com/configured-store');
         $this->setSetting('currency', 'default_currency', 'LBP');
 
@@ -41,7 +41,8 @@ class StorefrontTopbarTest extends TestCase
             ->assertOk()
             ->assertSee('Configured Store')
             ->assertSee('href="tel:+9611234567"', false)
-            ->assertSee('https://facebook.com/configured-store', false)
+            ->assertSee('href="https://facebook.com/configured-store"', false)
+            ->assertDontSee('href=" https://facebook.com/configured-store "', false)
             ->assertSee('https://instagram.com/configured-store', false)
             ->assertDontSee('aria-label="'.__('shop.topbar.whatsapp').'"', false)
             ->assertSee('rel="noopener noreferrer"', false)

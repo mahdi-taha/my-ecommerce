@@ -24,7 +24,8 @@ class HomepageBannerAdminUiTest extends TestCase
             ->assertSee('English Content')
             ->assertSee('Arabic Content')
             ->assertSee('Image')
-            ->assertSee('Actions')
+            ->assertSee('Save')
+            ->assertSee('onsubmit="disableSubmitButton(this)"', false)
             ->assertSee('action="'.route('admin.homepage-banners.store').'"', false)
             ->assertSee('name="title_en"', false)
             ->assertSee('name="title_ar"', false)
@@ -61,7 +62,8 @@ class HomepageBannerAdminUiTest extends TestCase
             ->assertSee('value="Existing Hero"', false)
             ->assertSee('Current Image')
             ->assertSee(asset('storage/homepage/existing.jpg'), false)
-            ->assertSee('Update Homepage Content')
+            ->assertSee('Edit Homepage Content')
+            ->assertSee('Save')
             ->assertDontSee("@include('admin.homepage-banners._form')", false);
     }
 

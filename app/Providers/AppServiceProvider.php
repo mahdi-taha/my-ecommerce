@@ -8,6 +8,7 @@ use App\Services\StorefrontContentService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\View as IlluminateView;
@@ -106,7 +107,20 @@ class AppServiceProvider extends ServiceProvider
             return $count;
         };
 
-        $storefrontIdentity = function (): array {
+        $validSocialUrl = static function (mixed $value): ?string {
+            $url = trim((string) $value);
+
+            if ($url === '' || Validator::make(
+                ['url' => $url],
+                ['url' => ['url:http,https', 'max:2048']]
+            )->fails()) {
+                return null;
+            }
+
+            return $url;
+        };
+
+        $storefrontIdentity = function () use ($validSocialUrl): array {
             $request = request();
             $attribute = 'storefront.store_identity';
 
@@ -121,11 +135,20 @@ class AppServiceProvider extends ServiceProvider
                     ? Storage::disk('public')->url($logoPath)
                     : null,
                 'currency_code' => (string) setting('currency.default_currency', 'USD'),
+                'social_links' => [
+                    'facebook' => $validSocialUrl(setting('store.facebook_url', '')),
+                    'instagram' => $validSocialUrl(setting('store.instagram_url', '')),
+                    'whatsapp' => $validSocialUrl(setting('store.whatsapp_url', '')),
+                ],
             ];
             $request->attributes->set($attribute, $identity);
 
             return $identity;
         };
+
+        View::composer('shop.layouts.app', function (IlluminateView $view) use ($storefrontIdentity): void {
+            $view->with('storefrontFaviconUrl', $storefrontIdentity()['logo_url']);
+        });
 
         View::composer('shop.components.navbar', function (IlluminateView $view) use ($storefrontIdentity): void {
             $hierarchy = app('storefront.category_hierarchy');
@@ -147,21 +170,22 @@ class AppServiceProvider extends ServiceProvider
                 'topbarStoreName' => $identity['name'],
                 'topbarLogoUrl' => $identity['logo_url'],
                 'topbarPhone' => setting('store.store_phone', ''),
-                'topbarFacebookUrl' => setting('store.facebook_url', ''),
-                'topbarWhatsAppUrl' => setting('store.whatsapp_url', ''),
-                'topbarInstagramUrl' => setting('store.instagram_url', ''),
+                'topbarFacebookUrl' => $identity['social_links']['facebook'],
+                'topbarWhatsAppUrl' => $identity['social_links']['whatsapp'],
+                'topbarInstagramUrl' => $identity['social_links']['instagram'],
                 'topbarCurrencyCode' => $identity['currency_code'],
                 'topbarCustomer' => $customer,
                 'topbarNotificationCount' => $customerNotificationCount(),
             ]);
         });
 
-        View::composer(['shop.components.footer', 'shop.components.navbar'], function (IlluminateView $view): void {
+        View::composer(['shop.components.footer', 'shop.components.navbar'], function (IlluminateView $view) use ($storefrontIdentity): void {
             $content = app(StorefrontContentService::class);
             $locale = app()->getLocale();
             $view->with([
                 'storefrontFooterPages' => $content->footerPages($locale),
                 'storefrontContactPage' => $content->pageByCode('contact', $locale),
+                'storefrontSocialLinks' => $storefrontIdentity()['social_links'],
             ]);
         });
 
@@ -169,13 +193,50 @@ class AppServiceProvider extends ServiceProvider
             $view->with('notificationCount', $customerNotificationCount());
         });
 
-        View::composer('components.admin-topbar', function (IlluminateView $view): void {
+        $adminIdentity = function (): array {
+            $request = request();
+            $attribute = 'admin.store_identity';
+
+            if ($request->attributes->has($attribute)) {
+                return $request->attributes->get($attribute);
+            }
+
+            $logoPath = trim((string) setting('store.store_logo_path', ''));
+            $identity = [
+                'name' => (string) setting('store.store_name', config('app.name')),
+                'logo_url' => $logoPath !== '' && Storage::disk('public')->exists($logoPath)
+                    ? Storage::disk('public')->url($logoPath)
+                    : null,
+            ];
+            $request->attributes->set($attribute, $identity);
+
+            return $identity;
+        };
+
+        View::composer('components.admin-main', function (IlluminateView $view) use ($adminIdentity): void {
+            $view->with('adminFaviconUrl', $adminIdentity()['logo_url']);
+        });
+
+        View::composer('components.admin-topbar', function (IlluminateView $view) use ($adminIdentity): void {
             $adminNotificationCount = auth('admin')->user()?->databaseNotifications()
                 ->where('audience_code', NotificationAudienceCode::Administrator->value)
                 ->whereNull('read_at')
                 ->count() ?? 0;
 
-            $view->with('adminNotificationCount', $adminNotificationCount);
+            $identity = $adminIdentity();
+
+            // $view->with('adminNotificationCount', $adminNotificationCount);
+            $view->with([
+                'adminNotificationCount' => $adminNotificationCount,
+                'adminCompanyName' => $identity['name'],
+                'adminLogoUrl' => $identity['logo_url'],
+            ]);
+        });
+
+        View::composer('components.admin-sidebar', function (IlluminateView $view) use ($adminIdentity): void {
+            $view->with([
+                'adminCompanyName' => $adminIdentity()['name'],
+            ]);
         });
     }
 }

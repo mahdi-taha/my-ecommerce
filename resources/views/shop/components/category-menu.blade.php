@@ -4,7 +4,7 @@
             id="categoryMegaMenuToggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside"
             aria-expanded="false" aria-controls="categoryMegaMenu"
             aria-label="{{ __('shop.navigation.toggle_categories') }}">
-            <span class="h4 m-0">
+            <span class="h6 m-0">
                 <i class="fa fa-bars me-2" aria-hidden="true"></i>
                 {{ __('shop.navigation.all_categories') }}
             </span>

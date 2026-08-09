@@ -24,14 +24,14 @@ import './admin/simplebar.js';
 import 'datatables.net-bs5';
 import 'datatables.net-responsive-bs5';
 
-// window.disableSubmitButton = function (form) {
-//     const button = form.querySelector('button[type="submit"]');
+window.disableSubmitButton = function (form) {
+    const button = form.querySelector('button[type="submit"]');
 
-//     button.disabled = true;
+    button.disabled = true;
 
-//     button.querySelector('.btn-text').classList.add('d-none');
-//     button.querySelector('.btn-loading').classList.remove('d-none');
-// };
+    button.querySelector('.btn-text').classList.add('d-none');
+    button.querySelector('.btn-loading').classList.remove('d-none');
+};
 document.querySelectorAll('.toast-message')
     .forEach(toast => {
 

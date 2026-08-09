@@ -244,8 +244,8 @@ class InventoryController extends Controller
                 'translations' => fn ($query) => $query->where('locale', 'en'),
                 'configurable.translations' => fn ($query) => $query->where('locale', 'en'),
                 'attributeValues.option.translations' => fn ($query) => $query->where('locale', 'en'),
-            ])
-            ->orderBy('sku');
+            ]);
+        // ->orderBy('sku');
     }
 
     private function formatNumber(mixed $value): string

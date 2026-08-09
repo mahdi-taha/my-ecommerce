@@ -98,7 +98,7 @@ class CouponStatusPresentationTest extends TestCase
             ->assertOk()
             ->assertSee('<span class="badge bg-danger">', false)
             ->assertSeeText('Inactive')
-            ->assertSee('<span class="badge bg-info text-dark">', false)
+            ->assertSee('<span class="badge bg-info">', false)
             ->assertSeeText('Scheduled')
             ->assertSee('<span class="badge bg-secondary">', false)
             ->assertSeeText('Expired')
@@ -114,7 +114,7 @@ class CouponStatusPresentationTest extends TestCase
     {
         $this->assertSame([
             ['Active', 'bg-success'],
-            ['Scheduled', 'bg-info text-dark'],
+            ['Scheduled', 'bg-info'],
             ['Expired', 'bg-secondary'],
             ['Usage Exhausted', 'bg-warning text-dark'],
             ['Inactive', 'bg-danger'],

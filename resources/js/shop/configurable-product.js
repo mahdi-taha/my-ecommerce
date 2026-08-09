@@ -1,4 +1,4 @@
-﻿export function initializeConfigurableProducts() {
+export function initializeConfigurableProducts() {
     document.querySelectorAll('[data-configurable-product-form]').forEach((form) => {
         const variantData = form.querySelector('[data-configurable-variants]');
         const variants = Object.values(JSON.parse(variantData?.textContent || '{}'));

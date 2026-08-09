@@ -4,7 +4,7 @@
 
 @section('account-content')
 <div class="row justify-content-center"><div class="col-lg-6">
-    <div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h3 mb-0">{{ __('shop.account.profile.change_password') }}</h1><a class="btn btn-outline-secondary" href="{{ route('customer.account.edit') }}">{{ __('shop.account.password.back') }}</a></div>
+    <div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h3 mb-0">{{ __('shop.account.profile.change_password') }}</h1><a class="btn btn-secondary" href="{{ route('customer.account.edit') }}">{{ __('shop.account.password.back') }}</a></div>
     @if (session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
     <div class="card shadow-sm"><div class="card-body"><form method="POST" action="{{ route('customer.account.password.update') }}">
         @csrf @method('PUT')

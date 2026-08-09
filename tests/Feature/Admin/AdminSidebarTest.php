@@ -2,12 +2,15 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\Refund;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Support\CreatesRefundOrders;
 use Tests\TestCase;
 
 class AdminSidebarTest extends TestCase
 {
+    use CreatesRefundOrders;
     use RefreshDatabase;
 
     public function test_sidebar_links_every_implemented_top_level_admin_module_without_placeholders(): void
@@ -23,6 +26,7 @@ class AdminSidebarTest extends TestCase
             'admin.attributes.index',
             'admin.inventory.index',
             'admin.orders.index',
+            'admin.refunds.index',
             'admin.shipping-methods.index',
             'admin.customers.index',
             'admin.coupons.index',
@@ -89,6 +93,47 @@ class AdminSidebarTest extends TestCase
         }
     }
 
+    public function test_refunds_uses_one_index_link_active_across_its_route_family(): void
+    {
+        [$order, $payment, $admin] = $this->paidRefundOrder();
+        $refund = Refund::query()->create([
+            'refund_number' => 'RFD-2026-000001',
+            'idempotency_key' => str_repeat('r', 64),
+            'order_id' => $order->id,
+            'order_payment_id' => $payment->id,
+            'currency_code' => 'USD',
+            'merchandise_subtotal' => '10.0000',
+            'discount_amount' => '0.0000',
+            'tax_amount' => '0.0000',
+            'merchandise_amount' => '10.0000',
+            'return_shipping_cost' => '0.0000',
+            'shipping_treatment' => 'company_absorbs',
+            'shipping_deduction' => '0.0000',
+            'company_shipping_loss' => '0.0000',
+            'customer_refund_amount' => '10.0000',
+            'created_by' => $admin->id,
+            'refunded_at' => now(),
+        ]);
+
+        foreach ([
+            route('admin.refunds.index'),
+            route('admin.refunds.create'),
+            route('admin.refunds.show', $refund),
+        ] as $url) {
+            $response = $this->actingAs($admin, 'admin')->get($url);
+            $html = $response->getContent();
+            preg_match('/<aside class="left-sidebar">.*?<\/aside>/s', $html, $sidebarMatches);
+
+            $response->assertOk()->assertSeeText('Refunds');
+            $this->assertArrayHasKey(0, $sidebarMatches);
+            $this->assertActiveLink($sidebarMatches[0], route('admin.refunds.index'));
+            $this->assertSame(1, substr_count(
+                $sidebarMatches[0],
+                'href="'.route('admin.refunds.index').'"'
+            ));
+        }
+    }
+
     public function test_sidebar_uses_bounded_route_families_for_nested_resource_pages(): void
     {
         $sidebar = file_get_contents(resource_path('views/components/admin-sidebar.blade.php'));
@@ -99,6 +144,7 @@ class AdminSidebarTest extends TestCase
             "request()->routeIs('admin.attributes.*', 'admin.attribute-options.*')",
             "request()->routeIs('admin.inventory.*')",
             "request()->routeIs('admin.orders.*')",
+            "request()->routeIs('admin.refunds.*')",
             "request()->routeIs('admin.shipping-methods.*')",
             "request()->routeIs('admin.customers.*')",
             "request()->routeIs('admin.coupons.*')",
