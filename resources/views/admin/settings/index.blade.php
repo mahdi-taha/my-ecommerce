@@ -54,6 +54,7 @@
                                             <input type="file" class="form-control @error('store_logo') is-invalid @enderror"
                                                 id="store_logo" name="store_logo" accept="image/jpeg,image/png,image/webp">
                                             @if (filled($settings['store_logo_path'] ?? null))
+                                            <div class="form-text text-muted">Recommended: 800 × 400 px (2:1), preferably with a transparent background. Displayed with contain.</div>
                                                 <div class="form-text">Current: {{ $settings['store_logo_path'] }}</div>
                                             @endif
                                             @error('store_logo')<div class="invalid-feedback">{{ $message }}</div>@enderror

@@ -29,9 +29,9 @@ class HomepageBannerAdminUiTest extends TestCase
             ->assertSee('name="title_en"', false)
             ->assertSee('name="title_ar"', false)
             ->assertSee('dir="rtl"', false)
-            ->assertSee('recommended 1600 × 700 (16:7)')
-            ->assertSee('recommended 900 × 1200 (3:4)')
-            ->assertSee('recommended 800 × 600 (4:3)')
+            ->assertSee('recommended 1600 × 1600 px (1:1)')
+            ->assertSee('recommended 1200 × 1200 px (1:1)')
+            ->assertSee('recommended 1200 × 900 px (4:3)')
             ->assertSee('Images are center-cropped to fit')
             ->assertSee('Create Homepage Content')
             ->assertDontSee("@include('admin.homepage-banners._form')", false);

@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+    const productImageGuidance = 'Recommended: 1200 × 1200 px (1:1). Storefront images use contain; Admin previews may be center-cropped.';
     const productType = document.getElementById('type');
     const configurableBasePriceField = document.getElementById('configurable-base-price-field');
     const configurableBasePrice = document.getElementById('price');
@@ -299,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function () {
             } else if (action === 'status') {
                 applyMarkup += '<div class="input-group"><select class="form-select" id="apply-all-status"><option value="1">Active</option><option value="0">Inactive</option></select><button type="button" class="btn btn-outline-primary bulk-apply-all" data-fields="status">Apply</button></div>';
             } else if (action === 'add_images') {
-                applyMarkup += '<div class="input-group"><input type="file" accept="image/jpeg,image/png,image/webp" multiple class="form-control" id="apply-all-images"><button type="button" class="btn btn-outline-primary bulk-apply-all-images">Apply</button></div>';
+                applyMarkup += `<div class="input-group"><input type="file" accept="image/jpeg,image/png,image/webp" multiple class="form-control" id="apply-all-images"><button type="button" class="btn btn-outline-primary bulk-apply-all-images">Apply</button></div><div class="form-text text-muted">${productImageGuidance}</div>`;
             }
 
             selectedVariants.forEach(function (variant, id) {
@@ -311,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else if (action === 'status') {
                     controls = `<select name="variants[${id}][status]" class="form-select bulk-row-field" data-field="status"><option value="1" ${variant.status ? 'selected' : ''}>Active</option><option value="0" ${variant.status ? '' : 'selected'}>Inactive</option></select>`;
                 } else if (action === 'add_images') {
-                    controls = `<input type="file" name="variants[${id}][images][]" accept="image/jpeg,image/png,image/webp" multiple class="form-control bulk-row-images">`;
+                    controls = `<input type="file" name="variants[${id}][images][]" accept="image/jpeg,image/png,image/webp" multiple class="form-control bulk-row-images"><div class="form-text text-muted">${productImageGuidance}</div>`;
                 }
                 rowsMarkup += `<div class="border rounded p-3 mb-3" data-variant-id="${id}"><strong>${escapeHtml(variant.combination)}</strong><div class="text-muted small mb-2">${escapeHtml(variant.sku)}</div>${controls}</div>`;
             });

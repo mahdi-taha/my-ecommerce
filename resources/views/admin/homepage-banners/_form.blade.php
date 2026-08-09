@@ -110,9 +110,9 @@
         <div class="form-text">
             <p class="mb-1">JPG, JPEG, PNG, or WebP. Maximum size: 5 MB. Active content requires a valid image.</p>
             <ul class="mb-0 ps-3">
-                <li><strong>Hero:</strong> recommended 1600 × 700 (16:7).</li>
-                <li><strong>Hero Side:</strong> recommended 900 × 1200 (3:4).</li>
-                <li><strong>Offer:</strong> recommended 800 × 600 (4:3).</li>
+                <li><strong>Hero:</strong> recommended 1600 × 1600 px (1:1).</li>
+                <li><strong>Hero Side:</strong> recommended 1200 × 1200 px (1:1).</li>
+                <li><strong>Offer:</strong> recommended 1200 × 900 px (4:3).</li>
             </ul>
             <p class="mb-0 mt-1">Images are center-cropped to fit. Keep important content near the center.</p>
         </div>

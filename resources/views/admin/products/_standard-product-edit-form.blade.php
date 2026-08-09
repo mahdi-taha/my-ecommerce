@@ -208,6 +208,7 @@
     <section id="images" class="inputs-container shadow mb-4 pb-3 px-3 rounded" style="border: 1px solid #d4d9e4;">
         <h5 class="mb-4 mt-3">Images</h5>
         <input type="file" id="new_images" name="new_images[]" class="form-control mb-3" accept="image/jpeg,image/png,image/webp" multiple>
+        <div class="form-text text-muted">Recommended: 1200 × 1200 px (1:1). Storefront images use contain; Admin previews may be center-cropped.</div>
         @error('new_images.*')<p class="text-danger">{{ $message }}</p>@enderror
         @error('base_image')<p class="text-danger">{{ $message }}</p>@enderror
         <div class="row g-3 mb-3">

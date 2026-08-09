@@ -200,6 +200,7 @@
                                                     Remove
                                                 </button>
                                             </div>
+                                            <div class="form-text text-muted">Recommended: 512 × 512 px (1:1), preferably with a transparent background. Displayed with contain.</div>
                                             @error('logo')
                                                 <p class="text-danger">{{ $message }}</p>
                                             @enderror
@@ -229,6 +230,7 @@
                                                     Remove
                                                 </button>
                                             </div>
+                                            <div class="form-text text-muted">Recommended: 1600 × 700 px (16:7). Image is center-cropped responsively; keep important content near the center.</div>
                                             @error('banner')
                                                 <p class="text-danger">{{ $message }}</p>
                                             @enderror
