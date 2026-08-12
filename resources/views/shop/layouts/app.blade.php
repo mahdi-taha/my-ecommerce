@@ -80,7 +80,7 @@
     @include('shop.components.navbar')
     
 
-    <main class="flex-grow-1">
+    <main class="flex-grow-1 bg-light">
         @yield('content')
     </main>
 
