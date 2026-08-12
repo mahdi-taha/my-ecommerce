@@ -73,14 +73,14 @@
     @stack('styles')
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
 
     @include('shop.components.topbar')
 
     @include('shop.components.navbar')
     
 
-    <main>
+    <main class="flex-grow-1">
         @yield('content')
     </main>
 
