@@ -176,6 +176,53 @@ document.addEventListener('DOMContentLoaded', function () {
                 .replace(/^-+|-+$/g, '');
         }
 
+        function safeUploadIdentifier() {
+            if (typeof window.crypto?.randomUUID === 'function') {
+                return window.crypto.randomUUID();
+            }
+
+            if (typeof window.crypto?.getRandomValues === 'function') {
+                const values = new Uint32Array(4);
+                window.crypto.getRandomValues(values);
+
+                return Array.from(values, function (value) {
+                    return value.toString(16).padStart(8, '0');
+                }).join('-');
+            }
+
+            return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+        }
+
+        function normalizeUploadFilename(input, file) {
+            if (typeof window.DataTransfer !== 'function') {
+                console.warn('Category upload filename normalization is unavailable: DataTransfer is not supported.');
+
+                return file;
+            }
+
+            const originalExtension = file.name.includes('.')
+                ? file.name.split('.').pop().toLowerCase()
+                : '';
+            const safeExtension = originalExtension.replace(/[^a-z0-9]/g, '');
+            const safeFilename = `${safeUploadIdentifier()}${safeExtension ? `.${safeExtension}` : ''}`;
+
+            try {
+                const normalizedFile = new File([file], safeFilename, {
+                    type: file.type,
+                    lastModified: file.lastModified
+                });
+                const transfer = new DataTransfer();
+                transfer.items.add(normalizedFile);
+                input.files = transfer.files;
+
+                return normalizedFile;
+            } catch (error) {
+                console.warn('Category upload filename normalization could not be applied.', error);
+
+                return file;
+            }
+        }
+
         document.querySelectorAll('.category-name').forEach(function (nameInput) {
             const locale = nameInput.dataset.locale;
             const slugInput = document.querySelector(
@@ -206,11 +253,13 @@ document.addEventListener('DOMContentLoaded', function () {
             input.addEventListener('change', function () {
                 const preview = document.getElementById(input.dataset.preview);
                 const removeButton = document.getElementById(input.dataset.remove);
-                const file = input.files?.[0];
+                const selectedFile = input.files?.[0];
 
-                if (!preview || !removeButton || !file) {
+                if (!preview || !removeButton || !selectedFile) {
                     return;
                 }
+
+                const file = normalizeUploadFilename(input, selectedFile);
 
                 preview.src = URL.createObjectURL(file);
                 preview.classList.remove('d-none');

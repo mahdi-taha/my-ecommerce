@@ -40,6 +40,62 @@ class CategoryUploadValidationTest extends TestCase
         $this->assertSame('updated-category', $category->fresh()->translations()->where('locale', 'en')->value('slug'));
     }
 
+    public function test_special_original_filenames_are_replaced_with_safe_server_generated_names(): void
+    {
+        Storage::fake('public');
+
+        $this->actingAs(User::factory()->create(), 'admin')
+            ->post(route('admin.categories.store'), $this->categoryData([
+                'logo' => UploadedFile::fake()->image("Sharaf Electro Store_ Kıbrıs'ın Elektronik Marketi.JPG"),
+                'banner' => UploadedFile::fake()->image('صورة الفئة الرئيسية.PNG'),
+            ]))
+            ->assertRedirect(route('admin.categories.index'));
+
+        $category = Category::query()->firstOrFail();
+
+        $this->assertMatchesRegularExpression('#^categories/logos/[A-Za-z0-9]{40}\.jpg$#', $category->logo_path);
+        $this->assertMatchesRegularExpression('#^categories/banners/[A-Za-z0-9]{40}\.png$#', $category->banner_path);
+        $this->assertStringNotContainsString('Sharaf', $category->logo_path);
+        $this->assertStringNotContainsString('صورة', $category->banner_path);
+        Storage::disk('public')->assertExists($category->logo_path);
+        Storage::disk('public')->assertExists($category->banner_path);
+    }
+
+    public function test_replacing_category_images_deletes_previous_files_and_keeps_safe_paths(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create();
+
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.categories.store'), $this->categoryData([
+                'logo' => UploadedFile::fake()->image('old logo.jpg'),
+                'banner' => UploadedFile::fake()->image('old banner.png'),
+            ]))
+            ->assertRedirect(route('admin.categories.index'));
+
+        $category = Category::query()->firstOrFail();
+        $oldLogoPath = $category->logo_path;
+        $oldBannerPath = $category->banner_path;
+
+        $this->actingAs($admin, 'admin')
+            ->put(route('admin.categories.update', $category), $this->categoryData([
+                'category_slug_en' => 'replacement-category',
+                'category_slug_ar' => 'replacement-category-ar',
+                'logo' => UploadedFile::fake()->image("new logo's çığ.JPG"),
+                'banner' => UploadedFile::fake()->image('لافتة جديدة.WEBP'),
+            ]))
+            ->assertRedirect(route('admin.categories.index'));
+
+        $category->refresh();
+
+        Storage::disk('public')->assertMissing($oldLogoPath);
+        Storage::disk('public')->assertMissing($oldBannerPath);
+        Storage::disk('public')->assertExists($category->logo_path);
+        Storage::disk('public')->assertExists($category->banner_path);
+        $this->assertMatchesRegularExpression('#^categories/logos/[A-Za-z0-9]{40}\.jpg$#', $category->logo_path);
+        $this->assertMatchesRegularExpression('#^categories/banners/[A-Za-z0-9]{40}\.webp$#', $category->banner_path);
+    }
+
     public function test_oversized_category_images_are_rejected(): void
     {
         $response = $this->actingAs(User::factory()->create(), 'admin')
