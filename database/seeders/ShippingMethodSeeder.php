@@ -18,14 +18,18 @@ class ShippingMethodSeeder extends Seeder
         ];
 
         foreach ($methods as $method) {
-            ShippingMethod::firstOrCreate(
+            $shippingMethod = ShippingMethod::firstOrCreate(
                 ['code' => $method['code']],
                 array_merge($method, [
                     'amount' => '0.0000',
                     'description' => null,
-                    'is_active' => false,
+                    'is_active' => $method['code'] === 'store_pickup',
                 ])
             );
+
+            if ($method['code'] === 'store_pickup' && ! $shippingMethod->is_active) {
+                $shippingMethod->update(['is_active' => true]);
+            }
         }
     }
 }

@@ -44,6 +44,25 @@ class CustomerAuthenticationReturnTest extends TestCase
             ->assertSessionMissing('customer_return_to');
     }
 
+    public function test_checkout_login_returns_to_checkout_and_failed_login_preserves_it(): void
+    {
+        $customer = $this->customer();
+        $destination = route('shop.checkout.show');
+
+        $this->get(route('customer.login', ['return_to' => $destination]))
+            ->assertSessionHas('customer_return_to', $destination);
+
+        $this->post(route('customer.login.store'), [
+            'email' => $customer->email,
+            'password' => 'incorrect',
+        ])->assertSessionHasErrors('email')
+            ->assertSessionHas('customer_return_to', $destination);
+
+        $this->post(route('customer.login.store'), $this->credentials($customer))
+            ->assertRedirect($destination)
+            ->assertSessionMissing('customer_return_to');
+    }
+
     public function test_registration_validation_failure_preserves_cart_destination_and_merge_completes_first(): void
     {
         $tokens = app(GuestCartTokenService::class);
@@ -72,6 +91,49 @@ class CustomerAuthenticationReturnTest extends TestCase
         $this->assertNotNull($customer->cart);
     }
 
+    public function test_checkout_registration_returns_to_checkout_and_validation_failure_preserves_it(): void
+    {
+        $destination = route('shop.checkout.show');
+
+        $this->get(route('customer.register', ['return_to' => $destination]))
+            ->assertSessionHas('customer_return_to', $destination);
+
+        $this->post(route('customer.register.store'), ['email' => 'new@example.test'])
+            ->assertSessionHasErrors(['first_name', 'last_name', 'password'])
+            ->assertSessionHas('customer_return_to', $destination);
+
+        $this->post(route('customer.register.store'), $this->registrationData())
+            ->assertRedirect($destination)
+            ->assertSessionMissing('customer_return_to');
+    }
+
+    public function test_checkout_return_requires_a_same_origin_localized_url(): void
+    {
+        foreach ([
+            'https://example.com/en/checkout',
+            url('/checkout'),
+        ] as $invalid) {
+            $this->get(route('customer.login', ['return_to' => $invalid]))
+                ->assertSessionMissing('customer_return_to');
+        }
+    }
+
+    public function test_direct_login_and_registration_fall_back_to_customer_profile(): void
+    {
+        $customer = $this->customer();
+
+        $this->post(route('customer.login.store'), $this->credentials($customer))
+            ->assertRedirect(route('customer.account.edit'));
+
+        $this->post(route('customer.logout'));
+
+        $data = $this->registrationData();
+        $data['email'] = 'another-new@example.test';
+
+        $this->post(route('customer.register.store'), $data)
+            ->assertRedirect(route('customer.account.edit'));
+    }
+
     public function test_invalid_queries_do_not_replace_an_existing_valid_destination(): void
     {
         $destination = route('shop.cart.index');
@@ -81,7 +143,6 @@ class CustomerAuthenticationReturnTest extends TestCase
             '//example.com/account',
             route('customer.account.edit'),
             route('customer.login'),
-            route('shop.checkout.show'),
             url('/unknown'),
             'not a url',
         ] as $invalid) {

@@ -1,3 +1,17 @@
+export function canPlaceCheckoutOrder({
+    summaryConfirmed,
+    requestInProgress,
+    submitting,
+    shippingMethod,
+    paymentMethod,
+}) {
+    return summaryConfirmed
+        && !requestInProgress
+        && !submitting
+        && Boolean(shippingMethod)
+        && Boolean(paymentMethod);
+}
+
 export function initializeCheckoutSummary() {
     const form = document.querySelector('[data-checkout-form]');
 
@@ -18,6 +32,9 @@ export function initializeCheckoutSummary() {
     const token = form.querySelector('input[name="_token"]')?.value;
     let activeController = null;
     let requestId = 0;
+    let summaryConfirmed = !placeOrderButton.disabled;
+    let requestInProgress = false;
+    let submitting = false;
 
     const totals = {
         formatted_subtotal: form.querySelector('[data-checkout-subtotal]'),
@@ -44,14 +61,29 @@ export function initializeCheckoutSummary() {
         if (couponName) couponName.textContent = summary.coupon?.code ?? '';
     };
 
-    const send = async (endpoint, method, extra = {}, disableOnError = true) => {
+    const selectedMethods = () => ({
+        shippingMethod: form.querySelector('input[name="shipping_method"]:checked')?.value ?? '',
+        paymentMethod: form.querySelector('input[name="payment_method"]:checked')?.value ?? '',
+    });
+
+    const syncPlaceOrderButton = () => {
+        placeOrderButton.disabled = !canPlaceCheckoutOrder({
+            summaryConfirmed,
+            requestInProgress,
+            submitting,
+            ...selectedMethods(),
+        });
+    };
+
+    const send = async (endpoint, method, extra = {}) => {
         activeController?.abort();
         activeController = new AbortController();
         const currentRequestId = ++requestId;
-        const shippingMethod = form.querySelector('input[name="shipping_method"]:checked')?.value ?? '';
-        const paymentMethod = form.querySelector('input[name="payment_method"]:checked')?.value ?? '';
+        const { shippingMethod, paymentMethod } = selectedMethods();
 
-        placeOrderButton.disabled = true;
+        summaryConfirmed = false;
+        requestInProgress = true;
+        syncPlaceOrderButton();
         status.textContent = form.dataset.summaryLoading;
         status.classList.remove('text-danger');
         status.classList.add('text-muted');
@@ -80,17 +112,26 @@ export function initializeCheckoutSummary() {
 
             updateSummary(payload.summary);
             status.textContent = payload.summary.warnings?.[0] ?? '';
-            placeOrderButton.disabled = false;
+            summaryConfirmed = true;
+            requestInProgress = false;
+            syncPlaceOrderButton();
 
             return payload;
         } catch (error) {
             if (error.name === 'AbortError' || currentRequestId !== requestId) return null;
+            requestInProgress = false;
             status.textContent = error.checkoutMessage || form.dataset.summaryError;
             status.classList.remove('text-muted');
             status.classList.add('text-danger');
-            placeOrderButton.disabled = disableOnError;
+            syncPlaceOrderButton();
             throw error;
         }
+    };
+
+    const recoverSummary = async () => {
+        try {
+            await send(endpoint, 'POST');
+        } catch (_) {}
     };
 
     form.querySelectorAll('input[name="shipping_method"]').forEach((input) => {
@@ -108,11 +149,12 @@ export function initializeCheckoutSummary() {
         try {
             const payload = await send(form.dataset.couponApplyUrl, 'POST', {
                 coupon_code: couponInput?.value ?? '',
-            }, false);
+            });
             if (payload) couponStatus.textContent = payload.message;
         } catch (error) {
             couponStatus.textContent = error.checkoutMessage || form.dataset.summaryError;
             couponStatus.classList.add('text-danger');
+            await recoverSummary();
         }
     });
 
@@ -120,11 +162,23 @@ export function initializeCheckoutSummary() {
         couponStatus.textContent = '';
         couponStatus.classList.remove('text-danger');
         try {
-            const payload = await send(form.dataset.couponRemoveUrl, 'DELETE', {}, false);
+            const payload = await send(form.dataset.couponRemoveUrl, 'DELETE');
             if (payload) couponStatus.textContent = payload.message;
         } catch (error) {
             couponStatus.textContent = error.checkoutMessage || form.dataset.summaryError;
             couponStatus.classList.add('text-danger');
+            await recoverSummary();
         }
+    });
+
+    form.addEventListener('submit', (event) => {
+        if (submitting || placeOrderButton.disabled) {
+            event.preventDefault();
+
+            return;
+        }
+
+        submitting = true;
+        syncPlaceOrderButton();
     });
 }

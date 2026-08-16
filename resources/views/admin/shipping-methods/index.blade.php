@@ -19,6 +19,9 @@
                             </div>
                         </div>
                         <div class="card-body">
+                            @if ($errors->any())
+                                <div class="alert alert-danger" role="alert">{{ $errors->first() }}</div>
+                            @endif
                             <div class="table-responsive">
                                 <table class="table align-middle">
                                     <thead>
@@ -61,6 +64,14 @@
                                                             <button type="submit"
                                                                 class="btn btn-sm {{ $shippingMethod->is_active ? 'btn-outline-danger' : 'btn-outline-success' }}">
                                                                 {{ $shippingMethod->is_active ? 'Deactivate' : 'Activate' }}
+                                                            </button>
+                                                        </form>
+                                                        <form action="{{ route('admin.shipping-methods.destroy', $shippingMethod) }}"
+                                                            method="POST" onsubmit="return confirm('Delete this shipping method?')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                                <i class="ti ti-trash"></i>
                                                             </button>
                                                         </form>
                                                     </div>

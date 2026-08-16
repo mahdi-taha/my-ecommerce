@@ -26,6 +26,33 @@ class AdminSecurityTest extends TestCase
         $this->assertAuthenticatedAs($admin, 'admin');
     }
 
+    public function test_admin_login_ignores_a_storefront_intended_url(): void
+    {
+        $admin = User::factory()->create([
+            'email' => 'admin-with-storefront-intended-url@example.test',
+            'password' => 'password123',
+        ]);
+
+        $response = $this
+            ->withSession(['url.intended' => url('/')])
+            ->post(route('admin.login.store'), [
+                'email' => $admin->email,
+                'password' => 'password123',
+            ]);
+
+        $response->assertRedirect(route('admin.products.index'));
+        $this->assertAuthenticatedAs($admin, 'admin');
+    }
+
+    public function test_authenticated_admin_is_redirected_from_login_to_admin_dashboard(): void
+    {
+        $admin = User::factory()->create();
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.login'))
+            ->assertRedirect(route('admin.products.index'));
+    }
+
     public function test_customer_credentials_are_rejected(): void
     {
         $customer = User::factory()->customer()->create([

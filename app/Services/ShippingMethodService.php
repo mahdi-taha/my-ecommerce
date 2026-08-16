@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\ShippingMethod;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ShippingMethodService
 {
@@ -17,10 +19,11 @@ class ShippingMethodService
         unset($data['code']);
 
         return DB::transaction(function () use ($shippingMethod, $data): ShippingMethod {
-            $shippingMethod = ShippingMethod::query()
-                ->whereKey($shippingMethod->getKey())
-                ->lockForUpdate()
-                ->firstOrFail();
+            $shippingMethod = $this->lockedMethod($shippingMethod);
+
+            if ($shippingMethod->is_active && ! (bool) ($data['is_active'] ?? true)) {
+                $this->ensureAnotherActiveMethodExists($shippingMethod);
+            }
 
             $shippingMethod->update($data);
 
@@ -31,5 +34,45 @@ class ShippingMethodService
     public function updateStatus(ShippingMethod $shippingMethod, bool $isActive): ShippingMethod
     {
         return $this->update($shippingMethod, ['is_active' => $isActive]);
+    }
+
+    public function delete(ShippingMethod $shippingMethod): void
+    {
+        DB::transaction(function () use ($shippingMethod): void {
+            $shippingMethod = $this->lockedMethod($shippingMethod);
+
+            if ($shippingMethod->is_active) {
+                $this->ensureAnotherActiveMethodExists($shippingMethod);
+            }
+
+            $shippingMethod->delete();
+        });
+    }
+
+    private function lockedMethod(ShippingMethod $shippingMethod): ShippingMethod
+    {
+        $methods = ShippingMethod::query()
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get();
+        $locked = $methods->firstWhere('id', $shippingMethod->getKey());
+
+        if (! $locked) {
+            throw (new ModelNotFoundException)->setModel(ShippingMethod::class, [$shippingMethod->getKey()]);
+        }
+
+        return $locked;
+    }
+
+    private function ensureAnotherActiveMethodExists(ShippingMethod $shippingMethod): void
+    {
+        if (ShippingMethod::query()
+            ->where('is_active', true)
+            ->whereKeyNot($shippingMethod->getKey())
+            ->doesntExist()) {
+            throw ValidationException::withMessages([
+                'is_active' => 'At least one shipping method must remain active.',
+            ]);
+        }
     }
 }

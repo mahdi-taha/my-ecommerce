@@ -14,7 +14,7 @@ class ShippingMethodManagementTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_seeder_creates_inactive_neutral_placeholders_without_overwriting_edits(): void
+    public function test_seeder_creates_active_store_pickup_without_overwriting_other_edits(): void
     {
         $this->seed(ShippingMethodSeeder::class);
 
@@ -24,6 +24,10 @@ class ShippingMethodManagementTest extends TestCase
             'is_active' => false,
         ]);
         $this->assertDatabaseCount('shipping_methods', 4);
+        $this->assertDatabaseHas('shipping_methods', [
+            'code' => 'store_pickup',
+            'is_active' => true,
+        ]);
 
         ShippingMethod::where('code', 'inside_beirut')->update([
             'name' => 'Configured Name',
@@ -42,6 +46,13 @@ class ShippingMethodManagementTest extends TestCase
             'sort_order' => 99,
         ]);
         $this->assertDatabaseCount('shipping_methods', 4);
+
+        ShippingMethod::where('code', 'store_pickup')->update(['is_active' => false]);
+        $this->seed(ShippingMethodSeeder::class);
+        $this->assertDatabaseHas('shipping_methods', [
+            'code' => 'store_pickup',
+            'is_active' => true,
+        ]);
     }
 
     public function test_active_scope_orders_by_sort_order_then_id(): void
@@ -72,6 +83,7 @@ class ShippingMethodManagementTest extends TestCase
         ])->assertRedirect(route('admin.shipping-methods.index'));
 
         $method = ShippingMethod::where('code', 'local_delivery')->firstOrFail();
+        ShippingMethod::factory()->create(['is_active' => true]);
 
         $this->actingAs($admin, 'admin')->put(route('admin.shipping-methods.update', $method), [
             'code' => 'attempted_change',
@@ -95,6 +107,83 @@ class ShippingMethodManagementTest extends TestCase
             ->assertRedirect();
 
         $this->assertFalse($method->fresh()->is_active);
+    }
+
+    public function test_admin_cannot_deactivate_the_last_active_shipping_method_from_edit_or_status_action(): void
+    {
+        $admin = User::factory()->create();
+        $method = ShippingMethod::factory()->create(['is_active' => true]);
+
+        $payload = [
+            'name' => $method->name,
+            'type' => $method->type->value,
+            'amount' => $method->amount,
+            'description' => $method->description,
+            'is_active' => '0',
+            'sort_order' => $method->sort_order,
+        ];
+
+        $this->actingAs($admin, 'admin')
+            ->from(route('admin.shipping-methods.edit', $method))
+            ->put(route('admin.shipping-methods.update', $method), $payload)
+            ->assertRedirect(route('admin.shipping-methods.edit', $method))
+            ->assertSessionHasErrors(['is_active' => 'At least one shipping method must remain active.']);
+
+        $this->actingAs($admin, 'admin')
+            ->patch(route('admin.shipping-methods.status.update', $method), ['is_active' => '0'])
+            ->assertSessionHasErrors(['is_active' => 'At least one shipping method must remain active.']);
+
+        $this->assertTrue($method->fresh()->is_active);
+    }
+
+    public function test_admin_can_deactivate_a_shipping_method_when_another_is_active(): void
+    {
+        $admin = User::factory()->create();
+        $method = ShippingMethod::factory()->create(['is_active' => true]);
+        ShippingMethod::factory()->create(['is_active' => true]);
+
+        $this->actingAs($admin, 'admin')
+            ->patch(route('admin.shipping-methods.status.update', $method), ['is_active' => '0'])
+            ->assertSessionHasNoErrors();
+
+        $this->assertFalse($method->fresh()->is_active);
+    }
+
+    public function test_admin_cannot_delete_the_last_active_shipping_method(): void
+    {
+        $admin = User::factory()->create();
+        $method = ShippingMethod::factory()->create(['is_active' => true]);
+
+        $this->actingAs($admin, 'admin')
+            ->delete(route('admin.shipping-methods.destroy', $method))
+            ->assertSessionHasErrors(['is_active' => 'At least one shipping method must remain active.']);
+
+        $this->assertModelExists($method);
+    }
+
+    public function test_admin_can_delete_an_active_shipping_method_when_another_is_active(): void
+    {
+        $admin = User::factory()->create();
+        $method = ShippingMethod::factory()->create(['is_active' => true]);
+        ShippingMethod::factory()->create(['is_active' => true]);
+
+        $this->actingAs($admin, 'admin')
+            ->delete(route('admin.shipping-methods.destroy', $method))
+            ->assertRedirect(route('admin.shipping-methods.index'));
+
+        $this->assertModelMissing($method);
+    }
+
+    public function test_admin_can_delete_an_inactive_shipping_method(): void
+    {
+        $admin = User::factory()->create();
+        $method = ShippingMethod::factory()->create(['is_active' => false]);
+
+        $this->actingAs($admin, 'admin')
+            ->delete(route('admin.shipping-methods.destroy', $method))
+            ->assertRedirect(route('admin.shipping-methods.index'));
+
+        $this->assertModelMissing($method);
     }
 
     public function test_invalid_enum_negative_amount_and_duplicate_code_are_rejected(): void

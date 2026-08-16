@@ -43,7 +43,7 @@ class AdminAuthController extends Controller
             'last_login_at' => now(),
         ]);
 
-        return redirect()->intended(route('admin.products.index'));
+        return redirect()->route('admin.products.index');
     }
 
     public function logout(Request $request): RedirectResponse

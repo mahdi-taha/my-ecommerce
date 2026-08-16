@@ -25,7 +25,7 @@ class CouponCartService
 
             if (! $coupon) {
                 throw ValidationException::withMessages([
-                    'coupon_code' => __('shop.checkout.coupon.errors.not_found'),
+                    'coupon_code' => __('shop.checkout.coupon.errors.coupon_not_found'),
                 ]);
             }
 

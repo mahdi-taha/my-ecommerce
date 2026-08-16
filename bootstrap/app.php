@@ -30,6 +30,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('admin/*')
             ? route('admin.login')
             : route('customer.login'));
+        $middleware->redirectUsersTo(fn (Request $request) => $request->is('admin/login')
+            ? route('admin.products.index')
+            : '/');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

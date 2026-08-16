@@ -208,6 +208,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('shipping-methods.update');
         Route::patch('shipping-methods/{shippingMethod}/status', [ShippingMethodController::class, 'updateStatus'])
             ->name('shipping-methods.status.update');
+        Route::delete('shipping-methods/{shippingMethod}', [ShippingMethodController::class, 'destroy'])
+            ->name('shipping-methods.destroy');
 
         Route::patch('coupons/{coupon}/deactivate', [CouponController::class, 'deactivate'])
             ->name('coupons.deactivate');

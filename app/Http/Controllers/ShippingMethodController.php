@@ -69,4 +69,13 @@ class ShippingMethodController extends Controller
 
         return back()->with('success', 'Shipping method status updated successfully.');
     }
+
+    public function destroy(ShippingMethod $shippingMethod): RedirectResponse
+    {
+        $this->shippingMethodService->delete($shippingMethod);
+
+        return redirect()
+            ->route('admin.shipping-methods.index')
+            ->with('success', 'Shipping method deleted successfully.');
+    }
 }
